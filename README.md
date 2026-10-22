@@ -47,9 +47,9 @@ Qt Quick Controls se usa en la galería.
 
 | Distribución | Compilación y módulos de interfaz adicionales |
 | :--- | :--- |
-| Arch / CachyOS | `cmake ninja gcc qt6-base qt6-declarative qt6-svg qt6-imageformats` |
-| Fedora | `cmake ninja-build gcc-c++ qt6-qtbase-devel qt6-qtdeclarative qt6-qtsvg` |
-| Debian / Ubuntu | `cmake ninja-build g++ qt6-base-dev libqt6svg6 qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-window qml6-module-qtqml-workerscript` |
+| Arch / CachyOS | `cmake ninja gcc pkgconf wayland qt6-base qt6-declarative qt6-svg qt6-imageformats` |
+| Fedora | `cmake ninja-build gcc-c++ pkgconf wayland-devel qt6-qtbase-devel qt6-qtdeclarative qt6-qtsvg` |
+| Debian / Ubuntu | `cmake ninja-build g++ pkg-config libwayland-dev qt6-base-dev libqt6svg6 qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-window qml6-module-qtqml-workerscript` |
 
 Instala esas dependencias con el gestor de tu distribución y Quickshell desde
 su [guía oficial](https://quickshell.org/docs/guide/install-setup/).
@@ -95,8 +95,9 @@ de instalación ni de ejecución. CI carga QML real y renderiza los recursos con
 6.12.0. El daemon también se compila con ese SDK. Eso no acredita el blur,
 los controladores GPU ni una sesión Plasma real.
 
-`tests/requirements-ci.txt` fija la versión estable de Qt para el SDK y las
-pruebas. Dependabot propone actualizaciones semanales de Qt/PySide y acciones;
+`packaging/runtime.env` fija los mínimos para usuarios (Qt, Quickshell,
+Plasma). `tests/requirements-ci.txt` fija la última Qt estable con la que el CI
+compila y prueba; subirla no eleva el mínimo exigido. Dependabot propone actualizaciones semanales de Qt/PySide y acciones;
 CI semanal detecta nuevas versiones estables de Qt y Quickshell. Los cambios
 requieren pruebas antes de integrarse. Quickshell debe recompilarse para la
 versión exacta de Qt instalada, porque utiliza sus API privadas.
