@@ -32,9 +32,14 @@ FORBIDDEN_QML = [
 ]
 
 
+def skipped(part):
+    # build/, build-asan/, build-debug/…: árboles generados (ver .gitignore).
+    return part in SKIP_DIRS or part.startswith("build-")
+
+
 def source_files():
     for path in ROOT.rglob("*"):
-        if path.is_file() and not (set(path.relative_to(ROOT).parts) & SKIP_DIRS):
+        if path.is_file() and not any(skipped(part) for part in path.relative_to(ROOT).parts):
             yield path
 
 

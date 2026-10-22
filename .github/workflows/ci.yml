@@ -69,11 +69,11 @@ jobs:
           ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
         run: |
-          cmake -S . -B build-asan -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=OFF \
+          cmake -S . -B "$RUNNER_TEMP/build-asan" -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=OFF \
             -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
-          cmake --build build-asan --target nova-platform --parallel
-          python3 -I tests/ipc_smoke.py build-asan/daemon/nova-platform docs/CONTRATO-IPC-v1.md
-          python3 -I tests/compositor_probe.py build-asan/daemon/nova-platform
+          cmake --build "$RUNNER_TEMP/build-asan" --target nova-platform --parallel
+          python3 -I tests/ipc_smoke.py "$RUNNER_TEMP/build-asan/daemon/nova-platform" docs/CONTRATO-IPC-v1.md
+          python3 -I tests/compositor_probe.py "$RUNNER_TEMP/build-asan/daemon/nova-platform"
       - name: Reglas, sintaxis QML y shellcheck
         run: |
           python3 -I tools/check-sources.py --qmlformat "$QT_ROOT_DIR/bin/qmlformat"
