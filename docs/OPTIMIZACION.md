@@ -24,6 +24,44 @@ condicionado al protocolo anunciado por el compositor; reducir transparencia
 o activar alto contraste mantiene superficies opacas. No se acredita una
 reproducción exacta de materiales de otro sistema sin aceptación visual real.
 
+## Lanzador y búsqueda
+
+- **Índice por catálogo:** los nombres, nombres genéricos, palabras clave e
+  ID se normalizan (sin acentos ni mayúsculas) una vez por catálogo
+  (`DesktopPolicy.searchIndex`); cada pulsación solo puntúa y ordena.
+- **Relevancia:** inicio del nombre > inicio de palabra > iniciales («lc» →
+  LibreOffice Calc) > dentro del nombre > nombre genérico, palabras clave o
+  ID. Intro abre el primero; el resaltado lo marca mientras se escribe.
+- **Teclado:** ↓ pasa a la rejilla, ↑ vuelve, escribir con la rejilla enfocada
+  sigue buscando, Esc borra la búsqueda y con el campo vacío cierra.
+- **Celdas ligeras:** un solo menú contextual para toda la rejilla (antes un
+  `Menu` por celda), reutilización de delegados y el icono genérico solo
+  cuando no hay icono real o falla, nunca mientras carga.
+- **Movimiento:** el resaltado se desliza `Theme.motion.fast` entre celdas;
+  no hay animaciones por pulsación (el contenido cambia al instante, como
+  Spotlight) y con menos movimiento el desplazamiento es inmediato.
+
+Medida local (Qt 6.12, renderizador por software, 840×640, 300 aplicaciones
+con iconos SVG reales, 75 pulsaciones): **37 ms → 18 ms por pulsación**
+(filtrar, actualizar celdas y pintar). `node --test` comprueba la relevancia
+y que 2.000 aplicaciones se filtran en menos de 200 ms para seis consultas.
+
+## Reposo
+
+Medida en sway sin GPU durante 20 s con el escritorio en reposo:
+
+| Proceso | Antes | Después |
+| :--- | :--- | :--- |
+| `qs` con widgets de escritorio | 1,25 % CPU | **0,10 % CPU** |
+| `qs` sin widgets | 0,15 % CPU | — |
+| `nova-platform` | 0 % CPU, 17,5 MiB | 0 % CPU, 17,5 MiB |
+
+La diferencia venía de animar las barras de CPU/RAM en cada refresco de
+10 s; ahora se actualizan en un solo fotograma y en pasos del 2 %, así que una
+variación mínima de memoria no repinta el widget. La memoria residente de `qs`
+(~270 MiB) en este entorno incluye el OpenGL por software (llvmpipe); debe
+medirse con GPU en Plasma.
+
 ## Agrupación del dock
 
 Los identificadores cortos se indexan una vez por evaluación del catálogo.

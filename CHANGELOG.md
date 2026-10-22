@@ -14,6 +14,14 @@ versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
   KWin, 1–15) mediante las operaciones nuevas `blur.get` y `blur.set`.
 
 ### Cambiado
+- Lanzador: búsqueda por relevancia (inicio del nombre, palabras,
+  iniciales, nombre genérico y palabras clave), índice normalizado una vez
+  por catálogo, resaltado del resultado que abre Intro, Esc que borra antes de
+  cerrar y escritura directa desde la rejilla. Un solo menú contextual y
+  delegados reutilizados: de 37 a 18 ms por pulsación con 300 aplicaciones.
+- `applications.list` incluye `genericName` («Navegador web», «Terminal»).
+- Widgets de escritorio en reposo: de 1,25 % a 0,10 % de CPU (sin animar las
+  barras de uso en cada refresco y en pasos del 2 %).
 - La intensidad del vidrio cubre un rango visible: con desenfoque, de 0,85 a
   0,10 de opacidad en Cristal (antes 0,78–0,58 y nunca por debajo de 0,38).
 - Sin tonos azulados: fondos NovaShell monocromos (perla y grafito), tokens de
