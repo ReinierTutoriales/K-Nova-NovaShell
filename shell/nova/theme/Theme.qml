@@ -178,8 +178,20 @@ QtObject {
         readonly property int loginAvatar: 96
         readonly property int loginAvatarSmall: 56
         readonly property int loginFieldWidth: 260
-        // Desenfoque del fondo en la pantalla de inicio de sesión (0..1).
+        // Desenfoque del fondo en la pantalla de inicio de sesión (0..1) y
+        // radio máximo en píxeles que escala ese valor.
         readonly property real loginBackdropBlur: 0.7
+        readonly property int loginBlurMax: 64
+        // Posición vertical del reloj y del formulario (fracción de pantalla).
+        readonly property real loginClockTop: 0.12
+        readonly property real loginCardBottom: 0.08
+        // Inicial del avatar respecto a su diámetro.
+        readonly property real avatarInitialRatio: 0.42
+        // Elementos no seleccionados de una fila (usuarios).
+        readonly property real inactiveOpacity: 0.7
+        readonly property real inactiveScale: 0.86
+        readonly property int splashMark: 96
+        readonly property int splashProgressWidth: 160
         // Fracción superior de la superficie que cubre el brillo especular.
         readonly property real sheenHeight: 0.55
     }

@@ -37,36 +37,27 @@ compositor anuncia `ext-background-effect-v1`; sin él la superficie mantiene
 una opacidad legible. No hay plugins nativos de KWin.
 [Contrato visual](docs/APARIENCIA.md).
 
-## Requisitos
-
-KDE Plasma 6.8+ en Wayland, [Quickshell](https://quickshell.org/docs/guide/install-setup/)
-0.3.2+ compilado para tu versión exacta de Qt, y Qt 6.12.0+. Para compilar el
-daemon: CMake ≥ 3.21, Ninja, C++20, Qt Core/Network/DBus y las cabeceras de
-Wayland.
-
-| Distribución | Paquetes de compilación e interfaz |
-| :--- | :--- |
-| Arch / CachyOS | `cmake ninja gcc pkgconf wayland qt6-base qt6-declarative qt6-svg qt6-imageformats` |
-| Fedora | `cmake ninja-build gcc-c++ pkgconf wayland-devel qt6-qtbase-devel qt6-qtdeclarative qt6-qtsvg` |
-| Debian / Ubuntu | `cmake ninja-build g++ pkg-config libwayland-dev qt6-base-dev libqt6svg6 qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-window qml6-module-qtqml-workerscript` |
-
-Solo sirve en distribuciones que ya ofrezcan Plasma 6.8 y Qt 6.12;
-`novactl doctor` lo comprueba.
-
 ## Instalar
 
+Requisitos: KDE Plasma 6.8+ en Wayland, Qt 6.12+ y
+[Quickshell](https://quickshell.org/docs/v0.3.0/guide/install-setup) 0.3.2+
+compilado para tu misma versión de Qt. La **[guía de instalación](docs/INSTALACION.md)**
+tiene los paquetes por distribución, cada paso explicado y solución de problemas.
+
 ```sh
-git clone --branch v0.1.0 https://github.com/ReinierTutoriales/K-Nova-NovaShell.git
+git clone --branch v0.2.0 https://github.com/ReinierTutoriales/K-Nova-NovaShell.git
 cd K-Nova-NovaShell
-./tools/novactl doctor     # sesión, Plasma, Quickshell, Qt y herramientas
-./tools/novactl install    # compila e instala en tu usuario (~/.local), sin root
-./tools/novactl start
-./tools/novactl enable     # opcional: arrancar al iniciar sesión
+./tools/novactl doctor                    # comprueba sesión, Plasma, Quickshell y Qt
+./tools/novactl install                   # compila e instala en tu usuario, sin root
+./tools/novactl start && ./tools/novactl enable
+./tools/novactl desktop-profile apply     # opcional: splash, fondo de bloqueo, Dolphin y KWin
+./tools/novactl login-theme install       # opcional: tema SDDM (imprime la orden con sudo)
 ```
 
 NovaShell convive con el panel de Plasma; no sustituye `plasmashell` ni cambia
-el tema global de iconos. Para desinstalar: `./tools/novactl uninstall`
-(`--purge` borra también tus ajustes).
+el tema global. Para desinstalar: `./tools/novactl uninstall` (`--purge`
+borra también tus ajustes). Actualizar y desinstalar paso a paso:
+[guía](docs/INSTALACION.md#9-actualizar).
 
 ## Uso
 
@@ -82,6 +73,7 @@ el tema global de iconos. Para desinstalar: `./tools/novactl uninstall`
 
 | Documento | Contenido |
 | :--- | :--- |
+| [Instalación](docs/INSTALACION.md) | Paso a paso, actualización, desinstalación y problemas. |
 | [Arquitectura](docs/ARQUITECTURA.md) | Piezas, reglas, seguridad del IPC y consumo en reposo. |
 | [Contrato IPC v1](docs/CONTRATO-IPC-v1.md) | Todas las operaciones del daemon. |
 | [Apariencia](docs/APARIENCIA.md) | Materiales, blur, iconos y pautas de Apple aplicadas. |

@@ -10,8 +10,7 @@ import "theme"
 // No ejecuta nada: entrar, apagar o reiniciar son llamadas al proxy de SDDM.
 Rectangle {
     id: root
-    width: 1600
-    height: 900
+    // SDDM ajusta la raíz a cada pantalla (SizeRootObjectToView).
     color: Theme.color.previewTop
 
     readonly property string appearance: config.stringValue("appearance")
@@ -46,7 +45,7 @@ Rectangle {
         anchors.fill: parent
         source: wallpaper
         blurEnabled: true
-        blurMax: 64
+        blurMax: Theme.metrics.loginBlurMax
         blur: Theme.metrics.loginBackdropBlur
         autoPaddingEnabled: false
     }
@@ -54,7 +53,7 @@ Rectangle {
     LoginClock {
         id: clock
         anchors.horizontalCenter: parent.horizontalCenter
-        y: Math.round(parent.height * 0.12)
+        y: Math.round(parent.height * Theme.metrics.loginClockTop)
     }
 
     LoginCard {
@@ -62,7 +61,7 @@ Rectangle {
         visible: primaryScreen
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: footer.top
-        anchors.bottomMargin: Math.round(root.height * 0.08)
+        anchors.bottomMargin: Math.round(root.height * Theme.metrics.loginCardBottom)
         sessionIndex: root.sessionIndex
         focus: primaryScreen
     }

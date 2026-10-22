@@ -182,7 +182,7 @@ cmd_build() {
     local generator=()
     have ninja && generator=(-G Ninja)
     cmake -S "$REPO_DIR" -B "$BUILD_DIR" "${generator[@]}" \
-        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
         -DCMAKE_INSTALL_PREFIX="$PREFIX" \
         -DCMAKE_INSTALL_LIBEXECDIR=libexec
     cmake --build "$BUILD_DIR" --parallel
@@ -260,17 +260,24 @@ cmd_uninstall() {
     systemctl --user disable --now "${UNITS[@]}" 2>/dev/null || true
 
     if [[ -f "$MANIFEST" ]]; then
-        local path
-        while IFS= read -r path; do
-            # Defensa: solo se borra lo que está dentro de $HOME.
-            [[ -n "$path" && "$path" == "$HOME"/* ]] && rm -f -- "$path"
-        done < "$MANIFEST"
+        # Defensa: solo se borra lo que está dentro de $HOME. En lote: la
+        # biblioteca de iconos son decenas de miles de archivos.
+        local owned
+        owned="$(awk -v home="$HOME/" 'index($0, home) == 1' "$MANIFEST")"
+        if [[ -n "$owned" ]]; then
+            printf '%s\n' "$owned" | tr '\n' '\0' | xargs -0 rm -f --
+        fi
+        # Carpetas que quedan vacías (paquetes de sesión, temas de iconos…):
+        # KPackage y los selectores de KDE listarían una carpeta vacía. Se
+        # sube como mucho hasta $PREFIX/share o $PREFIX, que nunca se borran.
+        local directory
+        while IFS= read -r directory; do
+            while [[ "$directory" == "$PREFIX"/* && "$directory" != "$PREFIX/share" ]] \
+                && rmdir -- "$directory" 2>/dev/null; do
+                directory="$(dirname -- "$directory")"
+            done
+        done < <(printf '%s\n' "$owned" | sed 's|/[^/]*$||' | sort -u)
     fi
-    # Paquetes de sesión: sin carpetas vacías que KPackage pueda listar.
-    local package
-    for package in "$PREFIX/share/plasma/look-and-feel/org.knova.novashell" "$PREFIX/share/wallpapers/NovaShell"; do
-        [[ -d "$package" ]] && find "$package" -depth -type d -empty -delete
-    done
     rm -rf -- "$SHELL_DEST" "$(dirname -- "$MANIFEST")"
     systemctl --user daemon-reload 2>/dev/null || true
 
@@ -278,11 +285,12 @@ cmd_uninstall() {
         warn "El tema SDDM sigue instalado en el sistema. Para retirarlo: sudo $SDDM_INSTALLER uninstall"
     fi
 
+    # Ajustes del daemon (settings.json) y estado de Quickshell para esta config.
     if (( purge )); then
-        rm -rf -- "$STATE_HOME/quickshell/novashell"
+        rm -rf -- "$CONFIG_HOME/novashell" "$STATE_HOME/quickshell/novashell" "$STATE_HOME/novashell"
         ok "NovaShell desinstalado, incluidos tus datos y ajustes."
     else
-        ok "NovaShell desinstalado. Tus ajustes siguen en $STATE_HOME/quickshell/novashell (usa --purge para borrarlos)."
+        ok "NovaShell desinstalado. Tus ajustes siguen en $CONFIG_HOME/novashell (usa --purge para borrarlos)."
     fi
 }
 

@@ -250,8 +250,24 @@ class SessionSmoke(unittest.TestCase):
                 card.setProperty("userIndex", 1)
                 QTest.qWait(50)
                 self.assertEqual(card.property("loginName"), "invitado")
+                # Teclado: la fila de usuarios recibe el foco y las flechas eligen.
+                strip = view.rootObject().findChild(QObject, "users")
+                strip.forceActiveFocus()
+                QTest.keyClick(view, Qt.Key_Left)
+                QTest.qWait(50)
+                self.assertEqual(card.property("loginName"), "reinier")
                 view.close()
                 self.assertEqual(WARNINGS, [], WARNINGS)
+
+    def test_sddm_single_user_and_keyboard_selection(self):
+        view, context = self.sddm_view([{"name": "solo", "realName": "", "icon": "", "needsPassword": True}])
+        card = view.rootObject().findChild(QObject, "loginCard")
+        self.assertEqual(card.property("loginName"), "solo")
+        view.rootObject().findChild(QObject, "password").setProperty("text", "nova")
+        card.submit()
+        self.assertEqual(context["sddm"].calls[-1], ("login", "solo", "nova", 0))
+        view.close()
+        self.assertEqual(WARNINGS, [], WARNINGS)
 
     def test_sddm_without_user_list_asks_for_name(self):
         view, context = self.sddm_view([])
