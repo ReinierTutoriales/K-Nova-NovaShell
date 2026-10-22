@@ -14,7 +14,10 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     with tempfile.TemporaryDirectory(prefix="nova-jsonl-") as temporary:
         directory = Path(temporary)
-        (directory / "nova").symlink_to(ROOT / "shell/nova", target_is_directory=True)
+        # JsonlClient is intentionally internal to services. Import its actual
+        # source from a local test directory without exporting a private API.
+        (directory / "client").mkdir()
+        (directory / "client/JsonlClient.qml").symlink_to(ROOT / "shell/nova/services/JsonlClient.qml")
         server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         server.bind(str(directory / "silent.sock"))
         server.listen(1)
@@ -40,7 +43,7 @@ def main():
         (directory / "shell.qml").write_text('''// SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
 import Quickshell
-import qs.nova.services
+import "./client"
 ShellRoot {
     id: root
     property int phase: 0
