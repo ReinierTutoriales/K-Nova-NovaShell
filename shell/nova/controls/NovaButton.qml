@@ -45,12 +45,12 @@ Button {
             visible: root.symbol !== ""
             name: root.symbol
             size: Theme.icons.small
-            tint: root.prominent ? Theme.color.accentText : Theme.color.text
+            tint: root.prominent ? Theme.color.accentFillText : Theme.color.text
             Layout.alignment: Qt.AlignVCenter
         }
         Text {
             text: root.text
-            color: root.prominent ? Theme.color.accentText : Theme.color.text
+            color: root.prominent ? Theme.color.accentFillText : Theme.color.text
             font.family: Theme.font.family
             font.pixelSize: Theme.font.body
             font.weight: root.prominent ? Font.DemiBold : Font.Normal

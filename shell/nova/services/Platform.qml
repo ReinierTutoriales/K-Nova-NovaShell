@@ -29,6 +29,13 @@ Singleton {
     property int applicationsTotal: 0
     property var brightness: ({available: false, displays: []})
     property var metrics: ({available: false})
+    // Intensidad del desenfoque de KWin (blur.get); se pide al abrir Ajustes.
+    property var blur: ({strength: 15, writable: false})
+    function refreshBlur() { call("blur.get", {}, result => platform.blur = result); }
+    function setBlur(strength) {
+        platform.blur = {strength: strength, writable: platform.blur.writable};
+        call("blur.set", {strength: strength});
+    }
     property int _catalogGeneration: 0
     property string _pendingWindow: ""
     property string _pendingSource: ""
@@ -147,7 +154,7 @@ Singleton {
         socketPath: Quickshell.env("XDG_RUNTIME_DIR") + "/novashell/platform.sock"
         readOperations: ["platform.ping", "platform.version", "platform.capabilities",
             "compositor.capabilities", "applications.list", "settings.get", "windows.list",
-            "brightness.get", "system.metrics"]
+            "brightness.get", "system.metrics", "blur.get"]
 
         onEventReceived: (name, payload) => {
             if (name === "windows.changed") platform.applyWindows(payload);

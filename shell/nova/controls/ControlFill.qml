@@ -24,7 +24,7 @@ Rectangle {
         : checked ? Theme.color.selection
         : hovered ? Theme.color.hover
         : flat ? Theme.color.transparent : Theme.color.controlFill
-    border.width: focused ? Theme.metrics.focusWidth : (flat || prominent ? 0 : Theme.space.hairline)
-    border.color: focused ? Theme.color.focus : Theme.color.controlBorder
+    border.width: focused ? Theme.metrics.focusWidth : (flat ? 0 : Theme.space.hairline)
+    border.color: focused ? Theme.color.focus : (prominent ? Theme.color.accentFillRim : Theme.color.controlBorder)
     Behavior on color { ColorAnimation { duration: Theme.motion.fast } }
 }

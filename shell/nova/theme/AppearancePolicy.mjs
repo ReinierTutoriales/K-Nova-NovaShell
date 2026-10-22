@@ -9,12 +9,25 @@ export function unit(value, fallback = 0.5) {
     return typeof value === "number" && Number.isFinite(value)
         ? Math.min(1, Math.max(0, value)) : fallback;
 }
+// Opacidad del vidrio según la intensidad elegida (0 = más opaco, 1 = más
+// transparente). Con desenfoque del compositor el rango es amplio; sin él se
+// conserva un mínimo legible porque el fondo se ve nítido detrás.
+const ALPHA_RANGES = {
+    liquid: { blur: [0.85, 0.10], plain: [0.95, 0.55] },
+    frosted: { blur: [0.92, 0.32], plain: [0.97, 0.70] },
+};
 export function surfaceAlpha(material, amount, opaque, blur) {
     if (opaque || material === "solid")
         return 1;
-    // Translucency is not blur: unknown compositors retain a readable fill.
-    const base = material === "liquid" ? 0.58 : 0.76;
-    return Math.max(blur ? 0.38 : 0.88, base + (1 - unit(amount)) * 0.20);
+    const range = (ALPHA_RANGES[material] || ALPHA_RANGES.liquid)[blur ? "blur" : "plain"];
+    return range[0] + (range[1] - range[0]) * unit(amount);
+}
+// Vidrio transparente sobre imágenes (inicio de sesión): opacidad de la capa
+// clara (modo claro) u oscura (modo oscuro) para la misma intensidad.
+export function clearGlassAlpha(amount, dark, strong = false) {
+    const a = unit(amount);
+    const base = dark ? 0.48 - 0.36 * a : 0.42 - 0.34 * a;
+    return Math.min(0.9, base + (strong ? 0.18 : 0));
 }
 
 // Contraste WCAG entre dos colores "#rrggbb".

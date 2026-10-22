@@ -15,6 +15,7 @@ TrayRow 1.0 TrayRow.qml
 SettingsRow 1.0 SettingsRow.qml
 SettingsToggles 1.0 SettingsToggles.qml
 WelcomeView 1.0 WelcomeView.qml
+GlassIntensity 1.0 GlassIntensity.qml
 WelcomeText 1.0 WelcomeText.qml
 DesktopWidgets 1.0 DesktopWidgets.qml
 AnalogClock 1.0 AnalogClock.qml

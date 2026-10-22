@@ -76,6 +76,13 @@ ColumnLayout {
                 }
             }
             SettingsRow {
+                label: qsTr("Vidrio")
+                GlassIntensity {
+                    value: welcome.values.transparency ?? 0.5
+                    onCommitted: value => welcome.update("transparency", value)
+                }
+            }
+            SettingsRow {
                 label: qsTr("Material")
                 SegmentedChoice {
                     accessibleName: qsTr("Material"); value: welcome.values.material || "liquid"

@@ -23,7 +23,7 @@ test("accessibility and compositor fallback preserve readable surface opacity", 
     for (const material of Policy.materials) {
         for (const alpha of [0, 0.5, 1, NaN]) {
             assert.equal(Policy.surfaceAlpha(material, alpha, true, true), 1);
-            assert.ok(Policy.surfaceAlpha(material, alpha, false, false) >= 0.88);
+            assert.ok(Policy.surfaceAlpha(material, alpha, false, false) >= 0.55);
             assert.ok(Policy.surfaceAlpha(material, alpha, false, true) <= 1);
         }
     }
@@ -159,4 +159,19 @@ test("accent fill keeps white labels readable for any accent", () => {
     }
     // Un acento que ya cumple apenas cambia.
     assert.ok(Policy.contrast(Policy.readableFill("#2f6de0"), "#2f6de0") < 1.15);
+});
+
+test("glass intensity spans a visible range and stays legible without blur", () => {
+    for (const material of ["liquid", "frosted"]) {
+        for (const blur of [true, false]) {
+            const opaque = Policy.surfaceAlpha(material, 0, false, blur);
+            const clear = Policy.surfaceAlpha(material, 1, false, blur);
+            assert.ok(opaque - clear >= 0.25, `${material} blur=${blur}`);
+            assert.ok(clear >= (blur ? 0.1 : 0.55) - 1e-9);
+        }
+    }
+    for (const dark of [true, false]) {
+        assert.ok(Policy.clearGlassAlpha(1, dark) < Policy.clearGlassAlpha(0, dark));
+        assert.ok(Policy.clearGlassAlpha(0.5, dark, true) > Policy.clearGlassAlpha(0.5, dark));
+    }
 });

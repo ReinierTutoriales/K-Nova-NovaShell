@@ -45,6 +45,9 @@ Scope {
             onPatchRequested: patch => Platform.preferences.patch(patch)
             onWallpaperRequested: url => Platform.call("wallpaper.set", {url: url, screen: Quickshell.screens.indexOf(desktop.output)})
             onWelcomeRequested: ShellState.toggle("welcome", desktop.output)
+            blurStrength: Platform.blur.strength; blurWritable: Platform.blur.writable
+            onBlurRequested: strength => Platform.setBlur(strength)
+            Component.onCompleted: Platform.refreshBlur()
         } }
     }
     DesktopPanel {
