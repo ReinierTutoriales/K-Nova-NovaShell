@@ -1,0 +1,23 @@
+[Unit]
+Description=NovaShell - escritorio Quickshell
+Documentation=https://github.com/ReinierTutoriales/K-Nova-NovaShell
+Requires=nova-platform.service
+After=graphical-session.target plasma-kwin_wayland.service plasma-plasmashell.service nova-platform.service
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+# Reiniciar el shell solo señala al proceso qs; las apps lanzadas desde él
+# heredan el cgroup y no deben morir con él.
+KillMode=process
+# La instalación reemplaza la config de golpe; sin vigilante de archivos no
+# hay recargas de QML a medio copiar. Los cambios aplican con `novactl restart`.
+Environment=QS_DISABLE_FILE_WATCHER=1
+# Muchos hilos = muchas arenas de malloc que no devuelven memoria.
+Environment=MALLOC_ARENA_MAX=2
+ExecStart=@QS_BIN@ --no-duplicate -c novashell
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

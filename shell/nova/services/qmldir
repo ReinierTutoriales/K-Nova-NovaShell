@@ -1,0 +1,3 @@
+module qs.nova.services
+singleton Platform 1.0 Platform.qml
+internal JsonlClient JsonlClient.qml

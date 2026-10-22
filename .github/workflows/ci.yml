@@ -1,0 +1,54 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  daemon:
+    name: daemon (build + tests)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependencias
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build g++ qt6-base-dev python3
+
+      - name: Configurar
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DNOVA_WERROR=ON
+
+      - name: Compilar
+        run: cmake --build build --parallel
+
+      - name: Tests (unitarios + extremo a extremo)
+        run: ctest --test-dir build --output-on-failure
+
+  rules:
+    name: reglas (QML, shell, licencias)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependencias
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            shellcheck qt6-declarative-dev-tools python3
+
+      - name: Reglas de arquitectura y sintaxis QML
+        run: python3 -I tools/check-sources.py --qmlformat /usr/lib/qt6/bin/qmlformat
+
+      - name: shellcheck
+        run: shellcheck -x tools/novactl

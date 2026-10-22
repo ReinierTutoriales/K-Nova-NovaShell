@@ -1,0 +1,308 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# novactl — compila, instala y gestiona NovaShell para el usuario actual.
+#
+# Principio de diseño: NUNCA usa sudo ni escribe fuera de $HOME.
+#   binarios   -> ~/.local/libexec/nova-platform
+#   shell QML  -> ~/.config/quickshell/novashell/
+#   servicios  -> ~/.config/systemd/user/{nova-platform,novashell}.service
+#   manifiesto -> ~/.local/share/novashell/install-manifest
+set -euo pipefail
+
+REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly REPO_DIR
+VERSION="$(head -n1 "$REPO_DIR/VERSION")"
+readonly VERSION
+readonly PREFIX="${NOVA_PREFIX:-$HOME/.local}"
+readonly BUILD_DIR="${NOVA_BUILD_DIR:-$REPO_DIR/build}"
+readonly CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+readonly DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+readonly STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+readonly SHELL_DEST="$CONFIG_HOME/quickshell/novashell"
+readonly UNIT_DIR="$CONFIG_HOME/systemd/user"
+readonly MANIFEST="$DATA_HOME/novashell/install-manifest"
+readonly UNITS=(nova-platform.service novashell.service)
+readonly MIN_PLASMA_MAJOR=6
+
+# ---------------------------------------------------------------- utilidades
+
+if [[ -t 1 ]]; then
+    C_OK=$'\e[32m' C_WARN=$'\e[33m' C_ERR=$'\e[31m' C_BOLD=$'\e[1m' C_RST=$'\e[0m'
+else
+    C_OK='' C_WARN='' C_ERR='' C_BOLD='' C_RST=''
+fi
+
+info() { printf '%s\n' "$*"; }
+ok()   { printf '%s✔%s %s\n' "$C_OK" "$C_RST" "$*"; }
+warn() { printf '%s!%s %s\n' "$C_WARN" "$C_RST" "$*" >&2; }
+fail() { printf '%s✘%s %s\n' "$C_ERR" "$C_RST" "$*" >&2; }
+die()  { fail "$*"; exit 1; }
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+require_user() {
+    if [[ "$(id -u)" -eq 0 ]]; then
+        die "No ejecutes novactl como root ni con sudo: NovaShell se instala solo en tu \$HOME."
+    fi
+}
+
+quickshell_bin() {
+    if [[ -n "${NOVA_QS_BIN:-}" ]]; then
+        printf '%s\n' "$NOVA_QS_BIN"
+    elif have qs; then
+        command -v qs
+    elif have quickshell; then
+        command -v quickshell
+    else
+        return 1
+    fi
+}
+
+# --------------------------------------------------------------------- doctor
+
+cmd_doctor() {
+    require_user
+    local problems=0
+
+    info "${C_BOLD}NovaShell $VERSION — diagnóstico${C_RST}"
+
+    if [[ "${XDG_SESSION_TYPE:-}" == wayland ]]; then
+        ok "Sesión Wayland"
+    else
+        warn "La sesión no es Wayland (XDG_SESSION_TYPE=${XDG_SESSION_TYPE:-vacío}). NovaShell requiere Plasma 6 Wayland."
+    fi
+
+    if [[ "${XDG_CURRENT_DESKTOP:-}" == *KDE* ]]; then
+        ok "Escritorio KDE"
+    else
+        warn "XDG_CURRENT_DESKTOP=${XDG_CURRENT_DESKTOP:-vacío}; NovaShell está pensado para KDE Plasma 6."
+    fi
+
+    if have plasmashell; then
+        local plasma_version
+        plasma_version="$(plasmashell --version 2>/dev/null | awk '{print $NF}')"
+        if [[ "${plasma_version%%.*}" -ge "$MIN_PLASMA_MAJOR" ]] 2>/dev/null; then
+            ok "Plasma $plasma_version"
+        else
+            fail "Plasma ${plasma_version:-desconocido}; se requiere 6.x"
+            problems=$((problems + 1))
+        fi
+    else
+        warn "plasmashell no encontrado (¿no es una sesión Plasma?)"
+    fi
+
+    local qs
+    if qs="$(quickshell_bin)"; then
+        ok "Quickshell: $qs ($("$qs" --version 2>/dev/null | head -n1 || echo 'versión desconocida'))"
+    else
+        fail "Quickshell no encontrado (se necesita la 0.3.x; define NOVA_QS_BIN si está fuera del PATH)"
+        problems=$((problems + 1))
+    fi
+
+    local tool
+    for tool in cmake ninja c++ systemctl; do
+        if have "$tool"; then
+            ok "$tool"
+        else
+            fail "Falta $tool"
+            problems=$((problems + 1))
+        fi
+    done
+
+    if have qtpaths6 || have qmake6 || [[ -d /usr/lib/cmake/Qt6 ]] || [[ -d /usr/lib64/cmake/Qt6 ]] \
+        || compgen -G '/usr/lib/*/cmake/Qt6' >/dev/null; then
+        ok "Qt 6 (desarrollo)"
+    else
+        fail "No se encontraron las cabeceras/CMake de Qt 6 (qt6-base-dev / qt6-qtbase-devel / qt6-base)"
+        problems=$((problems + 1))
+    fi
+
+    if [[ -n "${XDG_RUNTIME_DIR:-}" ]]; then
+        ok "XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR"
+    else
+        fail "XDG_RUNTIME_DIR no está definido"
+        problems=$((problems + 1))
+    fi
+
+    if (( problems > 0 )); then
+        fail "$problems problema(s) bloqueante(s)."
+        return 1
+    fi
+    ok "Todo listo."
+}
+
+# ---------------------------------------------------------------------- build
+
+cmd_build() {
+    require_user
+    have cmake || die "Falta cmake"
+    local generator=()
+    have ninja && generator=(-G Ninja)
+    cmake -S "$REPO_DIR" -B "$BUILD_DIR" "${generator[@]}" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX="$PREFIX" \
+        -DCMAKE_INSTALL_LIBEXECDIR=libexec
+    cmake --build "$BUILD_DIR" --parallel
+    ok "Compilado en $BUILD_DIR"
+}
+
+# -------------------------------------------------------------------- install
+
+# Copia el árbol QML de forma atómica: se prepara al lado y se intercambia con
+# mv, así un shell en ejecución nunca ve una mezcla de archivos viejos y nuevos.
+install_shell_tree() {
+    local parent staging backup
+    parent="$(dirname -- "$SHELL_DEST")"
+    staging="$parent/.novashell.new"
+    backup="$parent/.novashell.old"
+    mkdir -p -- "$parent"
+    rm -rf -- "$staging" "$backup"
+    cp -R -- "$REPO_DIR/shell" "$staging"
+    chmod -R u+rwX,go-w -- "$staging"
+    if [[ -e "$SHELL_DEST" ]]; then
+        mv -- "$SHELL_DEST" "$backup"
+    fi
+    mv -- "$staging" "$SHELL_DEST"
+    rm -rf -- "$backup"
+}
+
+render_unit() {
+    local template="$1" destination="$2" qs="$3"
+    local libexec="$PREFIX/libexec"
+    # '|' como separador: las rutas llevan '/'. Se rechazan rutas con '|'.
+    [[ "$libexec$qs" != *'|'* ]] || die "Ruta no soportada (contiene '|'): $libexec / $qs"
+    sed -e "s|@LIBEXECDIR@|$libexec|g" -e "s|@QS_BIN@|$qs|g" "$template" > "$destination.tmp"
+    mv -- "$destination.tmp" "$destination"
+}
+
+cmd_install() {
+    require_user
+    local qs
+    qs="$(quickshell_bin)" || die "Quickshell no encontrado; ejecuta: novactl doctor"
+
+    cmd_build
+    cmake --install "$BUILD_DIR"
+
+    install_shell_tree
+
+    mkdir -p -- "$UNIT_DIR" "$(dirname -- "$MANIFEST")"
+    local unit
+    for unit in "${UNITS[@]}"; do
+        render_unit "$REPO_DIR/packaging/systemd/$unit.in" "$UNIT_DIR/$unit" "$qs"
+    done
+
+    {
+        printf '%s\n' "$PREFIX/libexec/nova-platform"
+        for unit in "${UNITS[@]}"; do printf '%s\n' "$UNIT_DIR/$unit"; done
+    } > "$MANIFEST"
+    printf '%s\n' "$VERSION" > "$(dirname -- "$MANIFEST")/installed-version"
+
+    systemctl --user daemon-reload
+    ok "NovaShell $VERSION instalado en tu usuario (sin root)."
+    info "Siguiente paso: novactl start   (y 'novactl enable' para arrancar al iniciar sesión)"
+}
+
+cmd_uninstall() {
+    require_user
+    local purge=0
+    [[ "${1:-}" == --purge ]] && purge=1
+
+    systemctl --user disable --now "${UNITS[@]}" 2>/dev/null || true
+
+    if [[ -f "$MANIFEST" ]]; then
+        local path
+        while IFS= read -r path; do
+            # Defensa: solo se borra lo que está dentro de $HOME.
+            [[ -n "$path" && "$path" == "$HOME"/* ]] && rm -f -- "$path"
+        done < "$MANIFEST"
+    fi
+    rm -rf -- "$SHELL_DEST" "$(dirname -- "$MANIFEST")"
+    systemctl --user daemon-reload 2>/dev/null || true
+
+    if (( purge )); then
+        rm -rf -- "$STATE_HOME/quickshell/novashell"
+        ok "NovaShell desinstalado, incluidos tus datos y ajustes."
+    else
+        ok "NovaShell desinstalado. Tus ajustes siguen en $STATE_HOME/quickshell/novashell (usa --purge para borrarlos)."
+    fi
+}
+
+# ------------------------------------------------------------------- servicio
+
+require_installed() {
+    [[ -f "$MANIFEST" ]] || die "NovaShell no está instalado; ejecuta: novactl install"
+}
+
+cmd_start()   { require_user; require_installed; systemctl --user start "${UNITS[@]}"; ok "Iniciado"; }
+cmd_stop()    { require_user; systemctl --user stop novashell.service nova-platform.service; ok "Detenido"; }
+cmd_restart() { require_user; require_installed; systemctl --user restart nova-platform.service novashell.service; ok "Reiniciado"; }
+cmd_enable()  { require_user; require_installed; systemctl --user enable "${UNITS[@]}"; ok "Arrancará al iniciar sesión"; }
+cmd_disable() { require_user; systemctl --user disable "${UNITS[@]}"; ok "Ya no arrancará al iniciar sesión"; }
+cmd_status()  { systemctl --user --no-pager status "${UNITS[@]}" || true; }
+cmd_logs()    { journalctl --user --no-pager -n "${1:-100}" -u nova-platform.service -u novashell.service; }
+
+# Desarrollo: shell desde el árbol de fuentes con recarga en caliente.
+# Usa el daemon instalado si ya corre; si no, arranca el compilado en build/.
+cmd_dev() {
+    require_user
+    local qs
+    qs="$(quickshell_bin)" || die "Quickshell no encontrado"
+    local socket="${XDG_RUNTIME_DIR:?XDG_RUNTIME_DIR no definido}/novashell/platform.sock"
+    local daemon_pid=""
+
+    if [[ ! -S "$socket" ]]; then
+        [[ -x "$BUILD_DIR/daemon/nova-platform" ]] || cmd_build
+        "$BUILD_DIR/daemon/nova-platform" &
+        daemon_pid=$!
+        trap '[[ -n "$daemon_pid" ]] && kill "$daemon_pid" 2>/dev/null' EXIT
+        info "Daemon de desarrollo (pid $daemon_pid)"
+    fi
+
+    if systemctl --user --quiet is-active novashell.service; then
+        warn "novashell.service está activo; detenlo (novactl stop) para no tener dos barras."
+    fi
+    "$qs" -p "$REPO_DIR/shell"
+}
+
+cmd_version() {
+    info "Fuente:     $VERSION ($REPO_DIR)"
+    local installed
+    installed="$(dirname -- "$MANIFEST")/installed-version"
+    if [[ -f "$installed" ]]; then
+        info "Instalada:  $(<"$installed")"
+    else
+        info "Instalada:  ninguna"
+    fi
+}
+
+usage() {
+    cat <<EOF
+novactl $VERSION — gestor de NovaShell (sin root)
+
+Uso: novactl <orden>
+
+  doctor             Comprueba sesión, Plasma, Quickshell y herramientas
+  build              Compila el daemon en $BUILD_DIR
+  install            Compila e instala en tu usuario
+  uninstall [--purge] Desinstala (con --purge también borra tus ajustes)
+  start | stop | restart | status
+  enable | disable   Arranque automático al iniciar sesión
+  logs [N]           Últimas N líneas del registro (100 por defecto)
+  dev                Ejecuta el shell desde las fuentes (recarga en caliente)
+  version            Versión de las fuentes y la instalada
+EOF
+}
+
+main() {
+    local command="${1:-help}"
+    shift || true
+    case "$command" in
+        doctor|build|install|uninstall|start|stop|restart|enable|disable|status|logs|dev|version)
+            "cmd_$command" "$@" ;;
+        help|-h|--help) usage ;;
+        *) usage; exit 2 ;;
+    esac
+}
+
+main "$@"

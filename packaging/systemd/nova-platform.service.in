@@ -1,0 +1,22 @@
+[Unit]
+Description=NovaShell - servicio de plataforma
+Documentation=https://github.com/ReinierTutoriales/K-Nova-NovaShell
+# KDE marca graphical-session.target activo antes de que kwin_wayland tenga
+# su socket listo; esperar al compositor evita arranques prematuros.
+After=graphical-session.target plasma-kwin_wayland.service
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=@LIBEXECDIR@/nova-platform
+Restart=on-failure
+RestartSec=2
+# Endurecimiento: el daemon no necesita privilegios ni escribir fuera de su
+# directorio en XDG_RUNTIME_DIR. Ampliar solo cuando una operación lo exija.
+NoNewPrivileges=yes
+LockPersonality=yes
+RestrictRealtime=yes
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=graphical-session.target

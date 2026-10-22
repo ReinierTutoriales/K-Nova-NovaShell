@@ -1,0 +1,78 @@
+# Contrato IPC v1 — `nova-platform`
+
+Este documento es **la fuente de verdad** de lo que el shell puede pedirle al
+sistema. Si una operación no está aquí, no existe. El test `ipc_smoke`
+compara la tabla de operaciones con lo que el daemon anuncia en
+`platform.capabilities` y falla si no coinciden.
+
+## Transporte
+
+- Socket Unix por usuario: `$XDG_RUNTIME_DIR/novashell/platform.sock`.
+- Directorio `0700`, socket `0600`, y el daemon verifica con `SO_PEERCRED`
+  que el cliente es el mismo UID. **No es una API de red.**
+- Mensajes: objetos JSON UTF-8, uno por línea (`\n`). Máximo 64 KiB por línea;
+  una línea mayor cierra la conexión.
+- Máximo 32 clientes simultáneos.
+
+## Petición
+
+```json
+{"version":1,"requestId":"42","operation":"platform.ping","payload":{}}
+```
+
+| Campo | Tipo | Regla |
+| :--- | :--- | :--- |
+| `version` | entero | Debe ser `1`. |
+| `requestId` | texto | 1–64 caracteres. Lo elige el cliente; se devuelve tal cual. |
+| `operation` | texto | `grupo.accion` en minúsculas (`^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$`). |
+| `payload` | objeto | Opcional. |
+
+## Respuesta
+
+```json
+{"version":1,"requestId":"42","ok":true,"result":{"ready":true}}
+{"version":1,"requestId":"42","ok":false,"error":{"code":"unknown-operation","message":"…","retryable":false}}
+```
+
+Si la petición es tan inválida que no se pudo leer `requestId`, la respuesta
+lleva `"requestId": null`.
+
+## Eventos (reservado)
+
+Los eventos llegan sin `requestId` y con `event`:
+
+```json
+{"version":1,"event":"grupo.nombre","payload":{}}
+```
+
+v1 aún no emite eventos; el formato queda fijado para no romper clientes.
+
+## Códigos de error
+
+| Código | Significado | `retryable` |
+| :--- | :--- | :--- |
+| `invalid-json` | La línea no es un objeto JSON. | no |
+| `invalid-request` | Falta un campo o tiene un tipo/forma inválida. | no |
+| `unsupported-version` | `version` distinta de 1. | no |
+| `unknown-operation` | Operación no registrada. | no |
+| `request-too-large` | Línea por encima de 64 KiB; se cierra la conexión. | no |
+| `internal` | Fallo dentro del manejador; el daemon sigue vivo. | sí |
+
+## Operaciones
+
+<!-- operaciones:inicio -->
+| Operación | Payload | Resultado |
+| :--- | :--- | :--- |
+| `platform.ping` | — | `{"ready": true}` |
+| `platform.version` | — | `{"version": "0.1.0-dev", "protocol": 1}` |
+| `platform.capabilities` | — | `{"protocol": 1, "operations": ["…"]}` (lista ordenada) |
+<!-- operaciones:fin -->
+
+## Reglas para añadir una operación
+
+1. Debe ser **acotada**: nunca acepta un comando arbitrario, una ruta de
+   ejecutable ni un argumento que acabe en un shell.
+2. Se documenta aquí **en el mismo commit** que se implementa (el test lo exige).
+3. Las de escritura (apagar, borrar, cambiar red…) fallan de inmediato si el
+   daemon no está disponible; el cliente no las reintenta solo.
+4. Cambios incompatibles = `version: 2`, nunca reinterpretar un campo de v1.
