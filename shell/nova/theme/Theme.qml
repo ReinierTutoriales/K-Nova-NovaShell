@@ -14,8 +14,12 @@ QtObject {
     property bool reduceMotion: false
     property bool reduceTransparency: false
     property bool highContrast: false
-    // Opt in after verifying ext-background-effect-v1 on the compositor.
-    property bool backgroundBlur: false
+    // Preferencia del usuario (Ajustes / NOVA_BACKGROUND_BLUR).
+    property bool backgroundBlur: true
+    // Soporte real del compositor (ext-background-effect-v1); lo fija
+    // CompositorBlur. El blur exige ambos: pedirlo sin soporte no desenfoca
+    // y solo vuelve la superficie ilegible.
+    property bool compositorBlur: false
     readonly property string effectiveMode: Policy.choice(mode, Policy.modes, "auto")
     readonly property string effectiveMaterial: Policy.choice(material, Policy.materials, "frosted")
     readonly property string effectiveIconMode: Policy.choice(iconMode, Policy.iconModes, "default")
@@ -23,7 +27,7 @@ QtObject {
         || (effectiveMode === "auto" && Qt.styleHints.colorScheme === Qt.Dark)
     readonly property real glassAmount: Policy.unit(transparency, 0.5)
     readonly property bool opaque: reduceTransparency || highContrast
-    readonly property bool blurEnabled: backgroundBlur && !opaque && effectiveMaterial !== "solid"
+    readonly property bool blurEnabled: backgroundBlur && compositorBlur && !opaque && effectiveMaterial !== "solid"
     readonly property real surfaceAlpha: Policy.surfaceAlpha(
         effectiveMaterial, glassAmount, opaque, blurEnabled)
 

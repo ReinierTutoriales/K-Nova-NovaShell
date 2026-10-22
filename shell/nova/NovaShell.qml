@@ -21,7 +21,8 @@ Scope {
         Theme.highContrast = Quickshell.env("NOVA_HIGH_CONTRAST") === "1";
     }
 
-    // El blur lo decide CompositorBlur (detección + NOVA_BACKGROUND_BLUR).
+    // Soporte de blur del compositor (Theme.compositorBlur); la preferencia
+    // del usuario la aplica PreferencesBridge (Theme.backgroundBlur).
     CompositorBlur {}
 
     // La ventana de apariencia no existe hasta que se pide: en reposo no

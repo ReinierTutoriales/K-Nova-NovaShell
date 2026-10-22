@@ -21,7 +21,7 @@ QJsonObject Preferences::defaults() {
         {QStringLiteral("doNotDisturb"), false}, {QStringLiteral("showSeconds"), false},
         {QStringLiteral("notificationServer"), false}, {QStringLiteral("clipboardEnabled"), false},
         {QStringLiteral("reduceMotion"), false}, {QStringLiteral("reduceTransparency"), false},
-        {QStringLiteral("highContrast"), false}, {QStringLiteral("backgroundBlur"), false},
+        {QStringLiteral("highContrast"), false}, {QStringLiteral("backgroundBlur"), true},
         {QStringLiteral("pins"), QJsonArray{QStringLiteral("org.kde.dolphin.desktop"),
             QStringLiteral("org.kde.konsole.desktop"), QStringLiteral("firefox.desktop"),
             QStringLiteral("systemsettings.desktop")}}};

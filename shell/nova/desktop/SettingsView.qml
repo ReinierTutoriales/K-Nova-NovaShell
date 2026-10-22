@@ -60,7 +60,7 @@ ScrollView {
                 {key: "dockAutoHide", label: qsTr("Ocultar dock automáticamente")},
                 {key: "dockMagnify", label: qsTr("Ampliar iconos al pasar el puntero")},
                 {key: "showSeconds", label: qsTr("Mostrar segundos en el reloj")},
-                {key: "backgroundBlur", label: qsTr("Solicitar desenfoque al compositor")},
+                {key: "backgroundBlur", label: qsTr("Desenfoque de fondo (si el compositor lo admite)")},
                 {key: "reduceMotion", label: qsTr("Reducir movimiento")},
                 {key: "reduceTransparency", label: qsTr("Reducir transparencia")},
                 {key: "highContrast", label: qsTr("Alto contraste")},
