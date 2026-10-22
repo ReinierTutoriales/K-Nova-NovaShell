@@ -160,7 +160,7 @@ class SessionSmoke(unittest.TestCase):
         self.assertEqual(meta["KPackageStructure"], "Plasma/LookAndFeel")
         self.assertEqual(meta["KPlugin"]["Id"], lnf.name)
         self.assertGreaterEqual(int(meta["X-Plasma-APIVersion"]), 2)
-        for name in ("Splash.qml", "theme/qmldir", "images/nova-mark.svg",
+        for name in ("Splash.qml", "theme/qmldir", "images/nova-mark-dark.svg", "images/nova-mark-light.svg",
                      "images/nova-light.jpg", "images/nova-dark.jpg"):
             self.assertTrue((lnf / "contents/splash" / name).is_file(), name)
         wallpaper = self.share / "wallpapers/NovaShell"
@@ -227,7 +227,7 @@ class SessionSmoke(unittest.TestCase):
             self.assertTrue((theme / name).is_file(), name)
 
     def test_sddm_login_flow_and_power(self):
-        mark = str(self.share / "plasma/look-and-feel/org.knova.novashell/contents/splash/images/nova-mark.svg")
+        mark = str(self.share / "plasma/look-and-feel/org.knova.novashell/contents/splash/images/nova-mark-dark.svg")
         users = [{"name": "reinier", "realName": "Reinier", "icon": "file://" + mark, "needsPassword": True},
                  {"name": "invitado", "realName": "", "icon": "", "needsPassword": True}]
         for scheme in ("light", "dark"):
