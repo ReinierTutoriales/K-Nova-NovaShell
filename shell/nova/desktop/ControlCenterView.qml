@@ -41,7 +41,7 @@ ScrollView {
         Text { text: qsTr("Sonido"); color: Theme.color.text; font.pixelSize: Theme.font.title }
         RowLayout {
             IconButton { label: qsTr("Silenciar"); symbol: "volume"; enabled: center.backend.audioAvailable; onClicked: center.backend.toggleMute() }
-            Slider {
+            NovaSlider {
                 Layout.fillWidth: true
                 from: 0; to: 1
                 value: center.backend.volume
@@ -69,7 +69,7 @@ ScrollView {
                 required property var modelData
                 Layout.fillWidth: true
                 Text { text: modelData.name || modelData.id; color: Theme.color.text; font.pixelSize: Theme.font.body }
-                Slider {
+                NovaSlider {
                     Layout.fillWidth: true
                     from: 1; to: 100; stepSize: 1
                     value: modelData.percent

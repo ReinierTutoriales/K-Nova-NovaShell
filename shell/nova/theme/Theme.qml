@@ -53,6 +53,9 @@ QtObject {
         readonly property color pressed: theme.dark ? Qt.rgba(1, 1, 1, 0.20) : Qt.rgba(0, 0, 0, 0.12)
         readonly property color focus: theme.dark ? "#9ac2ff" : "#1455c0"
         readonly property color previewTop: theme.dark ? "#16243b" : "#dce9fb"
+        readonly property color selection: Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, theme.dark ? 0.28 : 0.16)
+        readonly property color clockFace: Qt.rgba(surface.r, surface.g, surface.b, theme.opaque ? 1 : 0.55)
+        readonly property color sliderTrack: theme.dark ? Qt.rgba(1, 1, 1, 0.18) : Qt.rgba(0, 0, 0, 0.12)
         readonly property color previewBottom: theme.dark ? "#493556" : "#e6d9ec"
         // Vidrio: brillo especular superior y borde de luz interior. Más
         // intensos en "liquid", sutiles en "frosted", nulos si es opaco.
@@ -107,6 +110,7 @@ QtObject {
         readonly property int body: 13
         readonly property int title: 16
         readonly property int heading: 25
+        readonly property int display: 44
     }
     readonly property QtObject motion: QtObject {
         readonly property int fast: theme.reduceMotion ? 0 : 120
@@ -138,6 +142,18 @@ QtObject {
         readonly property int minimumPanelHeight: 420
         readonly property int focusWidth: 2
         readonly property real disabledOpacity: 0.5
+        readonly property int sliderTrack: 4
+        readonly property int sliderHandle: 18
+        readonly property int switchWidth: 40
+        readonly property int batteryLow: 15
+        readonly property int switchHeight: 22
+        readonly property int sidebarWidth: 200
+        readonly property int settingsLabelWidth: 140
+        readonly property int clockSize: 132
+        readonly property int calendarCell: 26
+        readonly property int desktopWidgetWidth: 380
+        readonly property int settingsWidth: 880
+        readonly property int settingsHeight: 620
         // Fracción superior de la superficie que cubre el brillo especular.
         readonly property real sheenHeight: 0.55
     }

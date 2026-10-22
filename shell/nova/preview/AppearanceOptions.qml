@@ -72,7 +72,7 @@ ColumnLayout {
         font.family: Theme.font.family
         font.pixelSize: Theme.font.body
     }
-    Slider {
+    NovaSlider {
         Layout.fillWidth: true
         from: 0
         to: 1
