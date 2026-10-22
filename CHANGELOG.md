@@ -4,6 +4,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/);
 versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
 `0.x`, cualquier versión menor puede romper compatibilidad.
 
+## [Sin publicar]
+
 ## [0.2.0] — 2026-10-22 · pre-release
 
 Pantallas de sesión con la identidad de NovaShell, bienvenida de primer uso e
@@ -94,5 +96,6 @@ del sistema), por eso se publica como pre-release.
 - Capa de iconos GoldenGate v3: su autor la describe como una recopilación
   de iconos de terceros, por lo que su licencia no cubría ese arte.
 
+[Sin publicar]: https://github.com/ReinierTutoriales/K-Nova-NovaShell/compare/v0.2.0...main
 [0.2.0]: https://github.com/ReinierTutoriales/K-Nova-NovaShell/releases/tag/v0.2.0
 [0.1.0]: https://github.com/ReinierTutoriales/K-Nova-NovaShell/releases/tag/v0.1.0
