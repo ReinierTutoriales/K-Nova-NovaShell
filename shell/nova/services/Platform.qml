@@ -88,7 +88,11 @@ Singleton {
         windowBridgeAvailable = snapshot.available || false;
     }
     function reloadApplications() {
-        if (!connected || applicationsLoading) return;
+        // client.connected, no platform.connected: al conectar, este método se
+        // llama desde onConnectedChanged del cliente, antes de que el binding
+        // de platform.connected se reevalúe; leerlo daba false y el catálogo
+        // (y con él el dock) nunca se cargaba.
+        if (!client.connected || applicationsLoading) return;
         const generation = ++_catalogGeneration;
         applicationsLoading = true;
         let collected = [];
