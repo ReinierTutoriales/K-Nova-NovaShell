@@ -40,7 +40,7 @@ ColumnLayout {
         spacing: Theme.space.sm
         model: overview.windows
         ScrollBar.vertical: ScrollBar {}
-        delegate: GlassSurface {
+        delegate: ContentCard {
             required property var modelData
             width: ListView.view.width
             implicitHeight: row.implicitHeight + Theme.space.md * 2

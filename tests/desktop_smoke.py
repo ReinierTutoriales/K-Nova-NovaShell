@@ -31,6 +31,168 @@ def find(item, name):
 
 
 class DesktopSmoke(unittest.TestCase):
+    def test_progress_stops_when_hidden_and_respects_reduced_motion(self):
+        with tempfile.TemporaryDirectory(prefix="nova-progress-") as temporary:
+            Path(temporary, "qs").symlink_to(ROOT / "shell", target_is_directory=True)
+            WARNINGS.clear()
+            engine = QQmlApplicationEngine()
+            engine.addImportPath(temporary)
+            engine.loadData(b'''import QtQuick
+import qs.nova.theme
+import qs.nova.desktop
+Window {
+    width: 840; height: 680; visible: true
+    property bool reduced: false
+    onReducedChanged: Theme.reduceMotion = reduced
+    Component.onCompleted: Theme.reduceMotion = reduced
+    property alias loading: launcher.loading
+    property alias progress: launcher.progress
+    LauncherView { id: launcher; anchors.fill: parent }
+}''', QUrl.fromLocalFile(str(ROOT / "tests/progress-harness.qml")))
+            self.assertEqual(len(engine.rootObjects()), 1, "\n".join(WARNINGS))
+            window = engine.rootObjects()[0]
+            progress = find(window.contentItem(), "catalogProgress")
+            self.assertFalse(progress.property("animating"))
+            # Carga rápida (< progressDelay): la barra nunca llega a mostrarse.
+            window.setProperty("loading", True)
+            QTest.qWait(30)
+            self.assertFalse(progress.property("visible"))
+            self.assertFalse(progress.property("animating"))
+            window.setProperty("loading", False)
+            QTest.qWait(400)
+            self.assertFalse(progress.property("visible"))
+            # Carga larga: aparece tras el retardo y el barrido corre.
+            window.setProperty("loading", True)
+            QTest.qWait(400)
+            self.assertTrue(progress.property("visible"))
+            self.assertTrue(progress.property("indeterminate"))
+            self.assertTrue(progress.property("animating"))
+            window.setProperty("progress", 0.5)
+            APP.processEvents()
+            self.assertFalse(progress.property("indeterminate"))
+            self.assertFalse(progress.property("animating"))
+            self.assertEqual(progress.property("position"), 0.5)
+            window.setProperty("progress", 2)
+            APP.processEvents()
+            self.assertEqual(progress.property("position"), 1)
+            window.setProperty("progress", -1)
+            window.setProperty("reduced", True)
+            APP.processEvents()
+            self.assertTrue(progress.property("indeterminate"))
+            self.assertFalse(progress.property("animating"))
+            window.setProperty("reduced", False)
+            window.setProperty("loading", False)
+            APP.processEvents()
+            self.assertFalse(progress.property("animating"))
+            self.assertEqual(WARNINGS, [], "\n".join(WARNINGS))
+            window.close()
+            del engine
+            APP.processEvents()
+
+    def test_panel_transition_lifecycle_and_reduced_motion(self):
+        with tempfile.TemporaryDirectory(prefix="nova-panel-lifecycle-") as temporary:
+            Path(temporary, "qs").symlink_to(ROOT / "shell", target_is_directory=True)
+            WARNINGS.clear()
+            engine = QQmlApplicationEngine()
+            engine.addImportPath(temporary)
+            engine.loadData(b'''import QtQuick
+import qs.nova.controls
+import qs.nova.theme
+import qs.nova.desktop
+Window {
+    id: window; width: 840; height: 680; visible: reveal.visible
+    property alias opened: reveal.opened
+    property bool reduced: false
+    onReducedChanged: Theme.reduceMotion = reduced
+    Component.onCompleted: Theme.reduceMotion = reduced
+    property bool contentAlive: content.item !== null
+    property bool animating: reveal.animating
+    PanelTransition {
+        id: reveal; anchors.fill: parent
+        Loader {
+            id: content; anchors.fill: parent; active: reveal.visible; focus: reveal.opened
+            sourceComponent: Component { LauncherView {} }
+            onLoaded: if (reveal.opened) item.focusInitial()
+        }
+    }
+}''', QUrl.fromLocalFile(str(ROOT / "tests/panel-lifecycle-harness.qml")))
+            self.assertEqual(len(engine.rootObjects()), 1, "\n".join(WARNINGS))
+            window = engine.rootObjects()[0]
+            self.assertFalse(window.property("contentAlive"))
+            window.setProperty("opened", True)
+            QTest.qWait(250)
+            self.assertTrue(window.property("contentAlive"))
+            search = find(window.contentItem(), "launcherSearch")
+            self.assertTrue(search.hasActiveFocus())
+            window.setProperty("opened", False)
+            QTest.qWait(250)
+            self.assertFalse(window.property("contentAlive"))
+            self.assertFalse(window.property("animating"))
+            window.setProperty("reduced", True)
+            window.setProperty("opened", True)
+            APP.processEvents()
+            self.assertTrue(window.property("contentAlive"))
+            self.assertFalse(window.property("animating"))
+            window.setProperty("opened", False)
+            APP.processEvents()
+            self.assertFalse(window.property("contentAlive"))
+            self.assertEqual(WARNINGS, [], "\n".join(WARNINGS))
+            window.close()
+            del engine
+            APP.processEvents()
+
+    def test_launcher_theme_and_keyboard(self):
+        with tempfile.TemporaryDirectory(prefix="nova-launcher-theme-") as temporary:
+            Path(temporary, "qs").symlink_to(ROOT / "shell", target_is_directory=True)
+            WARNINGS.clear()
+            engine = QQmlApplicationEngine()
+            engine.addImportPath(temporary)
+            engine.loadData(b'''import QtQuick
+import qs.nova.theme
+import qs.nova.desktop
+Window {
+    id: window; width: 840; height: 680; visible: true
+    property string mode: "light"
+    onModeChanged: Theme.mode = mode
+    Component.onCompleted: Theme.mode = mode
+    property string launched: ""
+    color: Theme.color.surface
+    LauncherView {
+        anchors.fill: parent; anchors.margins: 16
+        applications: [{id:"files.desktop",name:"Archivos",icon:"folder"}, {id:"terminal.desktop",name:"Terminal",icon:"terminal"}]
+        onLaunchRequested: id => window.launched = id
+    }
+}''', QUrl.fromLocalFile(str(ROOT / "tests/launcher-theme-harness.qml")))
+            self.assertEqual(len(engine.rootObjects()), 1, "\n".join(WARNINGS))
+            window = engine.rootObjects()[0]
+            search = find(window.contentItem(), "launcherSearch")
+            grid = find(window.contentItem(), "launcherGrid")
+            background = search.property("background")
+            for mode, expected, foreground in [("dark", "#303239", "#f5f6fa"), ("light", "#f4f5f8", "#17191e")]:
+                window.setProperty("mode", mode)
+                QTest.qWait(30)
+                self.assertEqual(background.property("color").name(), expected)
+                self.assertEqual(search.property("color").name(), foreground)
+                self.assertGreater(background.property("radius"), 0)
+                (ROOT / "build").mkdir(exist_ok=True)
+                self.assertTrue(window.grabWindow().save(str(ROOT / "build" / f"desktop-launcher-{mode}.png")))
+            search.setProperty("text", "terminal")
+            search.forceActiveFocus()
+            QTest.keyClick(window, Qt.Key.Key_Down)
+            self.assertTrue(grid.hasActiveFocus())
+            QTest.keyClick(window, Qt.Key.Key_Enter)
+            self.assertEqual(window.property("launched"), "terminal.desktop")
+            QTest.keyClick(window, Qt.Key.Key_Up)
+            self.assertTrue(search.hasActiveFocus())
+            search.setProperty("text", "no-results")
+            window.setProperty("launched", "")
+            QTest.keyClick(window, Qt.Key.Key_Return)
+            self.assertEqual(window.property("launched"), "")
+            self.assertEqual(WARNINGS, [], "\n".join(WARNINGS))
+            window.close()
+            del engine
+            APP.processEvents()
+
     def test_views_and_launcher_keyboard(self):
         cases = {
             "launcher": '''LauncherView { applications: [{id: "files.desktop", name: "Archivos", icon: "folder"}, {id: "terminal.desktop", name: "Terminal", icon: "terminal"}]; onLaunchRequested: id => window.launched = id }''',

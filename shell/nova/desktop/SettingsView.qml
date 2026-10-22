@@ -181,7 +181,8 @@ RowLayout {
                 visible: settings.section === "dock"; values: settings.values
                 onToggled: (key, value) => settings.update(key, value)
                 model: [{key: "dockAutoHide", label: qsTr("Ocultar automáticamente")},
-                    {key: "dockMagnify", label: qsTr("Ampliar iconos al pasar el puntero"), fallback: true}]
+                    {key: "dockMagnify", label: qsTr("Ampliar iconos al pasar el puntero"),
+                    description: qsTr("Desactivado por defecto, como en macOS: anima en cada pasada del puntero.")}]
             }
 
             // Barra

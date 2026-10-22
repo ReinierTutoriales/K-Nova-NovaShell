@@ -15,6 +15,18 @@ test("dock identities preserve pinned order and merge live windows", () => {
     assert.equal(Policy.search(apps, "archí vos").length, 1);
     assert.equal(Policy.search(apps, "not-here").length, 0);
 });
+test("short desktop IDs resolve only when unambiguous", () => {
+    const apps = [{id:"org.example.shared.desktop",name:"One"}, {id:"io.example.shared.desktop",name:"Two"},
+        {id:"org.example.unique.desktop",name:"Unique"}];
+    const windows = [{id:"a",appId:"shared",title:"Unknown owner"}, {id:"b",appId:"unique"},
+        {id:"c",appId:"org.example.shared"}];
+    const dock = Policy.dock(apps, ["ORG.EXAMPLE.UNIQUE.desktop", "org.example.unique.desktop"], windows);
+    assert.deepEqual(dock.map(item => item.id), ["org.example.unique.desktop", "shared.desktop", "org.example.shared.desktop"]);
+    assert.equal(dock[0].pinned, true);
+    assert.equal(dock[0].windows[0].id, "b");
+    assert.equal(dock[1].name, "Unknown owner");
+    assert.equal(dock[2].name, "One");
+});
 test("rapid window clicks advance before the previous focus acknowledgement", () => {
     const windows = [{id: "a"}, {id: "b"}, {id: "c"}];
     assert.equal(Policy.nextWindow(windows, "a", "b", "a", 100).id, "c");

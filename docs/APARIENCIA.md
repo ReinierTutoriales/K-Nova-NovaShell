@@ -9,6 +9,7 @@
 | `IconTokens.mjs` | Paletas compartidas entre QML y exportador |
 | `CornerGeometry.mjs` | Geometría pura de esquinas superelípticas |
 | `shell/nova/icons/IconCatalog.mjs` | Identidades semánticas y SVG con caché LRU de 256 entradas |
+| `shell/nova/icons/FolderCatalog.mjs` | 13 roles de carpetas, cuatro apariencias y variantes ópticas estáticas |
 | `Icon.qml` | Símbolos monocromos; color y escala desde Theme |
 | `AppIcon.qml` | Arte vectorial de NovaShell; cuatro apariencias |
 | `SystemAppIcon.qml` | Iconos de otras aplicaciones con carga síncrona y fallback |
@@ -65,7 +66,40 @@ nodos estáticos: no hay shaders por frame ni capturas del escritorio.
 Esta base no implementa refracción del escritorio ni reemplaza la decoración
 de las ventanas. El blur real debe validarse en Plasma Wayland.
 
+## Pautas de Apple aplicadas
+
+Referencia: Apple Human Interface Guidelines (Motion, Progress indicators,
+Materials) y la sesión WWDC25 «Meet Liquid Glass». macOS 27 (Golden Gate)
+ajustó la transparencia de Liquid Glass para que botones y etiquetas se lean
+mejor; NovaShell prioriza la legibilidad por la misma razón.
+
+| Pauta | Cómo se aplica |
+| :--- | :--- |
+| Vidrio solo en la capa de navegación | `GlassSurface` en barra, dock, paneles, widgets y avisos flotantes. |
+| No apilar vidrio sobre vidrio | Controles sobre vidrio usan `ControlFill` (relleno de estado) y el contenido `ContentCard`. |
+| Tinte solo en elementos primarios | El acento marca selección, progreso, interruptores activos y el día de hoy. |
+| Movimiento breve, con propósito e interrumpible | Paneles: abrir 200 ms (OutCubic), cerrar 120 ms (InCubic); las `Behavior` se interrumpen solas. |
+| Evitar animar interacciones frecuentes | Ampliación del dock desactivada por defecto (como en macOS); hover solo cambia el relleno. |
+| Movimiento opcional | «Reducir movimiento» lleva las duraciones a 0 y quita barridos y ampliación. |
+| Progreso determinado cuando se conoce el total | El catálogo pasa de indeterminado a determinado en la misma barra. |
+| Ritmo honesto, sin saltos ni parones | El relleno avanza suavizado; la barra no aparece en operaciones de menos de 250 ms. |
+| Etiquetas concretas | «Leyendo aplicaciones instaladas: 24 de 230», no «Cargando…». |
+
 ## Recursos y pruebas
+
+El objetivo visual es macOS 27 Golden Gate. La migración actual es parcial y
+se registra en `assets/icon-appearance.json`: carpetas propias, sin extraer
+recursos del sistema de Apple; la biblioteca base conserva su versión real.
+Los símbolos de carpeta a 16 px representan la función (documentos, música,
+descargas…) y las vistas grandes usan carpetas con distintivos. Seleccionar
+NovaGlass, NovaGlass-dark, NovaGlass-clear o NovaGlass-tinted en los ajustes de
+iconos de KDE extiende esa capa a Dolphin; cambiar el modo del shell no cambia
+automáticamente la preferencia global de KDE.
+
+La prueba Qt exporta `build/desktop-folder-icons.png` con los iconos obtenidos
+del tema real en dos tamaños. Es una captura de renderizado Qt, no de macOS
+ni una sesión completa de Dolphin. Faltan la auditoría de todas las apps y
+la aceptación en una sesión Plasma real.
 
 La resolución de los iconos sigue la escala de pantalla, con tope 256 px.
 Los iconos del proveedor KDE se cargan en el hilo de interfaz: no convertir

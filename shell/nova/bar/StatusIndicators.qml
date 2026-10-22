@@ -34,13 +34,12 @@ AbstractButton {
     ToolTip.text: Accessible.description
     onClicked: activated()
 
-    background: GlassSurface {
-        cornerRadius: Theme.radius.sm
-        interactive: true
+    background: ControlFill {
+        flat: true
+        radius: Theme.radius.sm
         pressed: root.down
         hovered: root.hovered
         focused: root.visualFocus
-        opacity: root.hovered || root.down || root.visualFocus ? 1 : 0
     }
 
     contentItem: Item {
@@ -51,18 +50,18 @@ AbstractButton {
             Icon {
                 visible: root.backend?.wifiAvailable ?? false
                 name: "wifi"
-                size: Theme.icons.small
+                size: Theme.icons.bar
                 tint: root.backend?.wifiEnabled ? Theme.color.text : Theme.color.textMuted
             }
             Icon {
                 visible: root.backend?.bluetoothAvailable ?? false
                 name: "bluetooth"
-                size: Theme.icons.small
+                size: Theme.icons.bar
                 tint: root.backend?.bluetoothEnabled ? Theme.color.text : Theme.color.textMuted
             }
             Icon {
                 name: "volume"
-                size: Theme.icons.small
+                size: Theme.icons.bar
                 tint: root.backend?.audioAvailable && !root.backend.muted ? Theme.color.text : Theme.color.textMuted
             }
             RowLayout {
@@ -70,7 +69,7 @@ AbstractButton {
                 spacing: Theme.space.xxs
                 Icon {
                     name: "battery"
-                    size: Theme.icons.small
+                    size: Theme.icons.bar
                     tint: root.batteryPercent <= Theme.metrics.batteryLow ? Theme.color.error : Theme.color.text
                 }
                 Text {

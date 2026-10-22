@@ -1,0 +1,30 @@
+{
+  "formatVersion": 1,
+  "styleRevision": 1,
+  "visualTarget": "macOS 27 Golden Gate",
+  "migrationStatus": "partial",
+  "officialSystemAssets": false,
+  "folderRoles": [
+    "folder",
+    "folder-open",
+    "inode-directory",
+    "folder-documents",
+    "folder-download",
+    "folder-pictures",
+    "folder-music",
+    "folder-videos",
+    "folder-remote",
+    "user-home",
+    "folder-desktop",
+    "folder-publicshare",
+    "folder-templates"
+  ],
+  "appearances": [
+    "default",
+    "dark",
+    "clear",
+    "tinted"
+  ],
+  "opticalSmallSize": 16,
+  "baseLibraryManifest": "icon-library.json"
+}

@@ -34,6 +34,7 @@ PanelWindow {
     GlassSurface {
         anchors.fill: parent
         cornerRadius: Theme.radius.none
+        border.width: 0
 
         Rectangle {
             anchors {
@@ -62,11 +63,15 @@ PanelWindow {
             }
 
             IconButton {
+                iconSize: Theme.icons.bar
+                flat: true
                 label: qsTr("Aplicaciones")
                 symbol: "grid"
                 onClicked: { Platform.reloadApplications(); ShellState.toggle("launcher", bar.screen); }
             }
             IconButton {
+                iconSize: Theme.icons.bar
+                flat: true
                 label: qsTr("Apariencia")
                 symbol: "theme"
                 onClicked: bar.appearanceRequested()
@@ -79,11 +84,9 @@ PanelWindow {
             PlatformStatus {}
             TrayRow { window: bar }
             StatusIndicators { onActivated: ShellState.toggle("controls", bar.screen) }
-            IconButton { label: qsTr("Portapapeles"); symbol: "panel"; onClicked: ShellState.toggle("clipboard", bar.screen) }
-            IconButton { label: qsTr("Notificaciones"); symbol: "notification"; onClicked: ShellState.toggle("notifications", bar.screen) }
-            IconButton { label: qsTr("Hoy"); symbol: "calendar"; onClicked: ShellState.toggle("widgets", bar.screen) }
-
-            ClockWidget {}
+            IconButton { flat: true; iconSize: Theme.icons.bar; label: qsTr("Portapapeles"); symbol: "panel"; onClicked: ShellState.toggle("clipboard", bar.screen) }
+            IconButton { flat: true; iconSize: Theme.icons.bar; label: qsTr("Notificaciones"); symbol: "notification"; onClicked: ShellState.toggle("notifications", bar.screen) }
+            ClockWidget { onActivated: ShellState.toggle("widgets", bar.screen) }
         }
     }
 }
