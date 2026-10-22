@@ -21,12 +21,12 @@ Button {
     Accessible.name: applicationName
     ToolTip.text: applicationName
     ToolTip.visible: hovered && !showLabel
-    background: GlassSurface {
-        interactive: true
+    background: ControlFill {
+        flat: true
+        radius: Theme.radius.lg
         hovered: tile.hovered
         pressed: tile.down
         focused: tile.visualFocus
-        visible: tile.hovered || tile.down || tile.visualFocus
     }
     contentItem: ColumnLayout {
         spacing: Theme.space.xs

@@ -6,14 +6,23 @@ import qs.nova.controls
 import qs.nova.icons
 import qs.nova.theme
 
-GlassSurface {
+// Aviso flotante (floating: true) = vidrio, porque es capa de navegación.
+// Dentro del panel de historial = tarjeta plana: sin vidrio sobre vidrio.
+Item {
     id: card
+    property bool floating: false
     required property var entry
     property var actions: []
     property string iconSource: ""
     signal dismissRequested()
     signal actionRequested(int index)
     implicitHeight: contents.implicitHeight + Theme.space.lg * 2
+    Loader {
+        anchors.fill: parent
+        sourceComponent: card.floating ? glass : flat
+        Component { id: glass; GlassSurface { cornerRadius: Theme.radius.xl } }
+        Component { id: flat; ContentCard {} }
+    }
     ColumnLayout {
         id: contents
         anchors { fill: parent; margins: Theme.space.lg }

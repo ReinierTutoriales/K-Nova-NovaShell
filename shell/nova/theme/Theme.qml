@@ -53,6 +53,11 @@ QtObject {
         readonly property color pressed: theme.dark ? Qt.rgba(1, 1, 1, 0.20) : Qt.rgba(0, 0, 0, 0.12)
         readonly property color focus: theme.dark ? "#9ac2ff" : "#1455c0"
         readonly property color previewTop: theme.dark ? "#16243b" : "#dce9fb"
+        // Rellenos planos sobre vidrio (controles y tarjetas de contenido).
+        readonly property color controlFill: theme.dark ? Qt.rgba(1, 1, 1, 0.07) : Qt.rgba(1, 1, 1, 0.55)
+        readonly property color controlBorder: theme.highContrast ? text
+            : (theme.dark ? Qt.rgba(1, 1, 1, 0.10) : Qt.rgba(0, 0, 0, 0.08))
+        readonly property color cardFill: theme.dark ? Qt.rgba(1, 1, 1, 0.05) : Qt.rgba(1, 1, 1, 0.45)
         readonly property color selection: Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, theme.dark ? 0.28 : 0.16)
         readonly property color clockFace: Qt.rgba(surface.r, surface.g, surface.b, theme.opaque ? 1 : 0.55)
         readonly property color sliderTrack: theme.dark ? Qt.rgba(1, 1, 1, 0.18) : Qt.rgba(0, 0, 0, 0.12)
@@ -67,6 +72,8 @@ QtObject {
     }
     readonly property QtObject icons: QtObject {
         readonly property int small: 16
+        // Barra superior: un solo tamaño para símbolos, estado y bandeja.
+        readonly property int bar: 16
         readonly property int normal: 20
         readonly property int large: 24
         readonly property int application: 56
@@ -114,6 +121,8 @@ QtObject {
     }
     readonly property QtObject motion: QtObject {
         readonly property int progressCycle: 1400
+        // Una operación más corta que esto no muestra barra (evita parpadeo).
+        readonly property int progressDelay: 250
         readonly property int fast: theme.reduceMotion ? 0 : 120
         readonly property int normal: theme.reduceMotion ? 0 : 200
         readonly property int slow: theme.reduceMotion ? 0 : 320

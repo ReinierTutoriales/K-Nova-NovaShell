@@ -8,3 +8,5 @@ SegmentedChoice 1.0 SegmentedChoice.qml
 NovaTextField 1.0 NovaTextField.qml
 PanelTransition 1.0 PanelTransition.qml
 NovaProgressBar 1.0 NovaProgressBar.qml
+ControlFill 1.0 ControlFill.qml
+ContentCard 1.0 ContentCard.qml

@@ -26,10 +26,11 @@ Button {
         font.family: Theme.font.family
         font.pixelSize: Theme.font.body
     }
-    background: GlassSurface {
-        cornerRadius: Theme.radius.md
-        interactive: true
-        pressed: root.down || root.checked
+    background: ControlFill {
+        flat: root.flat
+        radius: Theme.radius.md
+        pressed: root.down
+        checked: root.checked
         hovered: root.hovered
         focused: root.visualFocus
         opacity: root.enabled ? 1 : Theme.metrics.disabledOpacity
