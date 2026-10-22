@@ -21,7 +21,20 @@ versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
 - `desktop-profile` activa también el splash y el fondo de la pantalla de
   bloqueo, de forma reversible; migra los registros de 0.1.0.
 
+- Guía de instalación paso a paso (`docs/INSTALACION.md`) y prueba de
+  instalación de extremo a extremo en el CI (`tests/install_smoke.py`).
+- Pantalla de inicio de sesión: la fila de usuarios se maneja con teclado
+  (Tab y flechas) y Esc borra la contraseña.
+
 ### Cambiado
+- `novactl install` compila sin las pruebas; `uninstall` borra en lote (de
+  ~5 minutos a segundos con la biblioteca de iconos) y también las carpetas
+  que quedan vacías, sin salir del prefijo.
+
+### Corregido
+- `novactl uninstall --purge` no borraba los ajustes del daemon
+  (`~/.config/novashell`).
+- Medidas de las pantallas de sesión movidas a `Theme` (sin literales).
 - `novactl install` toma la lista de archivos instalados de CMake
   (`install_manifest.txt`) en lugar de enumerarlos a mano.
 

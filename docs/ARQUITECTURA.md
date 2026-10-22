@@ -26,7 +26,9 @@
 | `shell/nova/bar` | Barra: lanzador, indicadores de estado, bandeja, reloj. | Ejecutar comandos. |
 | `shell/nova/desktop` | Dock, paneles (lanzador, centro de control, ajustes…) y widgets de escritorio. | Tocar archivos del sistema. |
 | `daemon/` | Integración con el sistema detrás de operaciones acotadas. | UI. |
-| `tools/novactl` | Compilar, instalar en `$HOME`, gestionar servicios. | Usar root. |
+| `session/` | Pantallas fuera del escritorio: splash (`ksplashqml`), tema SDDM y paquetes de fondo y look-and-feel; reutilizan `shell/nova/theme`. | Sustituir la interfaz de bloqueo de Plasma. |
+| `tools/novactl` | Compilar, instalar en `$HOME`, gestionar servicios, perfil nativo y tema SDDM. | Usar root. |
+| `packaging/sddm/install-theme.sh` | Único paso con root (opcional): copiar y activar el tema SDDM. | Cambiar el gestor de sesión. |
 
 ## Reglas que no se negocian (las comprueba el CI)
 

@@ -23,14 +23,31 @@ ctest --test-dir build --output-on-failure
   permisos, respuestas, límites, segunda instancia, cierre por SIGTERM y que
   `platform.capabilities` coincide con `docs/CONTRATO-IPC-v1.md`.
   Se omite si se ejecuta como root (el daemon lo rechaza por diseño).
+- `desktop_profile`, `sddm_install`, `check_updates`: perfil nativo, instalador
+  del tema SDDM y detección de versiones.
+
+Pruebas fuera de `ctest` (las ejecuta el CI; ver `.github/workflows/ci.yml`):
+
+| Prueba | Qué cubre |
+| :--- | :--- |
+| `tests/quickshell_smoke.py <qs> <daemon>` | Quickshell real + daemon: catálogo, preferencias, vistas y bienvenida. |
+| `tests/install_smoke.py` | `novactl install`/`uninstall` en un HOME vacío: manifiesto, servicios, paquetes de sesión y que no queden restos. Compila en una carpeta propia (1–2 minutos). |
+| `tests/session_smoke.py build` | Splash y tema SDDM cargados desde `cmake --install`, con la API de SDDM 0.21 simulada. |
+| `tests/appearance_smoke.py`, `tests/desktop_smoke.py` | Renderizado Qt de apariencia, iconos y vistas. |
+
+Las de renderizado necesitan `python3 -m pip install -r tests/requirements-ci.txt`.
 
 Reglas de arquitectura (tamaño de QML, prohibición de procesos en la UI,
 cabeceras SPDX, sintaxis QML):
 
 ```sh
 python3 tools/check-sources.py --qmlformat "$(command -v qmlformat || echo /usr/lib/qt6/bin/qmlformat)"
-shellcheck -x tools/novactl
+shellcheck -x tools/novactl packaging/sddm/install-theme.sh
 ```
+
+Los fondos se regeneran con `python3 tools/render-wallpapers.py` (numpy y
+Pillow) y los temas de iconos con `node tools/export-icons.mjs assets/icons`;
+el CI comprueba que el resultado versionado coincide.
 
 ## Ejecutar el shell desde las fuentes
 

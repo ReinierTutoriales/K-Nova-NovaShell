@@ -89,8 +89,9 @@ avatar circular (o inicial sobre el acento), campo de contraseña en cápsula
 con botón de flecha, aviso de Bloq Mayús, sacudida breve si la contraseña es
 incorrecta (desactivable) y, abajo, sesión, distribución de teclado y
 suspender/reiniciar/apagar solo si SDDM informa de que el sistema lo permite.
-Con varios usuarios aparece una fila de avatares; sin lista de usuarios, un
-campo de nombre. Las pantallas secundarias muestran fondo y reloj. Con el
+Con varios usuarios aparece una fila de avatares (Tab la enfoca y las
+flechas eligen; Esc borra la contraseña); sin lista de usuarios, un campo de
+nombre. Las pantallas secundarias muestran fondo y reloj. Con el
 renderizador por software (VM sin GPU) se omiten desenfoque y recorte
 circular en lugar de quedarse sin fondo. Comparte `Theme`, el catálogo de
 símbolos y el fondo con el shell; no ejecuta nada: entrar y la energía son
