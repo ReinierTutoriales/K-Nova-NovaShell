@@ -69,7 +69,9 @@ de inicio de sesión (paso 7).
 ./tools/novactl install
 ```
 
-Compila en modo Release (sin las pruebas, para tardar menos) e instala:
+Compila en modo Release (sin las pruebas, para tardar menos), instala y
+aplica el **aspecto nativo** (paso 6). Con `--no-profile` no toca la
+configuración de KDE.
 
 | Qué | Dónde |
 | :--- | :--- |
@@ -94,28 +96,27 @@ No ejecutes `novactl` con `sudo`: lo rechaza. Deja el prefijo por defecto
 
 La primera vez aparece la **bienvenida**: dos ajustes rápidos que se aplican
 al momento. Puedes omitirla; se reabre en Ajustes → Escritorio. NovaShell
-convive con el panel de Plasma y no cambia tu tema global.
+convive con el panel de Plasma y no cambia tu tema global (Plasma Style ni
+decoraciones de ventana).
 
-## 6. Perfil nativo (opcional, reversible)
+## 6. Aspecto nativo (automático, reversible)
 
-Activa el splash NovaShell, el fondo NovaShell en la pantalla de bloqueo y las
-preferencias de Dolphin y de las animaciones de KWin:
-
-```sh
-./tools/novactl desktop-profile preview    # qué cambiaría, sin tocar nada
-./tools/novactl desktop-profile apply      # balanced (también: glass, reduced)
-./tools/novactl desktop-profile restore    # deshace exactamente lo aplicado
-```
-
-El splash y el fondo de bloqueo se ven en el siguiente inicio de sesión o
-bloqueo. Para que la pantalla de bloqueo use también los colores y el acento
-de NovaShell, aplica una paleta NovaGlass (afecta a todas las apps KDE; se
-deshace en Preferencias del sistema → Colores):
+`install` ya aplicó el perfil `balanced`: iconos y carpetas NovaGlass
+monocromas, paleta NovaGlass clara u oscura según la que tenías (también la
+usa la pantalla de bloqueo), acento Liquid Glass neutro, tamaños de Dolphin,
+transiciones de KWin, splash y fondo de bloqueo. Para ajustarlo:
 
 ```sh
-plasma-apply-colorscheme NovaGlassDark      # o NovaGlassLight
+./tools/novactl desktop-profile status                   # qué hay aplicado
+./tools/novactl desktop-profile apply glass              # Magic Lamp al minimizar
+./tools/novactl desktop-profile apply reduced            # sin animaciones
+./tools/novactl desktop-profile apply balanced --appearance dark   # forzar oscuro
+./tools/novactl desktop-profile apply balanced --keep-look         # sin iconos ni paleta
+./tools/novactl desktop-profile restore                  # deshace exactamente lo aplicado
 ```
- La interfaz de bloqueo sigue siendo la de Plasma por seguridad
+
+Iconos y paleta cambian al momento; el splash y el fondo de bloqueo, en el
+siguiente inicio de sesión o bloqueo. La interfaz de bloqueo sigue siendo la de Plasma por seguridad
 ([por qué](SESION.md#bloqueo)). El fondo también aparece en Preferencias del
 sistema → Fondo de pantalla.
 
@@ -197,6 +198,8 @@ salvo con `--purge`.
 | No hay desenfoque | El compositor no anuncia `ext-background-effect-v1` | Ajustes → Estado de integración; la superficie queda opaca y legible |
 | No sale la bienvenida | El daemon no responde o ya se completó | `novactl status`; Ajustes → Escritorio → «Ver la bienvenida otra vez» |
 | `desktop-profile apply` dice que faltan paquetes | No se ejecutó `novactl install` | Instala y repite |
+| `install`: «Perfil nativo no aplicado» | Cambiaste una clave gestionada tras aplicar el perfil, o falta `plasma-apply-colorscheme` | `novactl desktop-profile preview`; `restore` y repite, o `--keep-look` |
+| Las apps abiertas no cambian de iconos | Falta `plasma-changeicons` en libexec | Se aplican al reabrirlas o al iniciar sesión |
 | El splash es el de Plasma | Perfil no aplicado o prefijo distinto de `~/.local` | `novactl desktop-profile status`; reinstala con el prefijo por defecto |
 | El inicio de sesión sigue con Breeze | Otro archivo fija el tema, falta `sddm-greeter-qt6` o el gestor no es SDDM | `novactl login-theme status`: muestra el tema efectivo y quién lo fija |
 | Error o pantalla rota en el inicio de sesión | — | Desde otra consola (Ctrl+Alt+F3): `sudo packaging/sddm/install-theme.sh uninstall` y reinicia SDDM |

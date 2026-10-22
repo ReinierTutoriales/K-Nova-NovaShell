@@ -66,8 +66,8 @@ NovaShell:
    plasma-apply-colorscheme NovaGlassDark        # o NovaGlassLight
    ```
 
-   Se deshace eligiendo otro esquema en Preferencias del sistema → Colores.
-   Afecta a todas las aplicaciones KDE, por eso NovaShell no lo aplica solo.
+   El perfil nativo (que `novactl install` aplica) ya lo hace y lo deshace
+   al restaurar; esta orden sirve si instalaste con `--no-profile`.
 
 El perfil fija
 `[Greeter] WallpaperPlugin=org.kde.image` y

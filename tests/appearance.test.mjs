@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, readlinkSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as Policy from "../shell/nova/theme/AppearancePolicy.mjs";
 import * as Corners from "../shell/nova/theme/CornerGeometry.mjs";
 import * as Icons from "../shell/nova/icons/IconCatalog.mjs";
-import { folderNames, folderSvg } from "../shell/nova/icons/FolderCatalog.mjs";
+import { folderAliases, folderNames, folderSvg } from "../shell/nova/icons/FolderCatalog.mjs";
 import { styleFor, decode, exportTheme } from "../tools/export-icons.mjs";
 
 test("invalid preferences cannot escape the supported appearance set", () => {
@@ -103,8 +103,11 @@ test("exported freedesktop themes have complete assets and inheritance", () => {
         assert.equal(names.length, 4);
         for (const name of names) {
             assert.equal(readdirSync(join(temporary, name, "scalable/apps")).length, 19);
-            assert.equal(readdirSync(join(temporary, name, "scalable/places")).length, folderNames.length);
-            assert.equal(readdirSync(join(temporary, name, "16x16/places")).length, folderNames.length);
+            const places = folderNames.length + Object.keys(folderAliases).length;
+            assert.equal(readdirSync(join(temporary, name, "scalable/places")).length, places);
+            assert.equal(readdirSync(join(temporary, name, "16x16/places")).length, places);
+            for (const [alias, role] of Object.entries(folderAliases))
+                assert.equal(readlinkSync(join(temporary, name, "16x16/places", alias + ".svg")), role + ".svg");
             for (const id of ["org.kde.dolphin", "system-file-manager", "dolphin"]) {
                 const small = readFileSync(join(temporary, name, "16x16/apps", id + ".svg"), "utf8");
                 assert.doesNotMatch(small, /<filter\b|filter="/);
@@ -174,4 +177,17 @@ test("glass intensity spans a visible range and stays legible without blur", () 
         assert.ok(Policy.clearGlassAlpha(1, dark) < Policy.clearGlassAlpha(0, dark));
         assert.ok(Policy.clearGlassAlpha(0.5, dark, true) > Policy.clearGlassAlpha(0.5, dark));
     }
+});
+
+test("folders are monochrome Liquid Glass in every appearance", () => {
+    // Saturation of every hex colour stays near zero: no blue tint.
+    const chroma = hex => {
+        const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+        return Math.max(r, g, b) - Math.min(r, g, b);
+    };
+    for (const name of folderNames)
+        for (const mode of ["default", "dark", "clear", "tinted"])
+            for (const small of [false, true])
+                for (const hex of folderSvg(name, mode, small).match(/#[0-9a-f]{6}/gi) || [])
+                    assert.ok(chroma(hex) <= 16, name + " " + mode + " " + hex);
 });

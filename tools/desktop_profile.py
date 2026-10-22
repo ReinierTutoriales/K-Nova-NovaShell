@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Reversible native Dolphin/KWin/session preferences through official KConfig tools."""
+"""Reversible native look, Dolphin, KWin and session preferences through official KDE tools."""
 import argparse
 from contextlib import contextmanager
 import fcntl
@@ -22,6 +22,12 @@ KEYS = {
     "windows.inScale": ("kwinrc", "Effect-scale", "InScale"),
     "windows.outScale": ("kwinrc", "Effect-scale", "OutScale"),
     "windows.duration": ("kwinrc", "Effect-scale", "Duration"),
+    # Stock KWin effects (enabled by default upstream; a user may have turned
+    # them off): blur backs the glass, the rest are short spatial transitions.
+    "windows.blur": ("kwinrc", "Plugins", "blurEnabled"),
+    "windows.maximize": ("kwinrc", "Plugins", "maximizeEnabled"),
+    "windows.desktops": ("kwinrc", "Plugins", "slideEnabled"),
+    "windows.popups": ("kwinrc", "Plugins", "fadingpopupsEnabled"),
     "files.icons": ("dolphinrc", "IconsMode", "IconSize"),
     "files.details": ("dolphinrc", "DetailsMode", "IconSize"),
     "files.compact": ("dolphinrc", "CompactMode", "IconSize"),
@@ -30,9 +36,29 @@ KEYS = {
     "session.splash": ("ksplashrc", "KSplash", "Theme"),
     "session.lockPlugin": ("kscreenlockerrc", "Greeter", "WallpaperPlugin"),
     "session.lockImage": ("kscreenlockerrc", ("Greeter", "Wallpaper", "org.kde.image", "General"), "Image"),
+    # Look: NovaGlass icons and palette with the neutral Liquid Glass accent.
+    # A custom or wallpaper accent would tint the palette, so both are cleared
+    # before the palette is applied (plasma-apply-colorscheme folds
+    # [General] AccentColor in). The palette stays last: restore puts the
+    # accent back first and then re-applies the previous palette.
+    "look.icons": ("kdeglobals", "Icons", "Theme"),
+    "look.accent": ("kdeglobals", "General", "AccentColor"),
+    "look.accentWallpaper": ("kdeglobals", "General", "accentColorFromWallpaper"),
+    "look.colors": ("kdeglobals", "General", "ColorScheme"),
 }
-# Keys that existed in journal version 1; newer keys were never touched by it.
-KEYS_V1 = [key for key in KEYS if not key.startswith("session.")]
+LOOK_KEYS = [key for key in KEYS if key.startswith("look.")]
+# Keys known to older journal versions; newer keys were never touched by them.
+KEYS_V2 = [key for key in KEYS if not key.startswith("look.") and key not in
+           ("windows.blur", "windows.maximize", "windows.desktops", "windows.popups")]
+KEYS_V1 = [key for key in KEYS_V2 if not key.startswith("session.")]
+JOURNAL_VERSION = 3
+# Plasma's default palette (colorssettings.kcfg) when the key was absent.
+DEFAULT_SCHEME = "BreezeLight"
+SCHEMES = {False: "NovaGlassLight", True: "NovaGlassDark"}
+ICON_THEMES = {False: "NovaGlass", True: "NovaGlass-dark"}
+# plasma-changeicons lives in libexec, whose location depends on the distro.
+LIBEXEC_DIRS = ("/usr/libexec", "/usr/lib/libexec", "/usr/lib64/libexec",
+                "/usr/lib/x86_64-linux-gnu/libexec", "/usr/lib/aarch64-linux-gnu/libexec")
 SPLASH_ID = "org.knova.novashell"
 VALUE_LIMIT = 1024
 
@@ -45,18 +71,34 @@ def wallpaper_url(data):
     return (Path(data) / "wallpapers/NovaShell").as_uri()
 
 
-def profile(name, data=None):
+def profile(name, data=None, dark=False):
     if name not in ("balanced", "glass", "reduced"):
         raise ValueError("perfil desconocido")
     reduced = name == "reduced"
+    motion = "false" if reduced else "true"
     return {"apps.motion": "0" if reduced else "0.75", "windows.motion": "0" if reduced else "0.75",
         "windows.scale": "false" if reduced else "true", "windows.fade": "false",
         "windows.squash": "true" if name == "balanced" else "false",
         "windows.lamp": "true" if name == "glass" else "false",
         "windows.inScale": "0.96", "windows.outScale": "0.96", "windows.duration": "0",
+        "windows.blur": "true", "windows.maximize": motion, "windows.desktops": motion,
+        "windows.popups": motion,
         "files.icons": "64", "files.details": "24", "files.compact": "32",
         "session.splash": SPLASH_ID, "session.lockPlugin": "org.kde.image",
-        "session.lockImage": wallpaper_url(data or data_dir())}
+        "session.lockImage": wallpaper_url(data or data_dir()),
+        "look.icons": ICON_THEMES[dark], "look.accent": None, "look.accentWallpaper": "false",
+        "look.colors": SCHEMES[dark]}
+
+
+def is_dark(window_background):
+    """Relative luminance of KConfig's "r,g,b" [Colors:Window] BackgroundNormal."""
+    try:
+        channels = [int(part) / 255 for part in (window_background or "").split(",")[:3]]
+    except ValueError:
+        return False
+    if len(channels) != 3 or not all(0 <= channel <= 1 for channel in channels):
+        return False
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2] < 0.5
 
 
 class KConfigStore:
@@ -66,6 +108,9 @@ class KConfigStore:
         self.writer = shutil.which("kwriteconfig6")
         if not self.reader or not self.writer:
             raise RuntimeError("se requieren kreadconfig6 y kwriteconfig6 de KDE Frameworks 6")
+        self.colors = shutil.which("plasma-apply-colorscheme")
+        self.icons = next((str(Path(directory) / "plasma-changeicons") for directory in LIBEXEC_DIRS
+                           if os.access(Path(directory) / "plasma-changeicons", os.X_OK)), None)
 
     def arguments(self, key):
         file, groups, entry = KEYS[key]
@@ -88,7 +133,25 @@ class KConfigStore:
             raise RuntimeError("valor de configuración demasiado grande")
         return None if value == "__NOVA_ABSENT__" else value
 
+    def window_background(self):
+        return self.run([self.reader, "--file", str(self.config / "kdeglobals"), "--group", "Colors:Window",
+                         "--key", "BackgroundNormal", "--default", ""])
+
     def write(self, key, value):
+        if key == "look.colors":
+            # The palette is many keys; only Plasma's tool writes them all and
+            # notifies running apps. Absent before = Plasma's default palette.
+            if not self.colors:
+                raise RuntimeError("falta plasma-apply-colorscheme de Plasma")
+            self.run([self.colors, "--", value or DEFAULT_SCHEME])
+            if value is None:
+                self.run([self.writer, *self.arguments(key), "--delete"])
+            if self.read(key) != value:
+                raise RuntimeError("Plasma no aplicó la paleta solicitada")
+            return
+        if key == "look.icons" and self.icons:
+            # Reloads icons in running apps (KIconTheme::reconfigure).
+            self.run([self.icons, "--", value or "breeze"])
         arguments = [self.writer, *self.arguments(key), "--notify"]
         arguments += ["--delete"] if value is None else ["--", value]
         self.run(arguments)
@@ -116,9 +179,9 @@ class NativeProfile:
         if self.state.stat().st_size > 65536:
             raise ValueError("registro demasiado grande")
         data = json.loads(self.state.read_text())
-        if not isinstance(data, dict) or data.get("version") not in (1, 2):
+        if not isinstance(data, dict) or data.get("version") not in (1, 2, JOURNAL_VERSION):
             raise ValueError("registro no compatible")
-        if data["version"] == 1:
+        if data["version"] != JOURNAL_VERSION:
             data = self.upgrade(data)
         if data.get("phase", "active") not in ("active", "applying"):
             raise ValueError("fase del registro inválida")
@@ -135,13 +198,14 @@ class NativeProfile:
 
     @staticmethod
     def upgrade(data):
-        # Version 1 never wrote session keys: before == applied == None makes
-        # restore leave whatever the user has there untouched.
+        # Older versions never wrote newer keys: before == applied == None
+        # makes restore leave whatever the user has there untouched.
+        known = KEYS_V1 if data["version"] == 1 else KEYS_V2
         for group in ("before", "applied", "rollback"):
             values = data.get(group)
-            if isinstance(values, dict) and set(values) == set(KEYS_V1):
-                values.update({key: None for key in KEYS if key not in KEYS_V1})
-        data["version"] = 2
+            if isinstance(values, dict) and set(values) == set(known):
+                values.update({key: None for key in KEYS if key not in known})
+        data["version"] = JOURNAL_VERSION
         return data
 
     def save(self, data):
@@ -160,22 +224,35 @@ class NativeProfile:
     def snapshot(self):
         return {key: self.store.read(key) for key in KEYS}
 
-    def preview(self, name):
-        desired = profile(name, self.data)
-        return {key: {"before": value, "after": desired[key]}
-                for key, value in self.snapshot().items() if value != desired[key]}
+    def desired(self, name, current, dark=None, look=True):
+        if dark is None:
+            reader = getattr(self.store, "window_background", None)
+            dark = is_dark(reader()) if reader else False
+        values = profile(name, self.data, dark)
+        if not look:  # keep the user's icons, accent and palette untouched
+            values.update({key: current[key] for key in LOOK_KEYS})
+        return values
 
-    def apply(self, name):
-        desired = profile(name, self.data)
+    def preview(self, name, dark=None, look=True):
+        current = self.snapshot()
+        desired = self.desired(name, current, dark, look)
+        return {key: {"before": value, "after": desired[key]}
+                for key, value in current.items() if value != desired[key]}
+
+    def apply(self, name, dark=None, look=True):
         previous = self.load()
         current = self.snapshot()
+        desired = self.desired(name, current, dark, look)
         if previous and previous.get("phase") == "applying":
             raise ValueError("la aplicación anterior se interrumpió; restaura primero")
-        if previous and current != previous["applied"]:
+        # Only keys the active profile owns matter; the rest belong to the user.
+        owned = [key for key in KEYS if previous and previous["before"][key] != previous["applied"][key]]
+        if any(current[key] != previous["applied"][key] for key in owned):
             raise ValueError("hay cambios posteriores; restaura primero para preservarlos")
+        before = {key: previous["before"][key] if key in owned else current[key] for key in KEYS}
         # Journal first: an interrupted application retains the original values.
-        journal = {"version": 2, "profile": name, "phase": "applying", "rollback": current,
-                   "before": previous["before"] if previous else current, "applied": desired}
+        journal = {"version": JOURNAL_VERSION, "profile": name, "phase": "applying", "rollback": current,
+                   "before": before, "applied": desired}
         self.save(journal)
         try:
             for key in KEYS:
@@ -228,6 +305,10 @@ def main():
     parser.add_argument("action", choices=("preview", "apply", "restore", "status"))
     parser.add_argument("profile", choices=("balanced", "glass", "reduced"), nargs="?", default="balanced")
     parser.add_argument("--data-dir", help="prefijo share/ donde novactl instaló los paquetes de sesión")
+    parser.add_argument("--appearance", choices=("auto", "light", "dark"), default="auto",
+                        help="variante de iconos y paleta; auto sigue la paleta actual")
+    parser.add_argument("--keep-look", action="store_true",
+                        help="no cambiar iconos, acento ni paleta")
     args = parser.parse_args()
     if os.geteuid() == 0:
         parser.exit(1, "No ejecutes el perfil como root.\n")
@@ -239,15 +320,21 @@ def main():
         data = Path(args.data_dir) if args.data_dir else data_dir()
         if not data.is_absolute():
             raise ValueError("el directorio de datos debe ser absoluto")
+        dark = None if args.appearance == "auto" else args.appearance == "dark"
+        look = not args.keep_look
         if args.action == "apply":
-            missing = [str(path) for path in (data / "plasma/look-and-feel" / SPLASH_ID / "metadata.json",
-                                              data / "wallpapers/NovaShell/metadata.json") if not path.is_file()]
+            required = [data / "plasma/look-and-feel" / SPLASH_ID / "metadata.json",
+                        data / "wallpapers/NovaShell/metadata.json"]
+            if look:
+                required += [data / "icons" / theme / "index.theme" for theme in ICON_THEMES.values()]
+                required += [data / "color-schemes" / f"{scheme}.colors" for scheme in SCHEMES.values()]
+            missing = [str(path) for path in required if not path.is_file()]
             if missing:
                 raise ValueError("faltan los paquetes de sesión; ejecuta primero novactl install")
         controller = NativeProfile(KConfigStore(config), state, data)
         with controller.locked():
-            result = controller.preview(args.profile) if args.action == "preview" else (
-                controller.apply(args.profile) if args.action == "apply" else (
+            result = controller.preview(args.profile, dark, look) if args.action == "preview" else (
+                controller.apply(args.profile, dark, look) if args.action == "apply" else (
                 controller.restore() if args.action == "restore" else controller.load()))
         print(json.dumps(result, ensure_ascii=False, indent=2))
         if args.action in ("apply", "restore"):

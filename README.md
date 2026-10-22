@@ -75,22 +75,30 @@ paquetes por distribución, cómo actualizar, desinstalar y resolver problemas.
 git clone --branch v0.3.0 https://github.com/ReinierTutoriales/K-Nova-NovaShell.git
 cd K-Nova-NovaShell
 ./tools/novactl doctor                    # ✔ bien · ! aviso · ✘ corregir antes de seguir
-./tools/novactl install                   # compila (Release) e instala en ~/.local
+./tools/novactl install                   # compila, instala en ~/.local y aplica el aspecto nativo
 ./tools/novactl start && ./tools/novactl enable
 ```
 
 **3. Opcional**
 
 ```sh
-./tools/novactl desktop-profile apply     # splash, fondo de bloqueo, Dolphin y KWin (reversible: restore)
+./tools/novactl desktop-profile apply glass   # otro perfil: glass (Magic Lamp) o reduced (sin animaciones)
 ./tools/novactl login-theme preview       # vista previa del inicio de sesión, sin root
 ./tools/novactl login-theme install       # imprime la orden con sudo para instalar el tema SDDM
 ```
 
 La primera vez aparece la bienvenida (vidrio, esquema y material). Los
 controles **Vidrio** y **Desenfoque** están en Ajustes → Apariencia.
-NovaShell convive con el panel de Plasma; no sustituye `plasmashell` ni cambia
-el tema global.
+NovaShell convive con el panel de Plasma; no sustituye `plasmashell`.
+
+**Tras instalar** el escritorio queda coherente sin más pasos: iconos y
+carpetas NovaGlass monocromas, paleta NovaGlass clara u oscura (según la que
+uses) con acento Liquid Glass, Dolphin con tamaños de icono cómodos,
+transiciones de KWin ágiles (factor 0,75, Scale, Squash, Maximize, Slide),
+Blur activo, splash y fondo de bloqueo NovaShell. Todo se deshace con
+`novactl desktop-profile restore` o al desinstalar; `novactl install
+--no-profile` instala sin tocar la configuración de KDE
+([detalles](docs/ESCRITORIO-NATIVO.md)).
 
 **Actualizar:** `git fetch --tags && git checkout vX.Y.Z && ./tools/novactl install && ./tools/novactl restart`.
 **Desinstalar:** `./tools/novactl uninstall` (`--purge` borra también tus ajustes).
@@ -101,7 +109,7 @@ el tema global.
 | :--- | :--- |
 | `novactl start \| stop \| restart \| status \| logs` | Gestiona los servicios de usuario. |
 | `novactl version` | Versión de las fuentes y la instalada. |
-| `novactl desktop-profile preview\|apply\|restore\|status [balanced\|glass\|reduced]` | Perfil reversible: Dolphin, efectos de KWin, splash y fondo de bloqueo ([detalles](docs/ESCRITORIO-NATIVO.md)). |
+| `novactl desktop-profile preview\|apply\|restore\|status [balanced\|glass\|reduced]` | Perfil reversible: iconos, paleta y acento, Dolphin, efectos de KWin, splash y fondo de bloqueo; `--appearance auto\|light\|dark`, `--keep-look` ([detalles](docs/ESCRITORIO-NATIVO.md)). |
 | `novactl login-theme preview\|install\|uninstall\|status` | Tema SDDM: vista previa sin root; instalarlo en el sistema imprime la orden con `sudo` ([detalles](docs/SESION.md)). |
 | `qs ipc call novashell toggle <launcher\|controls\|notifications\|settings\|overview\|clipboard\|widgets\|welcome>` | Abre o cierra un panel; asígnalo a un atajo en Ajustes de KDE → Atajos. |
 

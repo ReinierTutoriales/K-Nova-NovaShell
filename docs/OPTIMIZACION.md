@@ -135,7 +135,7 @@ una especificación de rendimiento para Linux.
 
 La biblioteca empaquetada conserva su revisión y licencia en el manifiesto;
 su base es Tahoe, en su última revisión publicada comprobada el 22-10-2026.
-La capa propia de carpetas inicia la adaptación visual a Golden Gate:
+La capa propia de carpetas (vidrio monocromo, sin tinte azul) inicia la adaptación visual a Golden Gate:
 `assets/icon-appearance.json` registra explícitamente una migración parcial,
 separada de la versión de la biblioteca base. Usa vectores sin filtros,
 variantes ópticas de 16 px y símbolos distintos por función; las cuatro
