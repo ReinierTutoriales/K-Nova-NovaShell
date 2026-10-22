@@ -58,8 +58,8 @@ Wayland headless · 🟡 implementado, falta validar en Plasma 6.8 real ·
 ## Pendientes de verificación técnica
 
 - ✅ Progreso real del catálogo, sin animación oculta y con movimiento reducido.
-- ✅ Carpetas e iconos: 440 renderizados Qt; capa PNG de Dolphin sin los
-  filtros subpíxel problemáticos del vector anterior.
+- ✅ Carpetas e iconos: 440 renderizados Qt; variante de Dolphin de 16 px sin
+  filtros subpíxel problemáticos, conservando el vector completo a otros tamaños.
 - ⬜ Comparación visual completa de iconos y carpetas frente a macOS 27.
 - 🟡 Capa visual Golden Gate: 13 roles de carpetas, cuatro apariencias y
   símbolos ópticos a 16 px; biblioteca de aplicaciones aún sin migración completa.
@@ -67,6 +67,3 @@ Wayland headless · 🟡 implementado, falta validar en Plasma 6.8 real ·
 
 - Sesión real Plasma 6.8 Wayland con Quickshell 0.3.2 y Qt 6.12: blur, GPU,
   consumo en reposo, puente KWin y servicios del sistema.
-
-- ✅ Capa de aplicaciones GoldenGate v3 clara/oscura, PNG acotados y alias
-  corregidos, con respaldo de la biblioteca vectorial completa.

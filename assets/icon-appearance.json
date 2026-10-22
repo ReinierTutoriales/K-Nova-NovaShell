@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "styleRevision": 2,
+  "styleRevision": 1,
   "visualTarget": "macOS 27 Golden Gate",
   "migrationStatus": "partial",
   "officialSystemAssets": false,
@@ -26,6 +26,5 @@
     "tinted"
   ],
   "opticalSmallSize": 16,
-  "baseLibraryManifest": "icon-library.json",
-  "applicationLayerManifest": "goldengate-library.json"
+  "baseLibraryManifest": "icon-library.json"
 }

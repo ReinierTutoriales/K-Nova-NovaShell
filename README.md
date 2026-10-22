@@ -20,9 +20,7 @@ Dock, lanzador, notificaciones y controles del sistema siguen en la
   Sin fuentes de iconos, red, capturas continuas de pantalla ni shaders por icono.
 - Biblioteca de sistema con 16.602 nombres de iconos: aplicaciones, acciones,
   carpetas, MIME, dispositivos, estados, categorías, emblemas y cursores.
-  Tres variantes vectoriales, dos capas de aplicaciones GoldenGate v3 y cuatro
-  temas `NovaGlass*`, instalados sin red. PNG acotados, alias corregidos y
-  cobertura vectorial como respaldo.
+  Tres variantes de sistema y cuatro temas `NovaGlass*`, instalados sin red.
   Los nombres estándar y los identificadores de aplicaciones resuelven mediante
   herencia freedesktop; Breeze/hicolor cubren las aplicaciones ausentes.
 

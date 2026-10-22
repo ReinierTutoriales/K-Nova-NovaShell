@@ -2,7 +2,12 @@
 Name=NovaGlass-clear
 Comment=NovaShell layered vector icons
 Inherits=NovaGlass,NovaGlass-System-light,breeze,hicolor
-Directories=scalable/apps,16x16/places,scalable/places
+Directories=16x16/apps,scalable/apps,16x16/places,scalable/places
+
+[16x16/apps]
+Size=16
+Type=Fixed
+Context=Applications
 
 [16x16/places]
 Size=16
