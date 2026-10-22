@@ -42,6 +42,8 @@ Wayland headless · 🟡 implementado, falta validar en Plasma 6.8 real ·
 - ✅ Materiales Cristal / Esmerilado / Sólido con brillo especular y canto de luz.
 - ✅ Blur solo si el compositor anuncia `ext-background-effect-v1` (detección en el daemon).
 - ✅ Ajustes con barra lateral y selectores con nombres traducidos.
+- ✅ Campos de búsqueda y contraseña adaptados al tema; prueba de cambio
+  claro/oscuro y navegación por teclado del lanzador con Qt real.
 - ✅ Widgets de escritorio: reloj analógico, uso del sistema y calendario.
 - 🟡 Aspecto del blur sobre KWin 6.8 (el compositor de prueba no lo soporta).
 - ⬜ Widget del tiempo: necesita una operación de red acotada en el daemon.

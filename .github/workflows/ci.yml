@@ -101,7 +101,9 @@ jobs:
           cmake --build "$RUNNER_TEMP/quickshell-build" --parallel 2
           cmake --install "$RUNNER_TEMP/quickshell-build"
       - name: Integración con el motor real y el daemon
-        run: dbus-run-session -- python3 tests/quickshell_smoke.py "$PWD/build/quickshell-prefix/bin/qs" "$PWD/build/daemon/nova-platform"
+        run: |
+          dbus-run-session -- python3 tests/quickshell_smoke.py "$PWD/build/quickshell-prefix/bin/qs" "$PWD/build/daemon/nova-platform"
+          dbus-run-session -- python3 tests/jsonl_client_smoke.py "$PWD/build/quickshell-prefix/bin/qs"
       - name: Qt Quick y SVG sin módulos innecesarios
         run: |
           python3 -m venv "$RUNNER_TEMP/qt-tests"

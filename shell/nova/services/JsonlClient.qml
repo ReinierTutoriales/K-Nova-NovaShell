@@ -22,6 +22,7 @@ QtObject {
     property string logName: "JsonlClient"
     property var readOperations: []
     property int maxQueueSize: 50
+    property int maxPendingSize: 128
     property int requestTimeoutMs: 10000
 
     readonly property bool connected: _socket !== null && _socket.connected
@@ -36,7 +37,12 @@ QtObject {
             version: protocolVersion, requestId: id,
             operation: operation, payload: payload || {}
         }) + "\n"
-        const entry = { callback: callback, line: line, sentAt: 0 }
+        const entry = { callback: callback, line: line, createdAt: Date.now() }
+
+        if (!enabled || _pending.size >= maxPendingSize) {
+            _reply(entry, _error("unavailable", "cliente deshabilitado o demasiadas peticiones pendientes", true))
+            return id
+        }
 
         if (connected) {
             _send(id, entry)
@@ -82,7 +88,6 @@ QtObject {
     }
 
     function _send(id, entry) {
-        entry.sentAt = Date.now()
         _pending.set(id, entry)
         _syncPending()
         _socket.write(entry.line)
@@ -94,7 +99,7 @@ QtObject {
         _queue = []
         for (const id of ids) {
             const entry = _pending.get(id)
-            if (entry)
+            if (entry && connected && enabled)
                 _send(id, entry)
         }
     }
@@ -116,6 +121,8 @@ QtObject {
             console.warn("[" + logName + "] línea no válida del daemon")
             return
         }
+        if (!message || typeof message !== "object" || Array.isArray(message) || message.version !== protocolVersion)
+            return
         if (typeof message.event === "string") {
             eventReceived(message.event, message.payload || {})
             return
@@ -131,13 +138,27 @@ QtObject {
     function _expire() {
         const now = Date.now()
         for (const [id, entry] of Array.from(_pending.entries())) {
-            if (entry.sentAt > 0 && now - entry.sentAt > requestTimeoutMs) {
+            if (_pending.has(id) && now - entry.createdAt >= requestTimeoutMs) {
                 _pending.delete(id)
                 _reply(entry, _error("timeout", "el daemon no respondió a tiempo", true))
             }
         }
         _syncPending()
+        _queue = _queue.filter(id => _pending.has(id))
     }
+
+    function _resetConnection() {
+        if (_socket !== null) {
+            _socket.stale = true
+            _socket.connected = false
+            _socket.destroy()
+            _socket = null
+        }
+        _failAll("disconnected", "la conexión se reinició")
+        _backoffMs = 500
+    }
+    onEnabledChanged: if (!enabled) _resetConnection()
+    onSocketPathChanged: if (_socket !== null) _resetConnection()
 
     function _connect() {
         if (!enabled || socketPath === "")
@@ -183,7 +204,7 @@ QtObject {
     property Timer _reconnectTimer: Timer {
         interval: client._backoffMs
         repeat: true
-        running: client.enabled && !client.connected
+        running: client.enabled && client.socketPath !== "" && !client.connected
         triggeredOnStart: true
         onTriggered: {
             client._connect()
@@ -194,9 +215,8 @@ QtObject {
     property Timer _expiryTimer: Timer {
         interval: 1000
         repeat: true
-        // Solo con peticiones enviadas esperando respuesta; las encoladas
-        // sin conexión no caducan (se envían al reconectar).
-        running: client.enabled && client.connected && client._pendingCount > 0
+        // También caducan las lecturas en cola; sin peticiones no despierta.
+        running: client.enabled && client._pendingCount > 0
         onTriggered: client._expire()
     }
 }
