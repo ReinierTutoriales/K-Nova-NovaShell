@@ -1,5 +1,7 @@
 # Hoja de ruta
 
+Versión publicada: **0.1.0** (pre-release). Ver [cambios](../CHANGELOG.md).
+
 Estados: ✅ implementado y probado con Quickshell 0.3.2 real en un compositor
 Wayland headless · 🟡 implementado, falta validar en Plasma 6.8 real ·
 ⬜ pendiente. Nada se da por terminado sin una sesión Plasma real.
@@ -49,10 +51,11 @@ Wayland headless · 🟡 implementado, falta validar en Plasma 6.8 real ·
 - ⬜ Widget del tiempo: necesita una operación de red acotada en el daemon.
 - ⬜ Paquetes de temas.
 
-## Fase 6 — Distribución ⬜
+## Fase 6 — Distribución 🟡
 
-- Flake de NixOS, PKGBUILD (AUR), spec de Fedora/COPR.
-- Releases firmadas por tag; `novactl update` con selección de versión.
+- ✅ Releases por etiqueta `vX.Y.Z` con notas de cambios ([proceso](LANZAMIENTO.md)).
+- ⬜ Firma de etiquetas y `novactl update` con selección de versión.
+- ⬜ Flake de NixOS, PKGBUILD (AUR), spec de Fedora/COPR.
 - Opción de sustituir `plasmashell` de forma reversible.
 
 ## Pendientes de verificación técnica
@@ -61,8 +64,8 @@ Wayland headless · 🟡 implementado, falta validar en Plasma 6.8 real ·
 - ✅ Carpetas e iconos: 440 renderizados Qt; variante de Dolphin de 16 px sin
   filtros subpíxel problemáticos, conservando el vector completo a otros tamaños.
 - ⬜ Comparación visual completa de iconos y carpetas frente a macOS 27.
-- 🟡 Capa visual Golden Gate: 13 roles de carpetas, cuatro apariencias y
-  símbolos ópticos a 16 px; biblioteca de aplicaciones aún sin migración completa.
+- ✅ Carpetas propias con estética macOS 27 (Golden Gate): 13 roles, cuatro
+  apariencias y símbolos ópticos a 16 px. Iconos de aplicaciones: MacTahoe.
 - ⬜ Estilo Qt Widgets para materiales de Dolphin y progreso KIO/Plasma.
 
 - Sesión real Plasma 6.8 Wayland con Quickshell 0.3.2 y Qt 6.12: blur, GPU,
