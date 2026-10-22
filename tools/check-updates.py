@@ -1,11 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""CI-only stable release check; never installs or mutates the desktop."""
+"""CI-only stable release check; never installs or mutates the desktop.
+
+Quickshell is read from the mirror's git tags, not from GitHub Releases:
+the mirror only publishes some tags as releases (its "latest" release can
+lag several patch versions behind the newest tag).
+"""
 import json
 from pathlib import Path
 import re
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
+STABLE = re.compile(r"v?(\d+)\.(\d+)\.(\d+)")
+QUICKSHELL_TAGS = "https://api.github.com/repos/quickshell-mirror/quickshell/tags?per_page=100"
 
 
 def json_url(url):
@@ -14,24 +21,53 @@ def json_url(url):
         return json.load(response)
 
 
+def parse(version):
+    match = STABLE.fullmatch(version)
+    return tuple(map(int, match.groups())) if match else None
+
+
+def latest_stable(versions):
+    """Highest X.Y.Z among the given strings (an optional "v" prefix is allowed)."""
+    stable = [parsed for parsed in map(parse, versions) if parsed]
+    if not stable:
+        raise RuntimeError("No stable release found")
+    return ".".join(map(str, max(stable)))
+
+
+def evaluate(pairs):
+    """Return (messages, outdated) for (name, configured, latest) triples.
+
+    Only a newer upstream version counts as outdated. A configured version
+    above the newest upstream one means the data source is wrong, which is
+    an error rather than an update.
+    """
+    messages, outdated = [], []
+    for name, current, latest in pairs:
+        configured, upstream = parse(current), parse(latest)
+        if configured is None or upstream is None:
+            raise RuntimeError(f"Unrecognized version for {name}: {current!r} / {latest!r}")
+        messages.append(f"{name}: configured={current}, stable={latest}")
+        if upstream > configured:
+            outdated.append(f"{name} {current} -> {latest}")
+        elif upstream < configured:
+            raise RuntimeError(f"{name} {current} is newer than the upstream source ({latest})")
+    return messages, outdated
+
+
 def main():
     requirements = (ROOT / "tests/requirements-ci.txt").read_text()
     pinned_qt = re.search(r"^PySide6-Essentials==([0-9.]+)$", requirements, re.M).group(1)
     runtime = (ROOT / "packaging/runtime.env").read_text()
     pinned_qs = re.search(r"^NOVA_MIN_QUICKSHELL=([0-9.]+)$", runtime, re.M).group(1)
+
     qt_releases = json_url("https://pypi.org/pypi/PySide6-Essentials/json")["releases"]
-    stable_qt = [version for version, files in qt_releases.items()
-                 if re.fullmatch(r"\d+\.\d+\.\d+", version)
-                 and any(not item.get("yanked", False) for item in files)]
-    latest_qt = max(stable_qt, key=lambda version: tuple(map(int, version.split("."))))
-    latest_qs = json_url("https://api.github.com/repos/quickshell-mirror/quickshell/releases/latest")["tag_name"].removeprefix("v")
-    outdated = []
-    for name, current, latest in [("Qt", pinned_qt, latest_qt), ("Quickshell", pinned_qs, latest_qs)]:
-        if not re.fullmatch(r"\d+\.\d+\.\d+", latest):
-            raise RuntimeError("Unrecognized stable release: " + latest)
-        print(f"{name}: configured={current}, stable={latest}")
-        if current != latest:
-            outdated.append(f"{name} {current} -> {latest}")
+    latest_qt = latest_stable(version for version, files in qt_releases.items()
+                              if any(not item.get("yanked", False) for item in files))
+    latest_qs = latest_stable(tag["name"] for tag in json_url(QUICKSHELL_TAGS))
+
+    messages, outdated = evaluate([("Qt", pinned_qt, latest_qt),
+                                   ("Quickshell", pinned_qs, latest_qs)])
+    print("\n".join(messages))
     if outdated:
         raise SystemExit("Stable update requires validation: " + ", ".join(outdated))
 
