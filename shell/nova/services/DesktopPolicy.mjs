@@ -8,11 +8,46 @@ export function influenceAt(distance, radius) {
     const t = Math.min(1, Math.abs(distance) / Math.max(1, radius));
     return 1 - t * t * t * (10 + t * (-15 + 6 * t));
 }
-export function search(applications, query) {
-    const words = String(query || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().split(/\s+/).filter(Boolean);
-    return applications.filter(app => words.every(word =>
-        String(app.name + " " + app.id + " " + (app.keywords || "")).normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(word)));
+// Búsqueda del lanzador. Sin acentos ni mayúsculas; varias palabras deben
+// coincidir todas. Ordena por relevancia para que Intro abra lo esperado:
+// inicio del nombre > inicio de palabra > iniciales ("lc" → LibreOffice
+// Calc) > dentro del nombre > nombre genérico, palabras clave o ID. A igual
+// relevancia se conserva el orden alfabético del catálogo.
+export function fold(value) {
+    return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+function words(value) { return fold(value).replace(/[^a-z0-9]+/g, " ").trim(); }
+// Índice normalizado una vez por catálogo (no en cada pulsación).
+export function searchIndex(applications) {
+    return applications.map((app, order) => {
+        const name = words(app.name);
+        return {app, order, name, initials: name.split(" ").map(part => part[0] || "").join(""),
+            extra: words([app.genericName, app.keywords, identity(app.id)].join(" "))};
+    });
+}
+function wordScore(entry, word) {
+    if (entry.name.startsWith(word)) return 100;
+    if ((" " + entry.name).includes(" " + word)) return 70;
+    if (word.length > 1 && entry.initials.startsWith(word)) return 60;
+    if (entry.name.includes(word)) return 40;
+    if ((" " + entry.extra).includes(" " + word)) return 25;
+    return entry.extra.includes(word) ? 10 : 0;
+}
+export function search(applications, query, index) {
+    const terms = words(query).split(" ").filter(Boolean);
+    if (!terms.length) return applications;
+    const scored = [];
+    for (const entry of index || searchIndex(applications)) {
+        let score = 0;
+        for (const term of terms) {
+            const value = wordScore(entry, term);
+            if (!value) { score = 0; break; }
+            score += value;
+        }
+        if (score) scored.push(entry);
+        entry.score = score;
+    }
+    return scored.sort((a, b) => b.score - a.score || a.order - b.order).map(entry => entry.app);
 }
 export function dock(applications, pins, windows) {
     const byId = new Map(applications.map(app => [identity(app.id), app]));

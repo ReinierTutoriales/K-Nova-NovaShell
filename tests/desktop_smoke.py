@@ -30,6 +30,11 @@ def find(item, name):
     return None
 
 
+
+def type_text(window, text):
+    for character in text:
+        QTest.keyClick(window, getattr(Qt.Key, "Key_" + character.upper()))
+
 class DesktopSmoke(unittest.TestCase):
     def test_progress_stops_when_hidden_and_respects_reduced_motion(self):
         with tempfile.TemporaryDirectory(prefix="nova-progress-") as temporary:
@@ -159,7 +164,8 @@ Window {
     color: Theme.color.surface
     LauncherView {
         anchors.fill: parent; anchors.margins: 16
-        applications: [{id:"files.desktop",name:"Archivos",icon:"folder"}, {id:"terminal.desktop",name:"Terminal",icon:"terminal"}]
+        applications: [{id:"files.desktop",name:"Archivos",icon:"folder"}, {id:"terminal.desktop",name:"Terminal",icon:"terminal"},
+            {id:"thunderbird.desktop",name:"Thunderbird",icon:"mail",genericName:"Correo"}, {id:"firefox.desktop",name:"Firefox",icon:"firefox",genericName:"Navegador web"}]
         onLaunchRequested: id => window.launched = id
     }
 }''', QUrl.fromLocalFile(str(ROOT / "tests/launcher-theme-harness.qml")))
@@ -184,6 +190,24 @@ Window {
             self.assertEqual(window.property("launched"), "terminal.desktop")
             QTest.keyClick(window, Qt.Key.Key_Up)
             self.assertTrue(search.hasActiveFocus())
+            # Relevancia: Intro abre el mejor resultado aunque haya varios.
+            search.setProperty("text", "")
+            search.forceActiveFocus()
+            type_text(window, "fi")
+            QTest.keyClick(window, Qt.Key.Key_Return)
+            self.assertEqual(window.property("launched"), "firefox.desktop")
+            # Nombre genérico, Esc borra la búsqueda sin cerrar.
+            search.setProperty("text", "correo")
+            QTest.keyClick(window, Qt.Key.Key_Return)
+            self.assertEqual(window.property("launched"), "thunderbird.desktop")
+            QTest.keyClick(window, Qt.Key.Key_Escape)
+            self.assertEqual(search.property("text"), "")
+            # Escribir con la rejilla enfocada vuelve a la búsqueda.
+            QTest.keyClick(window, Qt.Key.Key_Down)
+            self.assertTrue(grid.hasActiveFocus())
+            type_text(window, "ter")
+            self.assertTrue(search.hasActiveFocus())
+            self.assertEqual(search.property("text"), "ter")
             search.setProperty("text", "no-results")
             window.setProperty("launched", "")
             QTest.keyClick(window, Qt.Key.Key_Return)
