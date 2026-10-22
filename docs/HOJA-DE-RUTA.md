@@ -1,53 +1,53 @@
 # Hoja de ruta
 
-Paso a paso: cada fase debe quedar estable (tests + CI en verde y probada en
-Plasma real) antes de empezar la siguiente.
+Estados: ✅ implementado y probado con Quickshell 0.3.2 real en un compositor
+Wayland headless · 🟡 implementado, falta validar en Plasma 6.8 real ·
+⬜ pendiente. Nada se da por terminado sin una sesión Plasma real.
 
-## Fase 0 — Base ✅ (esta versión)
+## Fase 0 — Base ✅
 
-- Daemon `nova-platform` con contrato IPC v1, socket seguro y tests.
-- Shell Quickshell mínimo: barra por pantalla, reloj, estado del servicio.
-- Sistema de tokens de diseño (`Theme`) con claro/oscuro y `reduceMotion`.
+- Daemon `nova-platform` con contrato IPC v1, socket seguro y tests (ASan/UBSan en CI).
+- Tokens de diseño (`Theme`), claro/oscuro, accesibilidad.
 - `novactl` sin root, units systemd de usuario, CI con reglas de arquitectura.
 
-## Fase 1 — Barra completa
+## Fase 1 — Barra 🟡
 
-Base visual transversal disponible: iconos vectoriales y cuatro apariencias,
-materiales, controles accesibles, galería y exportación freedesktop.
-Ver [Apariencia](APARIENCIA.md). Esto no da por completados el dock,
-las integraciones de la barra ni la aceptación en una sesión Plasma real.
+- ✅ Barra por pantalla con lanzador, apariencia, reloj y estado del servicio.
+- ✅ Indicadores de red, Bluetooth, volumen y batería (servicios nativos de
+  Quickshell; cada uno se oculta si el equipo no lo tiene).
+- ✅ Bandeja del sistema (StatusNotifierItem).
+- 🟡 Valores reales de PipeWire/NetworkManager/UPower/BlueZ: el entorno de
+  prueba no tiene esos servicios.
+- ⬜ Presupuesto medido de RAM/CPU del shell en reposo en Plasma real.
 
-- Bandeja del sistema (StatusNotifierItem, nativo en Quickshell).
-- Volumen y dispositivo de salida (PipeWire, nativo en Quickshell).
-- Red y Bluetooth vía daemon (NetworkManager / BlueZ por DBus).
-- Batería y brillo.
-- Medición de RAM/CPU del shell en reposo; fijar presupuesto (objetivo a validar).
+## Fase 2 — Dock ✅ / 🟡
 
-## Fase 2 — Dock
+- ✅ Apps fijadas con iconos del tema del sistema (biblioteca MacTahoe).
+- ✅ Lanzar por ID `.desktop` vía daemon, menú contextual, ampliación, autoocultación.
+- 🟡 Ventanas abiertas y agrupación: requiere el puente KWin (script) en Plasma.
 
-- Apps fijadas y ventanas abiertas (protocolo de toplevels de Wayland).
-- Lanzar apps por ID de escritorio a través del daemon (`application.launch`),
-  nunca con un comando arbitrario.
-- Ocultación automática y animaciones con `Theme.motion`.
+## Fase 3 — Lanzador y búsqueda ✅
 
-## Fase 3 — Lanzador y búsqueda
+- ✅ Lanzador con búsqueda sin acentos, fijar/quitar del dock.
+- ⬜ Navegación completa por teclado revisada con lector de pantalla.
 
-- Lanzador a pantalla completa y búsqueda rápida de apps.
-- Navegación completa por teclado desde el diseño inicial.
+## Fase 4 — Notificaciones y centro de control 🟡
 
-## Fase 4 — Notificaciones y centro de control
+- ✅ Centro de control: Wi-Fi, Bluetooth, volumen, brillo, No molestar,
+  capturas y acciones de sesión.
+- 🟡 Servidor de notificaciones con historial (opcional en Ajustes).
 
-- Servidor de notificaciones con historial y "No molestar".
-- Centro de control: Wi-Fi, Bluetooth, volumen, brillo, capturas.
+## Fase 5 — Apariencia y escritorio 🟡
 
-## Fase 5 — Apariencia avanzada
+- ✅ Materiales Cristal / Esmerilado / Sólido con brillo especular y canto de luz.
+- ✅ Blur solo si el compositor anuncia `ext-background-effect-v1` (detección en el daemon).
+- ✅ Ajustes con barra lateral y selectores con nombres traducidos.
+- ✅ Widgets de escritorio: reloj analógico, uso del sistema y calendario.
+- 🟡 Aspecto del blur sobre KWin 6.8 (el compositor de prueba no lo soporta).
+- ⬜ Widget del tiempo: necesita una operación de red acotada en el daemon.
+- ⬜ Paquetes de temas.
 
-- Materiales (vidrio, esmerilado, tonal) como juegos de tokens intercambiables.
-- Desenfoque de fondo usando el protocolo de blur de KWin desde la ventana,
-  sin plugin nativo (verificar soporte en Quickshell 0.3.x antes de implementar).
-- Paquetes de temas.
-
-## Fase 6 — Distribución
+## Fase 6 — Distribución ⬜
 
 - Flake de NixOS, PKGBUILD (AUR), spec de Fedora/COPR.
 - Releases firmadas por tag; `novactl update` con selección de versión.
@@ -55,5 +55,5 @@ las integraciones de la barra ni la aceptación en una sesión Plasma real.
 
 ## Pendientes de verificación técnica
 
-- Validar Plasma 6.8 Wayland con Quickshell 0.3.2 y Qt 6.12 en una sesión real.
-- Lint QML completo en CI con Quickshell instalado (hoy: sintaxis + reglas).
+- Sesión real Plasma 6.8 Wayland con Quickshell 0.3.2 y Qt 6.12: blur, GPU,
+  consumo en reposo, puente KWin y servicios del sistema.
