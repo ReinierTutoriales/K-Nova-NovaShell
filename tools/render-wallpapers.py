@@ -4,7 +4,7 @@
 
 Los usan el splash, el tema SDDM y la pantalla de bloqueo, para que el inicio
 de sesión, la carga y el escritorio compartan identidad. Los colores parten de
-los tokens previewTop/previewBottom y del acento de Theme.qml.
+los tokens previewTop/previewBottom de Theme.qml: monocromos, sin azules.
 
 Uso: render-wallpapers.py [--size 3840x2160] [--out assets/wallpapers]
 Requiere numpy y Pillow (solo para regenerar; el resultado está versionado).
@@ -19,15 +19,20 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 # (arriba, abajo, [(x, y, radio, color, intensidad)]) en coordenadas 0..1.
 PALETTES = {
-    "light": ("#dce9fb", "#e6d9ec", [
-        (0.82, 0.30, 0.42, "#9cc2ff", 0.55),
-        (0.12, 0.85, 0.40, "#f0b8d8", 0.45),
-        (0.50, 1.05, 0.38, "#b6a8f5", 0.40),
+    # Monocromo (Liquid Glass): perla en claro, grafito en oscuro; sin tintes.
+    # Volúmenes de luz suaves con contraste suficiente para que el vidrio
+    # translúcido se note encima.
+    "light": ("#f4f4f6", "#dddce2", [
+        (0.80, 0.24, 0.40, "#ffffff", 0.90),
+        (0.12, 0.88, 0.42, "#bdbcc4", 0.70),
+        (0.55, 1.08, 0.40, "#cfced5", 0.60),
+        (0.30, 0.18, 0.26, "#e2e1e7", 0.45),
     ]),
-    "dark": ("#16243b", "#2a1f38", [
-        (0.82, 0.28, 0.45, "#3478f6", 0.42),
-        (0.10, 0.88, 0.42, "#8a3f7a", 0.40),
-        (0.52, 1.08, 0.40, "#5b48c9", 0.38),
+    "dark": ("#16161a", "#08080a", [
+        (0.80, 0.24, 0.42, "#5a5a62", 0.65),
+        (0.12, 0.88, 0.40, "#34343a", 0.60),
+        (0.55, 1.08, 0.40, "#44444b", 0.55),
+        (0.30, 0.18, 0.24, "#2a2a30", 0.45),
     ]),
 }
 
