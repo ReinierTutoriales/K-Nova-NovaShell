@@ -127,6 +127,7 @@ QtObject {
         readonly property int dockHeight: 112
         readonly property int dockButtonSize: 72
         readonly property real dockMaxScale: 1.15
+        readonly property real panelClosedScale: 0.98
         readonly property int notificationWidth: 360
         readonly property int notificationHeight: 160
         readonly property int widgetWidth: 320

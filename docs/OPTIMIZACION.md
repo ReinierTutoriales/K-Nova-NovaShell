@@ -5,9 +5,24 @@ La base se contrasta con las API estables utilizadas por el proyecto:
 | Documentación oficial | Aplicación en NovaShell | Comprobación |
 | :--- | :--- | :--- |
 | [Qt 6.12: rendimiento de QML](https://doc.qt.io/qt-6.12/qtquick-performance.html) | Evitar trabajo repetido en bindings, cargar paneles bajo demanda y detener temporizadores sin trabajo | Pruebas de políticas, inspección de Loader y regresión del cliente IPC |
-| [Qt 6.12: Image](https://doc.qt.io/qt-6.12/qml-qtquick-image.html) | Iconos asíncronos, caché de Qt y rasterización acotada por tamaño y escala | Renderizado Qt y resolución de iconos |
+| [Qt 6.12: Image](https://doc.qt.io/qt-6.12/qml-qtquick-image.html) | Archivos de iconos asíncronos, proveedores de tema en el hilo GUI, caché de Qt y rasterización acotada por tamaño y escala | Renderizado Qt y resolución de iconos |
 | [Qt 6.12: TextField](https://doc.qt.io/qt-6.12/qml-qtquick-controls-textfield.html) | Fondo, texto, selección y foco controlados por Theme | Cambio claro/oscuro, teclado y búsqueda sin resultados |
 | [Quickshell 0.3.2: Socket](https://quickshell.org/docs/v0.3.2/types/Quickshell.Io/Socket/) | Conexión asíncrona, flush tras escritura y renovación de socket al cambiar la ruta | Motor real con socket Unix, cancelación y caducidad |
+| [Qt 6.12: SmoothedAnimation](https://doc.qt.io/qt-6.12/qml-qtquick-smoothedanimation.html) | Magnificación y ocultación del dock con continuidad al cambiar el destino | Sintaxis y aceptación visual pendiente en KWin |
+| [Qt 6.12: Loader](https://doc.qt.io/qt-6.12/qml-qtquick-loader.html) | Paneles con foco explícito y descarga al terminar el cierre | Ciclo de apertura/cierre y movimiento reducido con Qt real |
+
+## Movimiento y materiales
+
+Los paneles usan opacidad y escala en el scene graph. Al cerrar dejan de aceptar
+entrada y su contenido se descarga al terminar la transición; sin movimiento,
+el cambio es inmediato. No usan capturas por fotograma ni capas de renderizado
+adicionales. La barra y los accesos del dock usan botones planos con estado de
+hover, pulsación y foco, evitando marcos permanentes alrededor de cada símbolo.
+
+La transparencia y el desenfoque son controles distintos. El blur continúa
+condicionado al protocolo anunciado por el compositor; reducir transparencia
+o activar alto contraste mantiene superficies opacas. No se acredita una
+reproducción exacta de materiales de otro sistema sin aceptación visual real.
 
 ## Agrupación del dock
 

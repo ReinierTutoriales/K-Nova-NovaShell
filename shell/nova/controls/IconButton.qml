@@ -16,6 +16,7 @@ Button {
     ToolTip.visible: hovered
     ToolTip.text: label
     background: GlassSurface {
+        visible: !root.flat || root.hovered || root.down || root.visualFocus
         cornerRadius: Theme.radius.sm
         interactive: true
         pressed: root.down

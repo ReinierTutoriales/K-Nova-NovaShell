@@ -46,7 +46,7 @@ PanelWindow {
         height: dock.iconSize + Theme.space.xl
         y: dock.revealed ? dock.height - height - Theme.space.sm : dock.height + Theme.space.sm
         cornerRadius: Theme.radius.xl
-        Behavior on y { NumberAnimation { duration: Theme.motion.normal; easing.type: Easing.OutCubic } }
+        Behavior on y { enabled: !Theme.reduceMotion; SmoothedAnimation { duration: Theme.motion.normal; velocity: -1 } }
         Flickable {
             anchors { fill: parent; leftMargin: Theme.space.lg; rightMargin: Theme.space.lg }
             contentWidth: row.implicitWidth
@@ -57,7 +57,7 @@ PanelWindow {
                 id: row
                 height: parent.height
                 spacing: Theme.space.lg
-                IconButton { label: qsTr("Aplicaciones"); symbol: "grid"; onClicked: { Platform.reloadApplications(); ShellState.toggle("launcher", dock.output); } }
+                IconButton { flat: true; label: qsTr("Aplicaciones"); symbol: "grid"; onClicked: { Platform.reloadApplications(); ShellState.toggle("launcher", dock.output); } }
                 Repeater {
                     model: Platform.dockItems
                     ApplicationTile {
@@ -75,7 +75,7 @@ PanelWindow {
                             ? 1 + (Theme.metrics.dockMaxScale - 1) * Policy.influenceAt(hover.point.position.x - app.mapToItem(dock.contentItem, app.width / 2, 0).x, dock.iconSize * 2)
                             : 1
                         transformOrigin: Item.Bottom
-                        Behavior on scale { NumberAnimation { duration: Theme.motion.fast } }
+                        Behavior on scale { enabled: !Theme.reduceMotion; SmoothedAnimation { duration: Theme.motion.fast; velocity: -1 } }
                         onClicked: Platform.activateApplication(modelData)
                         Menu {
                             id: menu
@@ -93,8 +93,8 @@ PanelWindow {
                     }
                 }
                 Rectangle { implicitWidth: Theme.space.hairline; implicitHeight: Theme.icons.application; color: Theme.color.border }
-                IconButton { label: qsTr("Ventanas y escritorios"); symbol: "preview"; onClicked: ShellState.toggle("overview", dock.output) }
-                IconButton { label: qsTr("Preferencias"); symbol: "settings"; onClicked: ShellState.toggle("settings", dock.output) }
+                IconButton { flat: true; label: qsTr("Ventanas y escritorios"); symbol: "preview"; onClicked: ShellState.toggle("overview", dock.output) }
+                IconButton { flat: true; label: qsTr("Preferencias"); symbol: "settings"; onClicked: ShellState.toggle("settings", dock.output) }
             }
         }
     }

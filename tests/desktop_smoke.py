@@ -31,6 +31,58 @@ def find(item, name):
 
 
 class DesktopSmoke(unittest.TestCase):
+    def test_panel_transition_lifecycle_and_reduced_motion(self):
+        with tempfile.TemporaryDirectory(prefix="nova-panel-lifecycle-") as temporary:
+            Path(temporary, "qs").symlink_to(ROOT / "shell", target_is_directory=True)
+            WARNINGS.clear()
+            engine = QQmlApplicationEngine()
+            engine.addImportPath(temporary)
+            engine.loadData(b'''import QtQuick
+import qs.nova.controls
+import qs.nova.theme
+import qs.nova.desktop
+Window {
+    id: window; width: 840; height: 680; visible: reveal.visible
+    property alias opened: reveal.opened
+    property bool reduced: false
+    onReducedChanged: Theme.reduceMotion = reduced
+    Component.onCompleted: Theme.reduceMotion = reduced
+    property bool contentAlive: content.item !== null
+    property bool animating: reveal.animating
+    PanelTransition {
+        id: reveal; anchors.fill: parent
+        Loader {
+            id: content; anchors.fill: parent; active: reveal.visible; focus: reveal.opened
+            sourceComponent: Component { LauncherView {} }
+            onLoaded: if (reveal.opened) item.focusInitial()
+        }
+    }
+}''', QUrl.fromLocalFile(str(ROOT / "tests/panel-lifecycle-harness.qml")))
+            self.assertEqual(len(engine.rootObjects()), 1, "\n".join(WARNINGS))
+            window = engine.rootObjects()[0]
+            self.assertFalse(window.property("contentAlive"))
+            window.setProperty("opened", True)
+            QTest.qWait(250)
+            self.assertTrue(window.property("contentAlive"))
+            search = find(window.contentItem(), "launcherSearch")
+            self.assertTrue(search.hasActiveFocus())
+            window.setProperty("opened", False)
+            QTest.qWait(250)
+            self.assertFalse(window.property("contentAlive"))
+            self.assertFalse(window.property("animating"))
+            window.setProperty("reduced", True)
+            window.setProperty("opened", True)
+            APP.processEvents()
+            self.assertTrue(window.property("contentAlive"))
+            self.assertFalse(window.property("animating"))
+            window.setProperty("opened", False)
+            APP.processEvents()
+            self.assertFalse(window.property("contentAlive"))
+            self.assertEqual(WARNINGS, [], "\n".join(WARNINGS))
+            window.close()
+            del engine
+            APP.processEvents()
+
     def test_launcher_theme_and_keyboard(self):
         with tempfile.TemporaryDirectory(prefix="nova-launcher-theme-") as temporary:
             Path(temporary, "qs").symlink_to(ROOT / "shell", target_is_directory=True)

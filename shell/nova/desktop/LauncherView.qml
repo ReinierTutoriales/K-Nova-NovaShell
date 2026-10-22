@@ -16,6 +16,7 @@ ColumnLayout {
     signal pinRequested(string id)
     signal refreshRequested()
     spacing: Theme.space.md
+    function focusInitial() { search.forceActiveFocus(); }
     function launchCurrent() {
         if (!results.length) return;
         const index = Math.min(results.length - 1, Math.max(0, grid.currentIndex));

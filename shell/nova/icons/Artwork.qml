@@ -14,7 +14,9 @@ Item {
         id: image
         anchors.fill: parent
         source: root.source
-        asynchronous: true
+        // Files can load off-thread; theme providers keep their GUI-thread
+        // contract (QIcon/platform theme engines may not be thread-safe).
+        asynchronous: !root.source.startsWith("image:")
         fillMode: Image.PreserveAspectFit
         sourceSize: Qt.size(root.rasterSize, root.rasterSize)
         visible: status === Image.Ready
