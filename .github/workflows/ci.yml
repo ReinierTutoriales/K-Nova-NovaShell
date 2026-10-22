@@ -110,6 +110,9 @@ jobs:
         run: |
           dbus-run-session -- python3 tests/quickshell_smoke.py "$PWD/build/quickshell-prefix/bin/qs" "$PWD/build/daemon/nova-platform"
           dbus-run-session -- python3 tests/jsonl_client_smoke.py "$PWD/build/quickshell-prefix/bin/qs"
+      - name: Instalación de usuario de extremo a extremo
+        timeout-minutes: 12
+        run: CMAKE_PREFIX_PATH="$QT_ROOT_DIR" python3 tests/install_smoke.py
       - name: Qt Quick y SVG sin módulos innecesarios
         run: |
           python3 -m venv "$RUNNER_TEMP/qt-tests"
