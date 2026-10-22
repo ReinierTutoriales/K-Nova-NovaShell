@@ -86,6 +86,9 @@ void Server::acceptConnections()
         m_buffers.insert(socket, QByteArray());
         connect(socket, &QLocalSocket::readyRead, this, [this, socket] { readClient(socket); });
         connect(socket, &QLocalSocket::disconnected, this, [this, socket] { dropClient(socket); });
+        if (socket->bytesAvailable() > 0) {
+            readClient(socket);
+        }
     }
 }
 

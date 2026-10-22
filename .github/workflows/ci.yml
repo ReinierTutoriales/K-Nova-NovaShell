@@ -43,6 +43,7 @@ jobs:
         uses: jurplel/install-qt-action@v4.4.1
         with:
           version: ${{ steps.qt.outputs.version }}
+          archives: icu qtbase qtdeclarative qtsvg qttools
           cache: true
       - name: Configurar y compilar
         run: |

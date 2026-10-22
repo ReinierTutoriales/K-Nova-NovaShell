@@ -147,7 +147,7 @@ def main():
                   "el límite cuenta bytes antes de eliminar espacios")
             try:
                 check(padded.sock.recv(1) == b"", "una línea gigante con salto cierra el socket")
-            except (ConnectionError, OSError):
+            except ConnectionError:
                 check(True, "una línea gigante con salto cierra el socket")
             padded.close()
 
