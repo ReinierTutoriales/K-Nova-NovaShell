@@ -57,7 +57,7 @@ PanelWindow {
                 id: row
                 height: parent.height
                 spacing: Theme.space.lg
-                IconButton { flat: true; label: qsTr("Aplicaciones"); symbol: "grid"; onClicked: { Platform.reloadApplications(); ShellState.toggle("launcher", dock.output); } }
+                IconButton { flat: true; label: qsTr("Buscar y abrir aplicaciones"); symbol: "launcher"; onClicked: { Platform.reloadApplications(); ShellState.toggle("launcher", dock.output); } }
                 Repeater {
                     model: Platform.dockItems
                     ApplicationTile {

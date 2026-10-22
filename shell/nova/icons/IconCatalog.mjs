@@ -57,6 +57,8 @@ export const symbols = Object.freeze({
     restart: "M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5",
     sleep: "M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z",
     forward: "M5 12h14M13 6l6 6-6 6",
+    // Lanzador: lupa (buscar) con destello (aplicaciones). El destello es relleno.
+    launcher: "M10 5.4a6.6 6.6 0 1 0 0 13.2a6.6 6.6 0 1 0 0-13.2M14.8 16.8L19.6 21.6",
     screenshot: "M7 3H3v4M17 3h4v4M3 17v4h4M21 17v4h-4M6 7h12v10H6z",
     controls: "M3 6h7M14 6h7M3 18h11M18 18h3M10 3v6M14 15v6",
     folder: "M3 7V5h7l2 2h9v13H3z"
@@ -81,6 +83,10 @@ export const applications = Object.freeze({
     application: { label: "Application", glyph: "application", palette: "slate" }
 });
 export const symbolNames = Object.freeze(Object.keys(symbols));
+// Partes rellenas de un símbolo (se dibujan con la misma tinta, sin trazo).
+const symbolFills = Object.freeze({
+    launcher: "M18.6 1.8Q19.03 4.97 22.2 5.4Q19.03 5.83 18.6 9Q18.17 5.83 15 5.4Q18.17 4.97 18.6 1.8Z",
+});
 export const applicationNames = Object.freeze(Object.keys(applications));
 const sources = new Map();
 export const CACHE_LIMIT = 256;
@@ -121,10 +127,13 @@ export function symbolSource(name, color, stroke = "1.7") {
     if (!Number.isFinite(width) || width < 0.5 || width > 4)
         throw new RangeError("Invalid icon stroke");
     const path = symbol(name);
-    return cached(JSON.stringify([path, ink, width]), () =>
+    const fill = Object.prototype.hasOwnProperty.call(symbolFills, name) && symbols[name] === path
+        ? symbolFills[name] : "";
+    return cached(JSON.stringify([path, fill, ink, width]), () =>
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">'
         + '<path fill="none" stroke="' + ink + '" stroke-width="' + width
-        + '" stroke-linecap="round" stroke-linejoin="round" d="' + path + '"/></svg>');
+        + '" stroke-linecap="round" stroke-linejoin="round" d="' + path + '"/>'
+        + (fill ? '<path fill="' + ink + '" d="' + fill + '"/>' : '') + '</svg>');
 }
 export function tilePath() {
     const points = [];

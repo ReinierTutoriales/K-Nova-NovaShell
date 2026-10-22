@@ -7,6 +7,8 @@ versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
 ## [Sin publicar]
 
 ### Añadido
+- Nuevo icono del lanzador en la barra y el dock: lupa con destello
+  (símbolo `launcher`), que abre el lanzador con el cursor en la búsqueda.
 - Control **Vidrio** (de opaco a transparente) en Ajustes y en la bienvenida,
   con vista previa en vivo, y control **Desenfoque** (intensidad del Blur de
   KWin, 1–15) mediante las operaciones nuevas `blur.get` y `blur.set`.
