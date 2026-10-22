@@ -47,12 +47,18 @@ Los cambios de la galería no se guardan todavía en disco.
 ## Transparencia y blur
 
 `GlassSurface` dibuja un relleno y acabado, sin capturar lo que hay detrás.
-La barra solicita `BackgroundEffect.blurRegion` solo al habilitar
-`NOVA_BACKGROUND_BLUR=1`. Quickshell 0.3 requiere que el compositor anuncie
-`ext-background-effect-v1`; no se usa un plugin ni el protocolo privado de otro
-escritorio. Si no has confirmado ese soporte, deja el valor predeterminado:
-la superficie mantiene opacidad mínima de 0.88. Reducir transparencia y alto
-contraste fuerzan opacidad 1 y desactivan el blur.
+El blur se decide solo (`CompositorBlur`): al conectar, el shell pide
+`compositor.capabilities` al daemon y activa `BackgroundEffect.blurRegion`
+únicamente si el compositor anuncia `ext-background-effect-v1`, el protocolo
+que usa Quickshell 0.3. No se usa un plugin ni el protocolo privado de otro
+escritorio. Con blur la superficie baja hasta opacidad 0.38 (vidrio); sin él
+mantiene un mínimo de 0.88 para que el texto siga legible.
+`NOVA_BACKGROUND_BLUR=1` lo fuerza y `=0` lo desactiva. Reducir transparencia
+y alto contraste fuerzan opacidad 1 y desactivan el blur.
+
+`GlassSurface` añade brillo especular superior y borde de luz interior
+(intensos en Cristal, sutiles en Esmerilado, nulos en Sólido u opaco). Son
+nodos estáticos: no hay shaders por frame ni capturas del escritorio.
 
 Esta base no implementa refracción del escritorio ni reemplaza la decoración
 de las ventanas. El blur real debe validarse en Plasma Wayland.
