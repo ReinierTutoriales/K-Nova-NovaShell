@@ -34,6 +34,6 @@ Column {
         color: Theme.color.text
         font.family: Theme.font.family
         font.pixelSize: Theme.font.hero
-        font.weight: Font.Bold
+        font.weight: Font.DemiBold
     }
 }

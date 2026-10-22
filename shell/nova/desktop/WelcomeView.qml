@@ -43,7 +43,7 @@ ColumnLayout {
             Item { Layout.fillHeight: true }
             Image {
                 Layout.alignment: Qt.AlignHCenter
-                source: "../icons/nova-mark.svg"
+                source: Theme.dark ? "../icons/nova-mark-dark.svg" : "../icons/nova-mark-light.svg"
                 sourceSize: Qt.size(Theme.icons.preview, Theme.icons.preview)
                 Accessible.ignored: true
             }
@@ -78,7 +78,7 @@ ColumnLayout {
             SettingsRow {
                 label: qsTr("Material")
                 SegmentedChoice {
-                    accessibleName: qsTr("Material"); value: welcome.values.material || "frosted"
+                    accessibleName: qsTr("Material"); value: welcome.values.material || "liquid"
                     options: [{value: "liquid", label: qsTr("Cristal")}, {value: "frosted", label: qsTr("Esmerilado")},
                         {value: "solid", label: qsTr("Sólido")}]
                     onSelected: choice => welcome.update("material", choice)

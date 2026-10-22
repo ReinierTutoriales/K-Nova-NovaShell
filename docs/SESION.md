@@ -54,7 +54,22 @@ shell (`org.kde.plasma.desktop`, archivo `lockscreenmainscript`), no desde el
 tema global. Sustituir ese paquete rompería plasmashell, y la interfaz de
 bloqueo es una frontera de seguridad: NovaShell **no** la reemplaza.
 
-Lo oficial y reversible es su fondo: el perfil fija
+Lo que sí se puede hacer, de forma oficial, para que el bloqueo combine con
+NovaShell:
+
+1. **Fondo** (lo aplica el perfil). La pantalla de bloqueo de Plasma ya lo
+   desenfoca al mostrar la contraseña.
+2. **Colores**: la interfaz de bloqueo usa el grupo *Complementary* del
+   esquema de color de KDE. Con las paletas NovaGlass:
+
+   ```sh
+   plasma-apply-colorscheme NovaGlassDark        # o NovaGlassLight
+   ```
+
+   Se deshace eligiendo otro esquema en Preferencias del sistema → Colores.
+   Afecta a todas las aplicaciones KDE, por eso NovaShell no lo aplica solo.
+
+El perfil fija
 `[Greeter] WallpaperPlugin=org.kde.image` y
 `[Greeter][Wallpaper][org.kde.image][General] Image` al paquete NovaShell.
 
@@ -83,12 +98,25 @@ Plasma Login Manager (Plasma 6.6+, bifurcación de SDDM) compila su pantalla
 dentro del programa (`qrc:/qt/qml/org/kde/plasma/login/Main.qml`) y solo deja
 cambiar el fondo. `novactl doctor` indica qué gestor usa tu sistema.
 
-**Diseño.** Fondo NovaShell desenfocado una vez (escena estática, sin coste
-mientras nadie escribe), fecha en el formato largo del idioma y hora grande,
-avatar circular (o inicial sobre el acento), campo de contraseña en cápsula
-con botón de flecha, aviso de Bloq Mayús, sacudida breve si la contraseña es
-incorrecta (desactivable) y, abajo, sesión, distribución de teclado y
-suspender/reiniciar/apagar solo si SDDM informa de que el sistema lo permite.
+![Pantalla de inicio de sesión NovaShell en claro](images/inicio-sesion-claro.png)
+
+**Diseño (Liquid Glass).** Fondo NovaShell desenfocado una vez (escena
+estática, sin coste mientras nadie escribe) bajo un velo que aclara en modo
+claro y oscurece en modo oscuro, para que reloj y formulario se lean sobre
+cualquier imagen. Fecha en el formato largo del idioma y hora grande. Los
+controles son **vidrio transparente** (`LoginGlass`): en modo claro, vidrio
+claro que deja ver el fondo; en modo oscuro, vidrio negro translúcido. El
+volumen sale del canto de luz y del brillo superior, no de colores: no hay
+acento azul. El campo de contraseña es una cápsula de vidrio; el botón de
+flecha, vidrio más denso con la flecha en la tinta del texto, y mientras SDDM
+verifica muestra un arco que gira en el hilo de render. Los avatares son
+discos de vidrio con la foto recortada en círculo o la inicial. El foco es un
+anillo en la tinta del texto (negro translúcido en claro, blanco en oscuro).
+Aviso de Bloq Mayús, sacudida breve si la contraseña es incorrecta, entrada
+suave al aparecer y fundido al entrar en la sesión (todo desactivable con
+`reduceMotion`). Abajo, sesión, distribución de teclado y
+suspender/reiniciar/apagar, solo si SDDM informa de que el sistema lo permite;
+cada botón muestra una cápsula de vidrio al pasar el puntero o con el foco.
 Con varios usuarios aparece una fila de avatares (Tab la enfoca y las
 flechas eligen; Esc borra la contraseña); sin lista de usuarios, un campo de
 nombre. Las pantallas secundarias muestran fondo y reloj. Con el
@@ -97,8 +125,18 @@ circular en lugar de quedarse sin fondo. Comparte `Theme`, el catálogo de
 símbolos y el fondo con el shell; no ejecuta nada: entrar y la energía son
 llamadas al proxy de SDDM.
 
-`theme.conf`: `appearance` (`auto`, `light`, `dark`), `background` (ruta
-absoluta a una imagen; vacío usa el fondo NovaShell) y `reduceMotion`.
+`theme.conf`:
+
+| Clave | Valores | Por defecto |
+| :--- | :--- | :--- |
+| `appearance` | `auto`, `light`, `dark` | `auto` |
+| `accent` | vacío (Liquid Glass) o `#rrggbb` para un acento de color | vacío |
+| `background` | ruta absoluta a una imagen; vacío usa el fondo NovaShell | vacío |
+| `reduceMotion` | `true`, `false` | `false` |
+
+Coste: la animación de entrada dura `Theme.motion.slow` y se detiene; en
+reposo solo el reloj se despierta una vez por minuto. El indicador giratorio
+existe únicamente mientras se verifica.
 
 **Instalación.** `novactl install` prepara el tema en
 `~/.local/share/novashell/sddm/novashell`. Desde ahí:

@@ -49,12 +49,9 @@ Item {
         height: Math.min(sessionList.contentHeight, Theme.metrics.controlHeight * 8) + padding * 2
         padding: Theme.space.xs
         focus: true
-        background: Rectangle {
-            radius: Theme.radius.lg
-            color: Theme.color.surface
-            border.width: Theme.space.hairline
-            border.color: Theme.color.border
-        }
+        background: LoginGlass { menu: true; radius: Theme.radius.lg }
+        enter: Transition { NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Theme.motion.fast } }
+        exit: Transition { NumberAnimation { property: "opacity"; from: 1; to: 0; duration: Theme.motion.fast } }
         contentItem: ListView {
             id: sessionList
             clip: true

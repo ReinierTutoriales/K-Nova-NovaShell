@@ -6,6 +6,21 @@ versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
 
 ## [Sin publicar]
 
+### Cambiado
+- **Acento Liquid Glass** en todo el sistema: sin azul. En claro, vidrio
+  transparente claro; en oscuro, vidrio negro translúcido (la superficie
+  oscura pasa de gris a negro). Indicadores, día de hoy, interruptores y
+  progreso usan la tinta del texto; la acción principal es vidrio denso. El
+  material predeterminado pasa a Cristal (`liquid`). Un acento de color sigue
+  disponible (`glassAccent: false`), con relleno legible a 4,5:1 para
+  cualquier color y foco derivado.
+- Inicio de sesión de vidrio transparente (`LoginGlass`): campo, botón de
+  entrar, avatares, menú de sesiones y botones del pie; velo claro/oscuro
+  sobre el fondo, arco giratorio mientras se verifica, entrada suave y
+  fundido al entrar. `theme.conf`: `accent` vacío por defecto (Liquid Glass).
+- Marca monocroma (tinta clara u oscura según el esquema) en splash y
+  bienvenida.
+
 ## [0.2.0] — 2026-10-22 · pre-release
 
 Pantallas de sesión con la identidad de NovaShell, bienvenida de primer uso e

@@ -110,7 +110,7 @@ AppearancePreview {
             theme.setProperty("material", "invalid")
             theme.setProperty("iconMode", "invalid")
             self.assertEqual(theme.property("effectiveMode"), "auto")
-            self.assertEqual(theme.property("effectiveMaterial"), "frosted")
+            self.assertEqual(theme.property("effectiveMaterial"), "liquid")
             self.assertEqual(theme.property("effectiveIconMode"), "default")
             window.setVisible(False)
             QTest.qWait(10)

@@ -108,7 +108,14 @@ preferencias de Dolphin y de las animaciones de KWin:
 ```
 
 El splash y el fondo de bloqueo se ven en el siguiente inicio de sesión o
-bloqueo. La interfaz de bloqueo sigue siendo la de Plasma por seguridad
+bloqueo. Para que la pantalla de bloqueo use también los colores y el acento
+de NovaShell, aplica una paleta NovaGlass (afecta a todas las apps KDE; se
+deshace en Preferencias del sistema → Colores):
+
+```sh
+plasma-apply-colorscheme NovaGlassDark      # o NovaGlassLight
+```
+ La interfaz de bloqueo sigue siendo la de Plasma por seguridad
 ([por qué](SESION.md#bloqueo)). El fondo también aparece en Preferencias del
 sistema → Fondo de pantalla.
 
@@ -136,8 +143,9 @@ sudo systemctl disable sddm && sudo systemctl enable plasmalogin   # volver
 ```
 
 Ajustes del tema en `/usr/share/sddm/themes/novashell/theme.conf`:
-`appearance=auto|light|dark`, `background=` (ruta absoluta a una imagen) y
-`reduceMotion=true|false`.
+`appearance` (`auto|light|dark`), `accent` (vacío = Liquid Glass; `#rrggbb`
+para un acento de color), `background` (ruta absoluta a una imagen) y
+`reduceMotion` (`true|false`).
 
 ## 8. Atajos de teclado
 

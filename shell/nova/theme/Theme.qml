@@ -7,10 +7,17 @@ import "IconTokens.mjs" as IconTokens
 QtObject {
     id: theme
     property string mode: "auto"
-    property string material: "frosted"
+    property string material: "liquid"
     property string iconMode: "default"
     property real transparency: 0.5
+    // Acento Liquid Glass (predeterminado): sin color. En claro, vidrio
+    // transparente claro; en oscuro, vidrio negro translúcido; los
+    // indicadores usan la tinta del texto. glassAccent=false activa el
+    // acento de color `accent` (p. ej. accent= en el tema SDDM).
+    property bool glassAccent: true
     property color accent: "#3478f6"
+    // Acento como "#rrggbb" para las funciones puras de AppearancePolicy.
+    readonly property string accentHex: Qt.rgba(accent.r, accent.g, accent.b, 1).toString()
     property bool reduceMotion: false
     property bool reduceTransparency: false
     property bool highContrast: false
@@ -21,7 +28,7 @@ QtObject {
     // y solo vuelve la superficie ilegible.
     property bool compositorBlur: false
     readonly property string effectiveMode: Policy.choice(mode, Policy.modes, "auto")
-    readonly property string effectiveMaterial: Policy.choice(material, Policy.materials, "frosted")
+    readonly property string effectiveMaterial: Policy.choice(material, Policy.materials, "liquid")
     readonly property string effectiveIconMode: Policy.choice(iconMode, Policy.iconModes, "default")
     readonly property bool dark: effectiveMode === "dark"
         || (effectiveMode === "auto" && Qt.styleHints.colorScheme === Qt.Dark)
@@ -33,18 +40,33 @@ QtObject {
 
     readonly property QtObject color: QtObject {
         readonly property color transparent: "transparent"
-        readonly property color surface: theme.dark ? "#202228" : "#ffffff"
-        readonly property color surfaceRaised: theme.dark ? "#303239" : "#f4f5f8"
+        // Oscuro: vidrio negro (no gris); claro: vidrio claro.
+        readonly property color surface: theme.dark ? "#0e0f12" : "#ffffff"
+        readonly property color surfaceRaised: theme.dark ? "#1c1d21" : "#f4f5f8"
         readonly property color barBackground: Qt.rgba(surface.r, surface.g, surface.b, theme.surfaceAlpha)
         readonly property color text: theme.dark ? "#f5f6fa" : "#17191e"
         readonly property color textMuted: theme.dark ? "#bec3cf" : "#505662"
-        readonly property color accent: theme.accent
-        readonly property color accentText: "#ffffff"
-        // Relleno de la acción principal: oscurecido para que accentText
-        // cumpla 4,5:1 (WCAG AA) con el acento por defecto (#3478f6 → 4,8:1).
-        readonly property color accentFill: Qt.darker(theme.accent, 1.1)
-        readonly property color accentFillHover: Qt.darker(theme.accent, 1.18)
-        readonly property color accentFillPressed: Qt.darker(theme.accent, 1.28)
+        // Indicadores (progreso, interruptor activo, hoy, deslizador): con
+        // acento de vidrio, la tinta del texto (monocromo); si no, el color.
+        readonly property color accent: theme.glassAccent ? text : theme.accent
+        // Texto sobre `accent` (p. ej. el día de hoy, el pulgar del interruptor).
+        readonly property color accentText: theme.glassAccent ? (theme.dark ? "#17191e" : "#ffffff") : "#ffffff"
+        // Acción principal. Vidrio: claro denso en claro, negro denso en
+        // oscuro, con el texto normal encima. Color: el acento oscurecido lo
+        // justo para que el blanco cumpla 4,5:1 (WCAG AA) con cualquier acento.
+        readonly property color accentFill: theme.glassAccent
+            ? (theme.dark ? Qt.rgba(0, 0, 0, 0.62) : Qt.rgba(1, 1, 1, 0.82))
+            : Policy.readableFill(theme.accentHex)
+        readonly property color accentFillHover: theme.glassAccent
+            ? (theme.dark ? Qt.rgba(0, 0, 0, 0.72) : Qt.rgba(1, 1, 1, 0.94))
+            : Policy.readableFill(theme.accentHex, 0.08)
+        readonly property color accentFillPressed: theme.glassAccent
+            ? (theme.dark ? Qt.rgba(0, 0, 0, 0.82) : Qt.rgba(1, 1, 1, 0.66))
+            : Policy.readableFill(theme.accentHex, 0.16)
+        readonly property color accentFillText: theme.glassAccent ? text : "#ffffff"
+        // Canto de la acción principal de vidrio (sin canto con acento de color).
+        readonly property color accentFillRim: theme.glassAccent
+            ? (theme.dark ? Qt.rgba(1, 1, 1, 0.18) : Qt.rgba(1, 1, 1, 0.9)) : transparent
         readonly property color ok: theme.dark ? "#6cdb8e" : "#16783b"
         readonly property color warn: theme.dark ? "#ffd176" : "#895500"
         readonly property color error: theme.dark ? "#ff9a95" : "#b42318"
@@ -56,14 +78,20 @@ QtObject {
         readonly property color glassBottom: Qt.rgba(surface.r, surface.g, surface.b, theme.surfaceAlpha)
         readonly property color hover: theme.dark ? Qt.rgba(1, 1, 1, 0.12) : Qt.rgba(0, 0, 0, 0.06)
         readonly property color pressed: theme.dark ? Qt.rgba(1, 1, 1, 0.20) : Qt.rgba(0, 0, 0, 0.12)
-        readonly property color focus: theme.dark ? "#9ac2ff" : "#1455c0"
+        // Anillo de foco. Vidrio: tinta del texto semitransparente. Color:
+        // derivado del acento (≥ 3:1 con la superficie para cualquier acento).
+        readonly property color focus: theme.glassAccent
+            ? (theme.dark ? Qt.rgba(1, 1, 1, 0.75) : Qt.rgba(0, 0, 0, 0.60))
+            : (theme.dark ? Qt.lighter(theme.accent, 1.45) : Qt.darker(theme.accent, 1.3))
         readonly property color previewTop: theme.dark ? "#16243b" : "#dce9fb"
         // Rellenos planos sobre vidrio (controles y tarjetas de contenido).
         readonly property color controlFill: theme.dark ? Qt.rgba(1, 1, 1, 0.07) : Qt.rgba(1, 1, 1, 0.55)
         readonly property color controlBorder: theme.highContrast ? text
             : (theme.dark ? Qt.rgba(1, 1, 1, 0.10) : Qt.rgba(0, 0, 0, 0.08))
         readonly property color cardFill: theme.dark ? Qt.rgba(1, 1, 1, 0.05) : Qt.rgba(1, 1, 1, 0.45)
-        readonly property color selection: Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, theme.dark ? 0.28 : 0.16)
+        readonly property color selection: theme.glassAccent
+            ? (theme.dark ? Qt.rgba(1, 1, 1, 0.14) : Qt.rgba(0, 0, 0, 0.08))
+            : Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, theme.dark ? 0.28 : 0.16)
         readonly property color clockFace: Qt.rgba(surface.r, surface.g, surface.b, theme.opaque ? 1 : 0.55)
         readonly property color sliderTrack: theme.dark ? Qt.rgba(1, 1, 1, 0.18) : Qt.rgba(0, 0, 0, 0.12)
         readonly property color previewBottom: theme.dark ? "#493556" : "#e6d9ec"
@@ -72,6 +100,18 @@ QtObject {
         readonly property real sheenAlpha: theme.opaque || theme.effectiveMaterial === "solid" ? 0
             : (theme.effectiveMaterial === "liquid" ? (theme.dark ? 0.16 : 0.42)
                                                     : (theme.dark ? 0.08 : 0.24))
+        // Velo sobre fondos de imagen (inicio de sesión): asienta el texto sin
+        // apagar el fondo; oscurece en oscuro y aclara en claro.
+        readonly property color scrimTop: theme.dark ? Qt.rgba(0, 0, 0, 0.18) : Qt.rgba(1, 1, 1, 0.10)
+        readonly property color scrimBottom: theme.dark ? Qt.rgba(0, 0, 0, 0.42) : Qt.rgba(1, 1, 1, 0.32)
+        // Vidrio transparente sobre imágenes (Liquid Glass): claro en modo
+        // claro, negro translúcido en oscuro; el fondo se ve a través. El
+        // canto y el brillo dan el volumen; el acento queda para el foco.
+        readonly property color clearGlass: theme.dark ? Qt.rgba(0, 0, 0, 0.30) : Qt.rgba(1, 1, 1, 0.22)
+        readonly property color clearGlassStrong: theme.dark ? Qt.rgba(0, 0, 0, 0.46) : Qt.rgba(1, 1, 1, 0.40)
+        readonly property color clearGlassMenu: theme.dark ? Qt.rgba(0, 0, 0, 0.62) : Qt.rgba(1, 1, 1, 0.70)
+        readonly property color clearGlassRim: theme.dark ? Qt.rgba(1, 1, 1, 0.16) : Qt.rgba(1, 1, 1, 0.70)
+        readonly property color clearGlassSheen: theme.dark ? Qt.rgba(1, 1, 1, 0.10) : Qt.rgba(1, 1, 1, 0.45)
         readonly property color sheen: Qt.rgba(1, 1, 1, sheenAlpha)
         readonly property color rim: Qt.rgba(1, 1, 1, sheenAlpha * 0.9)
     }
@@ -88,7 +128,7 @@ QtObject {
         readonly property string strokeWidth: String(stroke)
         readonly property string ink: theme.dark ? "#f5f6fa" : "#17191e"
         readonly property string tile: theme.dark ? "#303239" : "#ffffff"
-        readonly property string tint: theme.accent.toString()
+        readonly property string tint: theme.color.accent.toString()
         readonly property string white: "#ffffff"
         readonly property string darkTile: "#22252e"
         readonly property string darkEdge: "#5c6270"
@@ -190,6 +230,9 @@ QtObject {
         // Elementos no seleccionados de una fila (usuarios).
         readonly property real inactiveOpacity: 0.7
         readonly property real inactiveScale: 0.86
+        // Entrada de la pantalla de inicio: desplazamiento vertical inicial.
+        readonly property int loginEnterOffset: 24
+        readonly property int spinnerStroke: 2
         readonly property int splashMark: 96
         readonly property int splashProgressWidth: 160
         // Fracción superior de la superficie que cubre el brillo especular.

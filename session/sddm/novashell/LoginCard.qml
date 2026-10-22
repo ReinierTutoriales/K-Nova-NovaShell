@@ -14,6 +14,8 @@ FocusScope {
     property string userIcon: ""
     property bool needsPassword: true
     property bool busy: false
+    // Aceleración gráfica disponible (sombras y recortes circulares).
+    property bool effects: true
     property string message: ""
     readonly property bool manualUser: userModel.count === 0
     readonly property string loginName: manualUser ? manualName.text : userName
@@ -120,7 +122,7 @@ FocusScope {
             visible: card.needsPassword
             secret: true
             placeholder: qsTr("Contraseña")
-            enabled: !card.busy
+            busy: card.busy
             focus: !card.manualUser
             submitLabel: qsTr("Entrar")
             onAccepted: card.submit()

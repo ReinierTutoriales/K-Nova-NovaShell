@@ -35,7 +35,7 @@ Rectangle {
 
         Image {
             anchors.horizontalCenter: parent.horizontalCenter
-            source: "images/nova-mark.svg"
+            source: Theme.dark ? "images/nova-mark-dark.svg" : "images/nova-mark-light.svg"
             width: Theme.metrics.splashMark
             height: width
             sourceSize: Qt.size(width, height)

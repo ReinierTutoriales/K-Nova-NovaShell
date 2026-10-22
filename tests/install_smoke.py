@@ -85,7 +85,7 @@ def main():
             share / "color-schemes/NovaGlassDark.colors",
             share / "icons/NovaGlass/index.theme",
             home / ".config/quickshell/novashell/shell.qml",
-            home / ".config/quickshell/novashell/nova/icons/nova-mark.svg",
+            home / ".config/quickshell/novashell/nova/icons/nova-mark-light.svg",
         ]
         for path in required:
             assert path.exists(), f"falta {path}"

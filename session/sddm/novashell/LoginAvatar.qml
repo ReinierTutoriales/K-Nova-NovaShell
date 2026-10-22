@@ -3,11 +3,12 @@ import QtQuick
 import QtQuick.Effects
 import "theme"
 
-// Foto circular del usuario; sin foto (o sin shaders para recortarla en
-// círculo, renderizador por software), su inicial sobre el acento.
+// Foto circular del usuario sobre un disco de vidrio; sin foto (o sin
+// shaders para recortarla en círculo), su inicial sobre el vidrio.
 Item {
     id: avatar
-    readonly property bool photoShown: photo.status === Image.Ready && GraphicsInfo.api !== GraphicsInfo.Software
+    readonly property bool effects: GraphicsInfo.api !== GraphicsInfo.Software
+    readonly property bool photoShown: photo.status === Image.Ready && effects
     property string source: ""
     property string name: ""
     property bool current: false
@@ -15,15 +16,16 @@ Item {
     implicitWidth: size
     implicitHeight: size
 
-    Rectangle {
+    // Disco de vidrio transparente: base de la inicial y de las fotos con
+    // transparencia (nunca un círculo blanco ni de color).
+    LoginGlass {
         anchors.fill: parent
-        radius: width / 2
-        color: Theme.color.accentFill
-        visible: !avatar.photoShown
+        strong: true
         Text {
             anchors.centerIn: parent
+            visible: !avatar.photoShown
             text: avatar.name.length > 0 ? avatar.name.charAt(0).toUpperCase() : "?"
-            color: Theme.color.accentText
+            color: Theme.color.text
             font.family: Theme.font.family
             font.pixelSize: Math.round(avatar.size * Theme.metrics.avatarInitialRatio)
             font.weight: Font.DemiBold
@@ -56,7 +58,8 @@ Item {
         anchors.fill: parent
         radius: width / 2
         color: Theme.color.transparent
+        // Canto de luz del vidrio; el seleccionado lleva el anillo del acento.
         border.width: avatar.current ? Theme.metrics.focusWidth : Theme.space.hairline
-        border.color: avatar.current ? Theme.color.focus : Theme.color.border
+        border.color: avatar.current ? Theme.color.focus : Theme.color.clearGlassRim
     }
 }
