@@ -36,6 +36,10 @@ FocusScope {
     }
     function inform(text) { message = text; }
 
+    // La selección vive en la lista (teclado, puntero o userIndex desde fuera).
+    onUserIndexChanged: users.currentIndex = userIndex
+    Keys.onEscapePressed: { password.text = ""; message = ""; }
+
     Column {
         id: content
         anchors.horizontalCenter: parent.horizontalCenter
@@ -44,6 +48,7 @@ FocusScope {
 
         ListView {
             id: users
+            objectName: "users"
             visible: userModel.count > 1
             anchors.horizontalCenter: parent.horizontalCenter
             width: Math.min(contentWidth, Theme.metrics.loginFieldWidth * 2)
@@ -51,8 +56,14 @@ FocusScope {
             orientation: ListView.Horizontal
             spacing: Theme.space.md
             model: userModel
-            currentIndex: card.userIndex
             interactive: contentWidth > width
+            // Tab llega a la fila; las flechas cambian de usuario.
+            activeFocusOnTab: true
+            keyNavigationEnabled: true
+            Component.onCompleted: currentIndex = card.userIndex
+            onCurrentIndexChanged: card.userIndex = currentIndex
+            Keys.onReturnPressed: password.forceActiveFocus()
+            KeyNavigation.tab: password
             delegate: LoginAvatar {
                 id: entry
                 required property int index
@@ -63,15 +74,15 @@ FocusScope {
                 source: model.icon
                 name: label
                 current: selected
-                opacity: selected ? 1 : 0.7
-                scale: selected ? 1 : 0.86
+                opacity: selected ? 1 : Theme.metrics.inactiveOpacity
+                scale: selected ? 1 : Theme.metrics.inactiveScale
                 Behavior on scale { NumberAnimation { duration: Theme.motion.fast; easing.type: Easing.OutCubic } }
                 function choose() { card.pick(model.name, model.realName, model.icon, model.needsPassword); }
                 onSelectedChanged: if (selected) choose()
                 Component.onCompleted: if (selected) choose()
                 Accessible.role: Accessible.Button
                 Accessible.name: label
-                TapHandler { onTapped: { card.userIndex = index; password.forceActiveFocus(); } }
+                TapHandler { onTapped: { users.currentIndex = index; password.forceActiveFocus(); } }
             }
         }
 

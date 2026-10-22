@@ -36,7 +36,7 @@ Rectangle {
         Image {
             anchors.horizontalCenter: parent.horizontalCenter
             source: "images/nova-mark.svg"
-            width: Theme.icons.preview * 1.5
+            width: Theme.metrics.splashMark
             height: width
             sourceSize: Qt.size(width, height)
             Accessible.ignored: true
@@ -52,7 +52,7 @@ Rectangle {
         Rectangle {
             id: track
             anchors.horizontalCenter: parent.horizontalCenter
-            width: Theme.metrics.controlWidth * 1.6
+            width: Theme.metrics.splashProgressWidth
             height: Theme.metrics.sliderTrack
             radius: height / 2
             color: Theme.color.sliderTrack

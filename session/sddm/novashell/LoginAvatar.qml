@@ -25,7 +25,7 @@ Item {
             text: avatar.name.length > 0 ? avatar.name.charAt(0).toUpperCase() : "?"
             color: Theme.color.accentText
             font.family: Theme.font.family
-            font.pixelSize: Math.round(avatar.size * 0.42)
+            font.pixelSize: Math.round(avatar.size * Theme.metrics.avatarInitialRatio)
             font.weight: Font.DemiBold
         }
     }

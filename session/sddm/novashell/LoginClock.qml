@@ -12,6 +12,7 @@ Column {
     Timer {
         running: true
         repeat: false
+        // +50 ms: dispara ya dentro del minuto nuevo, nunca justo antes.
         interval: (60 - clock.now.getSeconds()) * 1000 - clock.now.getMilliseconds() + 50
         onTriggered: { clock.now = new Date(); restart(); }
     }
