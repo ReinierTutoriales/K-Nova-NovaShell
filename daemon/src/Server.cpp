@@ -64,6 +64,18 @@ Server::Server(Router router, QObject *parent)
 
 Server::~Server()
 {
+    // Los sockets aceptados son hijos de m_server y se destruirían después de
+    // m_buffers y m_router (orden inverso de declaración). Al destruirse
+    // emiten disconnected() -> dropClient(), que tocaría un QHash ya liberado.
+    // Se desconectan y destruyen aquí, mientras todos los miembros viven.
+    // findChildren incluye los ya cerrados con deleteLater() pendiente.
+    const QList<QLocalSocket *> sockets =
+        m_server.findChildren<QLocalSocket *>(Qt::FindDirectChildrenOnly);
+    m_buffers.clear();
+    for (QLocalSocket *socket : sockets) {
+        socket->disconnect(this);
+        delete socket;
+    }
     m_server.close();
     if (!m_socketPath.isEmpty()) {
         QLocalServer::removeServer(m_socketPath);

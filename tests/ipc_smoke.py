@@ -192,6 +192,16 @@ def main():
             second = subprocess.run([daemon, "--socket", sock_path], capture_output=True, timeout=5)
             check(second.returncode != 0, "una segunda instancia no roba el socket")
             check(Client(sock_path).request("5", "platform.ping")["ok"], "la primera instancia sigue atendiendo")
+
+            # Regresión: cerrar con clientes conectados (el shell siempre lo
+            # está) y con otro recién desconectado. Antes, ~Server destruía
+            # los sockets después de su tabla de buffers (use-after-free).
+            lingering = [Client(sock_path), Client(sock_path)]
+            lingering[0].request("6", "platform.ping")
+            closed = Client(sock_path)
+            closed.request("7", "platform.ping")
+            closed.close()
+            time.sleep(0.05)
         finally:
             if process.poll() is None:
                 process.send_signal(signal.SIGTERM)
@@ -201,7 +211,7 @@ def main():
                     process.kill()
                     process.wait()
 
-        check(process.returncode == 0, "SIGTERM produce salida limpia (código 0)")
+        check(process.returncode == 0, "SIGTERM con clientes conectados produce salida limpia (código 0)")
         check(not os.path.exists(sock_path), "el socket se elimina al salir")
 
     print(f"\n{len(FAILURES)} fallo(s)")

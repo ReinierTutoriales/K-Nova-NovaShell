@@ -75,6 +75,7 @@ def stop(process):
     except subprocess.TimeoutExpired:
         process.kill()
         process.wait()
+    check(process.returncode == 0, f"el daemon termina limpio (código {process.returncode})")
 
 
 def hung_compositor(daemon):
