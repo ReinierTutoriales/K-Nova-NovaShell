@@ -81,7 +81,7 @@ Ver [sesión](SESION.md).
   sinónimos, cuatro apariencias y símbolos ópticos a 16 px. Iconos de
   aplicaciones: MacTahoe.
 - 🟡 Aspecto nativo aplicado al instalar (iconos, paleta, acento neutro,
-  Dolphin, transiciones KWin, sesión), reversible: probado con KConfig
+  terminal Konsole translúcida, Dolphin, transiciones KWin, sesión), reversible: probado con KConfig
   simulado de extremo a extremo; falta Plasma 6.8 real.
 - ⬜ Estilo Qt Widgets para materiales de Dolphin y progreso KIO/Plasma.
 

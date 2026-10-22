@@ -141,6 +141,8 @@ def main():
         assert applied["kdeglobals|Icons|Theme"] == "NovaGlass-dark", applied
         assert "kdeglobals|General|AccentColor" not in applied, applied
         assert applied["ksplashrc|KSplash|Theme"] == "org.knova.novashell", applied
+        assert applied["konsolerc|Desktop Entry|DefaultProfile"] == "NovaShell Oscuro.profile", applied
+        assert (share / "konsole/NovaGlassTermDark.colorscheme").is_file()
 
         status = run(env, "login-theme", "status")
         assert "Tema preparado" in status.stdout, status.stdout

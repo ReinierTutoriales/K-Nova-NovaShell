@@ -44,6 +44,14 @@ KEYS = {
     "look.icons": ("kdeglobals", "Icons", "Theme"),
     "look.accent": ("kdeglobals", "General", "AccentColor"),
     "look.accentWallpaper": ("kdeglobals", "General", "accentColorFromWallpaper"),
+    # Konsole (and every konsolepart host: Dolphin's F4 panel, Kate, Yakuake
+    # without its own profile) opens NovaShell's translucent profile. Konsole
+    # 26.08+ also switches light/dark with the system ([LightDarkTheme]);
+    # older versions ignore those keys and keep DefaultProfile.
+    "look.terminal": ("konsolerc", "Desktop Entry", "DefaultProfile"),
+    "look.terminalSync": ("konsolerc", "LightDarkTheme", "SyncProfileWithSystemTheme"),
+    "look.terminalLight": ("konsolerc", "LightDarkTheme", "LightThemeProfile"),
+    "look.terminalDark": ("konsolerc", "LightDarkTheme", "DarkThemeProfile"),
     "look.colors": ("kdeglobals", "General", "ColorScheme"),
 }
 LOOK_KEYS = [key for key in KEYS if key.startswith("look.")]
@@ -51,11 +59,14 @@ LOOK_KEYS = [key for key in KEYS if key.startswith("look.")]
 KEYS_V2 = [key for key in KEYS if not key.startswith("look.") and key not in
            ("windows.blur", "windows.maximize", "windows.desktops", "windows.popups")]
 KEYS_V1 = [key for key in KEYS_V2 if not key.startswith("session.")]
-JOURNAL_VERSION = 3
+KEYS_V3 = [key for key in KEYS if not key.startswith("look.terminal")]
+JOURNAL_VERSION = 4
 # Plasma's default palette (colorssettings.kcfg) when the key was absent.
 DEFAULT_SCHEME = "BreezeLight"
 SCHEMES = {False: "NovaGlassLight", True: "NovaGlassDark"}
 ICON_THEMES = {False: "NovaGlass", True: "NovaGlass-dark"}
+TERMINAL_PROFILES = {False: "NovaShell Claro", True: "NovaShell Oscuro"}
+TERMINAL_SCHEMES = ("NovaGlassTermLight", "NovaGlassTermDark")
 # plasma-changeicons lives in libexec, whose location depends on the distro.
 LIBEXEC_DIRS = ("/usr/libexec", "/usr/lib/libexec", "/usr/lib64/libexec",
                 "/usr/lib/x86_64-linux-gnu/libexec", "/usr/lib/aarch64-linux-gnu/libexec")
@@ -87,6 +98,8 @@ def profile(name, data=None, dark=False):
         "session.splash": SPLASH_ID, "session.lockPlugin": "org.kde.image",
         "session.lockImage": wallpaper_url(data or data_dir()),
         "look.icons": ICON_THEMES[dark], "look.accent": None, "look.accentWallpaper": "false",
+        "look.terminal": TERMINAL_PROFILES[dark] + ".profile", "look.terminalSync": "true",
+        "look.terminalLight": TERMINAL_PROFILES[False], "look.terminalDark": TERMINAL_PROFILES[True],
         "look.colors": SCHEMES[dark]}
 
 
@@ -179,7 +192,7 @@ class NativeProfile:
         if self.state.stat().st_size > 65536:
             raise ValueError("registro demasiado grande")
         data = json.loads(self.state.read_text())
-        if not isinstance(data, dict) or data.get("version") not in (1, 2, JOURNAL_VERSION):
+        if not isinstance(data, dict) or data.get("version") not in (1, 2, 3, JOURNAL_VERSION):
             raise ValueError("registro no compatible")
         if data["version"] != JOURNAL_VERSION:
             data = self.upgrade(data)
@@ -200,7 +213,7 @@ class NativeProfile:
     def upgrade(data):
         # Older versions never wrote newer keys: before == applied == None
         # makes restore leave whatever the user has there untouched.
-        known = KEYS_V1 if data["version"] == 1 else KEYS_V2
+        known = {1: KEYS_V1, 2: KEYS_V2, 3: KEYS_V3}[data["version"]]
         for group in ("before", "applied", "rollback"):
             values = data.get(group)
             if isinstance(values, dict) and set(values) == set(known):
@@ -328,6 +341,8 @@ def main():
             if look:
                 required += [data / "icons" / theme / "index.theme" for theme in ICON_THEMES.values()]
                 required += [data / "color-schemes" / f"{scheme}.colors" for scheme in SCHEMES.values()]
+                required += [data / "konsole" / f"{name}.profile" for name in TERMINAL_PROFILES.values()]
+                required += [data / "konsole" / f"{scheme}.colorscheme" for scheme in TERMINAL_SCHEMES]
             missing = [str(path) for path in required if not path.is_file()]
             if missing:
                 raise ValueError("faltan los paquetes de sesión; ejecuta primero novactl install")

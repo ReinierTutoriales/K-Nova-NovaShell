@@ -46,6 +46,8 @@ install(DIRECTORY assets/icons/
     DESTINATION ${CMAKE_INSTALL_DATADIR}/icons)
 install(FILES packaging/kwin/windows.js DESTINATION ${CMAKE_INSTALL_DATADIR}/novashell/kwin)
 install(DIRECTORY packaging/color-schemes/ DESTINATION ${CMAKE_INSTALL_DATADIR}/color-schemes)
+# Perfiles y esquemas translúcidos de Konsole (claro/oscuro).
+install(DIRECTORY packaging/konsole/ DESTINATION ${CMAKE_INSTALL_DATADIR}/konsole)
 
 # Sesión: fondo claro/oscuro como paquete de Plasma (lo usan escritorio,
 # bloqueo y splash) y paquete look-and-feel que solo aporta el splash.
