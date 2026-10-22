@@ -21,7 +21,7 @@
 | **Centro de control** | Wi-Fi, Bluetooth, sonido, brillo, No molestar, capturas y acciones de sesión. |
 | **Ajustes** | Barra lateral: apariencia, escritorio, dock, barra, notificaciones, accesibilidad, privacidad e integración. |
 | **Widgets** | Reloj analógico, uso de CPU/memoria y calendario sobre el fondo. |
-| **Apariencia** | Cristal, Esmerilado y Sólido; claro/oscuro; alto contraste, menos transparencia y menos movimiento. |
+| **Apariencia** | Liquid Glass sin acento de color: vidrio claro en claro y negro translúcido en oscuro. Cristal, Esmerilado y Sólido; alto contraste, menos transparencia y menos movimiento. |
 | **Sesión** | Tema SDDM, splash, fondo claro/oscuro, fondo de bloqueo y bienvenida de primer uso. |
 | **Iconos** | Biblioteca MacTahoe (GPL-3.0, 16 602 nombres) y carpetas propias, sin red. |
 

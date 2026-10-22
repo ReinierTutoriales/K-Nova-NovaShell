@@ -46,6 +46,24 @@ Las variables deben llegar al proceso Quickshell; exportarlas al ejecutar
 Para servicios utiliza un drop-in de usuario con `Environment=`.
 Los cambios de la galería no se guardan todavía en disco.
 
+## Acento Liquid Glass
+
+NovaShell no usa un acento de color por defecto. `Theme.glassAccent` (activo)
+deriva todo del esquema:
+
+| Token | Claro | Oscuro |
+| :--- | :--- | :--- |
+| Superficie de vidrio | blanca translúcida | negra translúcida (`#0e0f12`) |
+| Indicadores (`color.accent`) | tinta oscura `#17191e` | tinta clara `#f5f6fa` |
+| Acción principal (`accentFill`) | vidrio claro denso | vidrio negro denso |
+| Foco | negro al 60 % | blanco al 75 % |
+| Selección | negro al 8 % | blanco al 14 % |
+
+Con `glassAccent: false` y `accent` (`#rrggbb`) vuelve un acento de color: el
+relleno principal se oscurece lo justo para que el texto blanco cumpla 4,5:1
+(`AppearancePolicy.readableFill`) y el foco se deriva del acento. El material
+predeterminado es Cristal (`liquid`).
+
 ## Transparencia y blur
 
 `GlassSurface` dibuja un relleno y acabado, sin capturar lo que hay detrás.
@@ -77,7 +95,7 @@ mejor; NovaShell prioriza la legibilidad por la misma razón.
 | :--- | :--- |
 | Vidrio solo en la capa de navegación | `GlassSurface` en barra, dock, paneles, widgets y avisos flotantes. |
 | No apilar vidrio sobre vidrio | Controles sobre vidrio usan `ControlFill` (relleno de estado) y el contenido `ContentCard`. |
-| Tinte solo en elementos primarios | El acento marca selección, progreso, interruptores activos y el día de hoy. |
+| Tinte solo en elementos primarios | Acento Liquid Glass sin color: selección, progreso, interruptores activos y el día de hoy usan la tinta del texto; la acción principal es vidrio denso (claro en claro, negro en oscuro). |
 | Movimiento breve, con propósito e interrumpible | Paneles: abrir 200 ms (OutCubic), cerrar 120 ms (InCubic); las `Behavior` se interrumpen solas. |
 | Evitar animar interacciones frecuentes | Ampliación del dock desactivada por defecto (como en macOS); hover solo cambia el relleno. |
 | Movimiento opcional | «Reducir movimiento» lleva las duraciones a 0 y quita barridos y ampliación. |
