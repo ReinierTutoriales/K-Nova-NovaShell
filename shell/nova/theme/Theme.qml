@@ -113,6 +113,7 @@ QtObject {
         readonly property int display: 44
     }
     readonly property QtObject motion: QtObject {
+        readonly property int progressCycle: 1400
         readonly property int fast: theme.reduceMotion ? 0 : 120
         readonly property int normal: theme.reduceMotion ? 0 : 200
         readonly property int slow: theme.reduceMotion ? 0 : 320
@@ -144,6 +145,7 @@ QtObject {
         readonly property int focusWidth: 2
         readonly property real disabledOpacity: 0.5
         readonly property int sliderTrack: 4
+        readonly property real progressSegmentRatio: 0.28
         readonly property int sliderHandle: 18
         readonly property int switchWidth: 40
         readonly property int batteryLow: 15

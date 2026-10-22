@@ -9,6 +9,7 @@
 | `IconTokens.mjs` | Paletas compartidas entre QML y exportador |
 | `CornerGeometry.mjs` | Geometría pura de esquinas superelípticas |
 | `shell/nova/icons/IconCatalog.mjs` | Identidades semánticas y SVG con caché LRU de 256 entradas |
+| `shell/nova/icons/FolderCatalog.mjs` | 13 roles de carpetas, cuatro apariencias y variantes ópticas estáticas |
 | `Icon.qml` | Símbolos monocromos; color y escala desde Theme |
 | `AppIcon.qml` | Arte vectorial de NovaShell; cuatro apariencias |
 | `SystemAppIcon.qml` | Iconos de otras aplicaciones con carga síncrona y fallback |
@@ -66,6 +67,20 @@ Esta base no implementa refracción del escritorio ni reemplaza la decoración
 de las ventanas. El blur real debe validarse en Plasma Wayland.
 
 ## Recursos y pruebas
+
+El objetivo visual es macOS 27 Golden Gate. La migración actual es parcial y
+se registra en `assets/icon-appearance.json`: carpetas propias, sin extraer
+recursos del sistema de Apple; la biblioteca base conserva su versión real.
+Los símbolos de carpeta a 16 px representan la función (documentos, música,
+descargas…) y las vistas grandes usan carpetas con distintivos. Seleccionar
+NovaGlass, NovaGlass-dark, NovaGlass-clear o NovaGlass-tinted en los ajustes de
+iconos de KDE extiende esa capa a Dolphin; cambiar el modo del shell no cambia
+automáticamente la preferencia global de KDE.
+
+La prueba Qt exporta `build/desktop-folder-icons.png` con los iconos obtenidos
+del tema real en dos tamaños. Es una captura de renderizado Qt, no de macOS
+ni una sesión completa de Dolphin. Faltan la auditoría de todas las apps y
+la aceptación en una sesión Plasma real.
 
 La resolución de los iconos sigue la escala de pantalla, con tope 256 px.
 Los iconos del proveedor KDE se cargan en el hilo de interfaz: no convertir

@@ -29,3 +29,8 @@ Xcursor resources adapted from MacTahoe-icon-theme, distributed under GPLv3.
 
 Application trademarks remain the property of their respective owners.
 
+`assets/icon-sources/file-manager.svg` preserves the same library's file-manager
+artwork and license. The exporter retains the full vector for normal sizes and
+generates a 16 px variant without subpixel Gaussian filters for Qt SVG. Paths,
+colors and identity are preserved; the existing bundled authorship applies.
+

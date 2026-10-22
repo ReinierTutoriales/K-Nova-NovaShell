@@ -51,6 +51,57 @@ alternativa de sus clases.
 
 ## Validación pendiente en equipo real
 
+El catálogo usa `NovaProgressBar`: barra indeterminada mientras se desconoce
+el total y progreso real por páginas cuando el daemon lo proporciona. No se
+simula un porcentaje ni se anima cuando está oculto, deshabilitado o se reduce
+el movimiento. Las métricas CPU/RAM siguen siendo medidores, no tareas.
+Qt comprueba el paso indeterminado → determinado, la saturación del valor y
+la detención al ocultar o reducir movimiento.
+
+La comprobación de iconos incluye carpetas de documentos, descargas, imágenes,
+música, vídeos, remotas, abiertas y personales en cuatro variantes y cinco
+tamaños: 440 resoluciones y renderizados Qt. Resolver un nombre no certifica
+que su dibujo corresponda a una versión específica de otro sistema.
+El icono de Dolphin conserva su vector completo para tamaños normales; su
+variante de 16 px omite filtros gaussianos de detalle subpíxel que provocaban
+avisos de buffers en Qt SVG. Las pruebas de resolución fallan ante cualquier
+aviso del renderizador, además de comprobar imágenes no vacías.
+
 Medir con el QML Profiler y una sesión Plasma: coste de abrir paneles,
 desplazamiento del lanzador, varias pantallas, escalado y efectos del compositor.
 Los cambios de complejidad y las pruebas funcionales no sustituyen esas medidas.
+
+## Contraste visual
+
+Se revisaron las imágenes publicadas por Apple en la presentación de
+[macOS 27](https://www.apple.com/in/os/macos/) y la
+[guía de Finder para 27](https://support.apple.com/en-by/guide/mac-help/mchlp2605/27/mac/27),
+además de las guías de
+[progreso](https://developer.apple.com/design/human-interface-guidelines/progress-indicators),
+[movimiento](https://developer.apple.com/design/human-interface-guidelines/motion) y
+[materiales](https://developer.apple.com/design/human-interface-guidelines/materials).
+Son imágenes del fabricante, no capturas obtenidas ejecutando ese sistema.
+
+Se observan agrupaciones de controles redondeadas, separación de navegación
+y contenido y una barra lateral diferenciada. La adaptación usa los tokens de
+NovaShell y las APIs Qt/KDE; las imágenes no proporcionan medidas exactas ni
+una especificación de rendimiento para Linux.
+
+| Área | Comprobado | Falta validar o implementar |
+| :--- | :--- | :--- |
+| Progreso del shell | Valores reales, estados y movimiento reducido | Captura y rendimiento en Plasma |
+| Paneles | Entrada/salida y descarga del contenido tras cerrar | Escalado, varias pantallas y frecuencia alta |
+| Ventanas externas | Perfiles KWin con efectos mutuamente excluyentes | Aceptación con KWin y GPU reales |
+| Dolphin | Paletas y tamaños de vista nativos | Estilo Qt Widgets y materiales de cabecera/barra lateral |
+| Iconos/carpetas | Biblioteca offline y 13 roles de carpetas propios en cuatro apariencias | Migración y auditoría visual completas frente a 27 |
+
+La biblioteca empaquetada conserva su revisión y licencia en el manifiesto;
+su base es Tahoe, en su última revisión publicada comprobada el 22-10-2026.
+La capa propia de carpetas inicia la adaptación visual a Golden Gate:
+`assets/icon-appearance.json` registra explícitamente una migración parcial,
+separada de la versión de la biblioteca base. Usa vectores sin filtros,
+variantes ópticas de 16 px y símbolos distintos por función; las cuatro
+apariencias no dependen de generar imágenes en tiempo de ejecución.
+No se etiqueta la colección completa como un paquete oficial o verificado de 27.
+Las barras de copia y los errores de operaciones de archivos pertenecen a
+KIO/Plasma: un control QML del shell no modifica su estilo Qt Widgets.

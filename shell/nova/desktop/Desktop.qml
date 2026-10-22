@@ -15,6 +15,7 @@ Scope {
         panelWidth: Theme.metrics.launcherWidth; panelHeight: Theme.metrics.launcherHeight
         content: Component { LauncherView {
             applications: Platform.applications; loading: Platform.applicationsLoading
+            progress: Platform.applicationsProgress
             iconResolver: name => Platform.iconUrl(name)
             onLaunchRequested: id => { Platform.launch(id); ShellState.close(); }
             onPinRequested: id => Platform.preferences.togglePin(id)

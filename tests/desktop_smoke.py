@@ -31,6 +31,54 @@ def find(item, name):
 
 
 class DesktopSmoke(unittest.TestCase):
+    def test_progress_stops_when_hidden_and_respects_reduced_motion(self):
+        with tempfile.TemporaryDirectory(prefix="nova-progress-") as temporary:
+            Path(temporary, "qs").symlink_to(ROOT / "shell", target_is_directory=True)
+            WARNINGS.clear()
+            engine = QQmlApplicationEngine()
+            engine.addImportPath(temporary)
+            engine.loadData(b'''import QtQuick
+import qs.nova.theme
+import qs.nova.desktop
+Window {
+    width: 840; height: 680; visible: true
+    property bool reduced: false
+    onReducedChanged: Theme.reduceMotion = reduced
+    Component.onCompleted: Theme.reduceMotion = reduced
+    property alias loading: launcher.loading
+    property alias progress: launcher.progress
+    LauncherView { id: launcher; anchors.fill: parent }
+}''', QUrl.fromLocalFile(str(ROOT / "tests/progress-harness.qml")))
+            self.assertEqual(len(engine.rootObjects()), 1, "\n".join(WARNINGS))
+            window = engine.rootObjects()[0]
+            progress = find(window.contentItem(), "catalogProgress")
+            self.assertFalse(progress.property("animating"))
+            window.setProperty("loading", True)
+            QTest.qWait(30)
+            self.assertTrue(progress.property("indeterminate"))
+            self.assertTrue(progress.property("animating"))
+            window.setProperty("progress", 0.5)
+            APP.processEvents()
+            self.assertFalse(progress.property("indeterminate"))
+            self.assertFalse(progress.property("animating"))
+            self.assertEqual(progress.property("position"), 0.5)
+            window.setProperty("progress", 2)
+            APP.processEvents()
+            self.assertEqual(progress.property("position"), 1)
+            window.setProperty("progress", -1)
+            window.setProperty("reduced", True)
+            APP.processEvents()
+            self.assertTrue(progress.property("indeterminate"))
+            self.assertFalse(progress.property("animating"))
+            window.setProperty("reduced", False)
+            window.setProperty("loading", False)
+            APP.processEvents()
+            self.assertFalse(progress.property("animating"))
+            self.assertEqual(WARNINGS, [], "\n".join(WARNINGS))
+            window.close()
+            del engine
+            APP.processEvents()
+
     def test_panel_transition_lifecycle_and_reduced_motion(self):
         with tempfile.TemporaryDirectory(prefix="nova-panel-lifecycle-") as temporary:
             Path(temporary, "qs").symlink_to(ROOT / "shell", target_is_directory=True)

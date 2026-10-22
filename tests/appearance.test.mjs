@@ -7,6 +7,7 @@ import { join } from "node:path";
 import * as Policy from "../shell/nova/theme/AppearancePolicy.mjs";
 import * as Corners from "../shell/nova/theme/CornerGeometry.mjs";
 import * as Icons from "../shell/nova/icons/IconCatalog.mjs";
+import { folderNames, folderSvg } from "../shell/nova/icons/FolderCatalog.mjs";
 import { styleFor, decode, exportTheme } from "../tools/export-icons.mjs";
 
 test("invalid preferences cannot escape the supported appearance set", () => {
@@ -101,7 +102,15 @@ test("exported freedesktop themes have complete assets and inheritance", () => {
         const names = readdirSync(temporary);
         assert.equal(names.length, 4);
         for (const name of names) {
-            assert.equal(readdirSync(join(temporary, name, "scalable/apps")).length, 16);
+            assert.equal(readdirSync(join(temporary, name, "scalable/apps")).length, 19);
+            assert.equal(readdirSync(join(temporary, name, "scalable/places")).length, folderNames.length);
+            assert.equal(readdirSync(join(temporary, name, "16x16/places")).length, folderNames.length);
+            for (const id of ["org.kde.dolphin", "system-file-manager", "dolphin"]) {
+                const small = readFileSync(join(temporary, name, "16x16/apps", id + ".svg"), "utf8");
+                assert.doesNotMatch(small, /<filter\b|filter="/);
+                const full = readFileSync(join(temporary, name, "scalable/apps", id + ".svg"), "utf8");
+                assert.match(full, /<filter\b/);
+            }
             const index = readFileSync(join(temporary, name, "index.theme"), "utf8");
             assert.match(index, /Inherits=.*hicolor/);
             assert.match(index, /Context=Applications/);
@@ -111,4 +120,31 @@ test("exported freedesktop themes have complete assets and inheritance", () => {
     } finally {
         rmSync(temporary, { recursive: true });
     }
+});
+
+test("folder roles retain identity and have bounded optical size variants", () => {
+    const manifest = JSON.parse(readFileSync(new URL("../assets/icon-appearance.json", import.meta.url), "utf8"));
+    assert.deepEqual(manifest.folderRoles, folderNames);
+    assert.equal(manifest.migrationStatus, "partial");
+    assert.equal(manifest.officialSystemAssets, false);
+    assert.throws(() => folderSvg("__proto__"));
+    assert.throws(() => folderSvg("folder", "unknown"));
+    for (const name of folderNames) {
+        const normal = folderSvg(name);
+        const small = folderSvg(name, "default", true);
+        assert.notEqual(normal, small);
+        assert.match(small, /stroke-width=/);
+        const variants = new Set();
+        for (const mode of ["default", "dark", "clear", "tinted"]) {
+            const xml = folderSvg(name, mode);
+            assert.doesNotMatch(xml, /<filter|<script|<image|NaN|undefined/);
+            assert.ok(xml.length < 1600);
+            variants.add(xml);
+        }
+        assert.equal(variants.size, 4);
+    }
+    assert.notEqual(folderSvg("folder-documents", "default", true), folderSvg("folder-music", "default", true));
+    assert.notEqual(folderSvg("folder"), folderSvg("folder-open"));
+    assert.notEqual(folderSvg("folder", "default", true), folderSvg("folder-open", "default", true));
+    assert.match(folderSvg("folder", "clear"), /fill-opacity="0.45"/);
 });

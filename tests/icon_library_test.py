@@ -58,19 +58,46 @@ def validate():
 
 def qt_lookup(directory):
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-    from PySide6.QtGui import QGuiApplication, QIcon
+    from PySide6.QtCore import Qt, QRect, QtMsgType, qInstallMessageHandler
+    from PySide6.QtGui import QColor, QGuiApplication, QIcon, QImage, QPainter
     app = QGuiApplication.instance() or QGuiApplication([])
+    warnings = []
+    previous_handler = qInstallMessageHandler(lambda kind, context, message: warnings.append(message)
+        if kind in (QtMsgType.QtWarningMsg, QtMsgType.QtCriticalMsg, QtMsgType.QtFatalMsg) else None)
     QIcon.setThemeSearchPaths([str(ROOT / "assets/icons"), str(directory)])
-    samples = ["firefox", "org.kde.dolphin", "folder", "document-open", "audio-volume-high",
-               "network-wireless", "computer", "text-plain", "user-trash", "nova-settings"]
+    appearance = json.loads((ROOT / "assets/icon-appearance.json").read_text())
+    samples = ["firefox", "org.kde.dolphin", "document-open", "audio-volume-high",
+               "network-wireless", "computer", "text-plain", "user-trash", "nova-settings"] + appearance["folderRoles"]
     for theme in ["NovaGlass", "NovaGlass-dark", "NovaGlass-clear", "NovaGlass-tinted"]:
         QIcon.setThemeName(theme)
         for name in samples:
             assert QIcon.hasThemeIcon(name), (theme, name)
             for size in [16, 24, 64, 128, 256]:
                 assert not QIcon.fromTheme(name).pixmap(size, size).isNull(), (theme, name, size)
+    # Actual QIcon theme resolution, not a separately drawn approximation.
+    roles = appearance["folderRoles"]
+    gallery = QImage(140 + 82 * len(roles), 4 * 118, QImage.Format.Format_ARGB32_Premultiplied)
+    painter = QPainter(gallery)
+    for row, theme in enumerate(["NovaGlass", "NovaGlass-dark", "NovaGlass-clear", "NovaGlass-tinted"]):
+        QIcon.setThemeName(theme)
+        y = row * 118
+        dark = theme.endswith("dark")
+        painter.fillRect(QRect(0, y, gallery.width(), 118), QColor("#22252e" if dark else "#f4f5f8"))
+        painter.setPen(QColor("#f5f6fa" if dark else "#17191e"))
+        painter.drawText(QRect(8, y, 130, 118), Qt.AlignmentFlag.AlignVCenter, theme)
+        for column, role in enumerate(roles):
+            x = 140 + column * 82
+            painter.drawPixmap(x + 9, y + 6, QIcon.fromTheme(role).pixmap(64, 64))
+            painter.drawPixmap(x + 33, y + 73, QIcon.fromTheme(role).pixmap(16, 16))
+            painter.drawText(QRect(x, y + 91, 82, 26), Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap,
+                             role.replace("folder-", "").replace("inode-", ""))
+    painter.end()
+    (ROOT / "build").mkdir(exist_ok=True)
+    assert gallery.save(str(ROOT / "build/desktop-folder-icons.png"))
     app.processEvents()
-    print("Qt native theme lookup OK: 200 renders, including application desktop IDs")
+    qInstallMessageHandler(previous_handler)
+    assert not warnings, "\n".join(warnings)
+    print(f"Qt native theme lookup OK: {len(samples) * 4 * 5} renders, including folders and desktop IDs")
 
 
 if __name__ == "__main__":

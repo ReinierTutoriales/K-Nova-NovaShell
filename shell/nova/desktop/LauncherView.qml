@@ -10,6 +10,7 @@ ColumnLayout {
     id: launcher
     property var applications: []
     property bool loading: false
+    property real progress: -1
     property var iconResolver: name => ""
     readonly property var results: Policy.search(applications, search.text)
     signal launchRequested(string id)
@@ -43,6 +44,14 @@ ColumnLayout {
             Layout.fillWidth: true
         }
         IconButton { label: qsTr("Actualizar"); symbol: "arrows"; onClicked: launcher.refreshRequested() }
+    }
+    NovaProgressBar {
+        objectName: "catalogProgress"
+        Layout.fillWidth: true
+        visible: launcher.loading
+        indeterminate: launcher.progress < 0
+        value: Math.max(0, launcher.progress)
+        Accessible.name: qsTr("Carga del catálogo de aplicaciones")
     }
     GridView {
         id: grid
