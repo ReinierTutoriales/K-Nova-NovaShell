@@ -10,24 +10,17 @@
 
 ---
 
-## Por qué NovaShell
+## Principios de NovaShell
 
-NovaShell toma la idea de [NextKDE](https://github.com/NextKde/NextKde) —un
-shell Quickshell completo encima de Plasma— y corrige sus puntos débiles
-estructurales:
+NovaShell desarrolla una experiencia de escritorio para KDE Plasma 6 con
+Quickshell, una interfaz modular y servicios de usuario.
 
-| Problema en NextKDE | Decisión en NovaShell |
-| :--- | :--- |
-| Plugins KWin nativos en C++ atados al ABI exacto de KWin; cada actualización de Plasma puede romperlos. | **Cero plugins KWin nativos en el núcleo.** Solo QML/Wayland estándar; lo nativo, si llega, será opcional y aislado. |
-| El instalador usa `sudo` y escribe en `/usr`. | **Nunca root.** Todo va a `~/.local` y `~/.config`; `novactl` se niega a correr como root. |
-| Archivos QML de 3000–4300 líneas. | **Máximo 400 líneas por archivo QML**, impuesto por el CI. |
-| Núcleo en tres lenguajes (C++, Go, QML/JS) + Python + bash. | **Un daemon (C++/Qt6) + QML.** |
-| RSS inflado; se mitiga con `MALLOC_ARENA_MAX`. | Presupuesto de recursos desde el día 1 (ver hoja de ruta). |
-| Requiere KWin 6.6+. | Sin plugins KWin, el objetivo es **cualquier Plasma 6** con Quickshell 0.3.x. |
-
-Se conserva lo que NextKDE hace bien: la UI no ejecuta comandos del sistema,
-todo pasa por un [contrato IPC versionado](docs/CONTRATO-IPC-v1.md) con socket
-`0600`, y las lecciones de arranque con systemd en Plasma.
+- Instalación en `~/.local` y `~/.config`, sin root.
+- Núcleo basado en QML, Wayland y un daemon C++/Qt6.
+- Componentes QML de hasta 400 líneas, verificados por CI.
+- Acceso al sistema mediante un [contrato IPC versionado](docs/CONTRATO-IPC-v1.md)
+  y un socket privado con permisos `0600`.
+- Presupuesto de recursos y arranque mediante systemd de usuario.
 
 ## Arquitectura
 
@@ -87,4 +80,4 @@ El repositorio incluye skills, agentes y reglas (`AGENTS.md`, `.claude/skills/`,
 
 ## Licencia
 
-[GPL-3.0-or-later](LICENSE). Compatible con NextKDE (GPL-3.0) y con Quickshell.
+[GPL-3.0-or-later](LICENSE).
