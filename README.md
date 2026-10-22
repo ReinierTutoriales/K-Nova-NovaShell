@@ -74,7 +74,7 @@ el tema global de iconos. Para desinstalar: `./tools/novactl uninstall`
 | `novactl start \| stop \| restart \| status \| logs` | Gestiona los servicios de usuario. |
 | `novactl version` | Versión de las fuentes y la instalada. |
 | `novactl desktop-profile preview\|apply\|restore\|status [balanced\|glass\|reduced]` | Perfil reversible: Dolphin, efectos de KWin, splash y fondo de bloqueo ([detalles](docs/ESCRITORIO-NATIVO.md)). |
-| `qs ipc call novashell toggle <launcher\|controls\|notifications\|settings\|overview\|clipboard\|widgets>` | Abre o cierra un panel; asígnalo a un atajo en Ajustes de KDE → Atajos. |
+| `qs ipc call novashell toggle <launcher\|controls\|notifications\|settings\|overview\|clipboard\|widgets\|welcome>` | Abre o cierra un panel; asígnalo a un atajo en Ajustes de KDE → Atajos. |
 
 ## Documentación
 
@@ -84,7 +84,7 @@ el tema global de iconos. Para desinstalar: `./tools/novactl uninstall`
 | [Contrato IPC v1](docs/CONTRATO-IPC-v1.md) | Todas las operaciones del daemon. |
 | [Apariencia](docs/APARIENCIA.md) | Materiales, blur, iconos y pautas de Apple aplicadas. |
 | [Escritorio nativo](docs/ESCRITORIO-NATIVO.md) | Perfiles de Dolphin y KWin. |
-| [Sesión](docs/SESION.md) | Splash, fondo y pantalla de bloqueo. |
+| [Sesión](docs/SESION.md) | Splash, fondo, pantalla de bloqueo y bienvenida. |
 | [Optimización](docs/OPTIMIZACION.md) | Criterios de rendimiento y su comprobación. |
 | [Desarrollo](docs/DESARROLLO.md) | Compilar, probar y contribuir. |
 | [Lanzamientos](docs/LANZAMIENTO.md) | Cómo se publica una versión. |

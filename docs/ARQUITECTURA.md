@@ -56,7 +56,7 @@
 
 ## Atajos de teclado (IPC de Quickshell)
 
-`qs ipc call novashell toggle <launcher|controls|notifications|settings|overview|clipboard|widgets>`,
+`qs ipc call novashell toggle <launcher|controls|notifications|settings|overview|clipboard|widgets|welcome>`,
 `close` y `appearance`. Se asignan como comandos en Ajustes de KDE → Atajos.
 
 ## Consumo en reposo
