@@ -7,6 +7,12 @@ add_test(NAME protocol COMMAND tst_protocol)
 # Prueba de extremo a extremo: arranca el daemon real, habla por el socket
 # y compara platform.capabilities con el contrato documentado.
 find_package(Python3 COMPONENTS Interpreter)
+find_program(NOVA_NODE_EXECUTABLE NAMES node)
+if(NOVA_NODE_EXECUTABLE)
+    add_test(NAME appearance
+        COMMAND ${NOVA_NODE_EXECUTABLE} --test ${CMAKE_CURRENT_SOURCE_DIR}/appearance.test.mjs)
+    set_tests_properties(appearance PROPERTIES TIMEOUT 30)
+endif()
 if(Python3_Interpreter_FOUND)
     add_test(NAME ipc_smoke
         COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR}/ipc_smoke.py

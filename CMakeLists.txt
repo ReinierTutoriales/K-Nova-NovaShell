@@ -31,6 +31,10 @@ endif()
 
 add_subdirectory(daemon)
 
+# Prebuilt vector themes: no Node.js dependency on the user's machine.
+install(DIRECTORY assets/icons/
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/icons)
+
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()

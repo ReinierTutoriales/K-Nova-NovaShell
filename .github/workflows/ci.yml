@@ -52,3 +52,34 @@ jobs:
 
       - name: shellcheck
         run: shellcheck -x tools/novactl
+
+      - name: Contratos de apariencia y exportación reproducible
+        run: |
+          node --test tests/appearance.test.mjs
+          node tools/export-icons.mjs build/icon-check
+          diff -r assets/icons build/icon-check
+
+  appearance:
+    name: apariencia (Qt ${{ matrix.pyside }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pyside: ['6.6.3', '6.11.2']
+    env:
+      QT_QPA_PLATFORM: offscreen
+      QT_QUICK_BACKEND: software
+      QT_QUICK_CONTROLS_STYLE: Basic
+    steps:
+      - uses: actions/checkout@v4
+      - name: Qt Quick y SVG
+        run: python3 -m pip install --disable-pip-version-check "PySide6==${{ matrix.pyside }}"
+      - name: Cargar componentes reales y renderizar SVG
+        run: python3 tests/appearance_smoke.py
+      - name: Capturas del renderizado
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: appearance-qt-${{ matrix.pyside }}
+          path: build/appearance-*.png
+          if-no-files-found: warn

@@ -13,9 +13,9 @@ RowLayout {
 
     Rectangle {
         Layout.alignment: Qt.AlignVCenter
-        implicitWidth: 8
-        implicitHeight: 8
-        radius: 4
+        implicitWidth: Theme.metrics.statusSize
+        implicitHeight: Theme.metrics.statusSize
+        radius: Theme.radius.status
         color: Platform.connected ? Theme.color.ok : Theme.color.error
 
         Behavior on color {

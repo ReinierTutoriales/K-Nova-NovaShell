@@ -18,6 +18,9 @@
 | Directorio | Responsabilidad | No hace |
 | :--- | :--- | :--- |
 | `shell/nova/theme` | Colores, radios, espacios, tipografía, duraciones. | Lógica. |
+| `shell/nova/icons` | Catálogo vectorial, carga y fallbacks. | Lanzar aplicaciones. |
+| `shell/nova/controls` | Materiales y controles compartidos. | Capturar el escritorio. |
+| `shell/nova/preview` | Galería de apariencia de la sesión. | Simular funciones del sistema. |
 | `shell/nova/services` | Único cliente del daemon (`Platform`). | Dibujar UI. |
 | `shell/nova/bar` (y futuros módulos) | Presentación. | Ejecutar comandos; tocar archivos del sistema. |
 | `daemon/` | Integración con el sistema detrás de operaciones acotadas. | UI. |

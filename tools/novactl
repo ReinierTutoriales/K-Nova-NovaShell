@@ -159,6 +159,7 @@ install_shell_tree() {
     mkdir -p -- "$parent"
     rm -rf -- "$staging" "$backup"
     cp -R -- "$REPO_DIR/shell" "$staging"
+    install -m 0644 "$REPO_DIR/LICENSE" "$REPO_DIR/THIRD_PARTY_NOTICES.md" "$staging/"
     chmod -R u+rwX,go-w -- "$staging"
     if [[ -e "$SHELL_DEST" ]]; then
         mv -- "$SHELL_DEST" "$backup"
@@ -194,6 +195,10 @@ cmd_install() {
 
     {
         printf '%s\n' "$PREFIX/libexec/nova-platform"
+        local icon_file
+        while IFS= read -r -d '' icon_file; do
+            printf '%s\n' "$PREFIX/share/icons/${icon_file#"$REPO_DIR/assets/icons/"}"
+        done < <(find "$REPO_DIR/assets/icons" -type f -print0)
         for unit in "${UNITS[@]}"; do printf '%s\n' "$UNIT_DIR/$unit"; done
     } > "$MANIFEST"
     printf '%s\n' "$VERSION" > "$(dirname -- "$MANIFEST")/installed-version"

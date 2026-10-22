@@ -12,6 +12,11 @@ Plasma real) antes de empezar la siguiente.
 
 ## Fase 1 — Barra completa
 
+Base visual transversal disponible: iconos vectoriales y cuatro apariencias,
+materiales, controles accesibles, galería y exportación freedesktop.
+Ver [Apariencia](APARIENCIA.md). Esto no da por completados el dock,
+las integraciones de la barra ni la aceptación en una sesión Plasma real.
+
 - Bandeja del sistema (StatusNotifierItem, nativo en Quickshell).
 - Volumen y dispositivo de salida (PipeWire, nativo en Quickshell).
 - Red y Bluetooth vía daemon (NetworkManager / BlueZ por DBus).

@@ -1,0 +1,19 @@
+[Icon Theme]
+Name=NovaGlass
+Comment=NovaShell layered vector icons
+Inherits=breeze,hicolor
+Directories=scalable/apps,scalable/actions
+
+[scalable/apps]
+Size=64
+MinSize=16
+MaxSize=256
+Type=Scalable
+Context=Applications
+
+[scalable/actions]
+Size=24
+MinSize=16
+MaxSize=64
+Type=Scalable
+Context=Actions
