@@ -51,6 +51,18 @@ Wayland headless · 🟡 implementado, falta validar en Plasma 6.8 real ·
 - ⬜ Widget del tiempo: necesita una operación de red acotada en el daemon.
 - ⬜ Paquetes de temas.
 
+## Fase 5b — Sesión 🟡
+
+Ver [sesión](SESION.md).
+
+- 🟡 Splash NovaShell (look-and-feel por usuario) y fondo claro/oscuro: carga
+  probada con Qt real desde la instalación; falta `ksplashqml` en Plasma.
+- 🟡 Fondo NovaShell en la pantalla de bloqueo. La interfaz de bloqueo no se
+  reemplaza: KWin no ofrece `ext-session-lock-v1` y `kscreenlocker` la toma
+  del paquete de shell de Plasma.
+- ⬜ Asistente de bienvenida de primer uso.
+- ⬜ Tema SDDM de inicio de sesión (Plasma Login Manager no admite temas).
+
 ## Fase 6 — Distribución 🟡
 
 - ✅ Releases por etiqueta `vX.Y.Z` con notas de cambios ([proceso](LANZAMIENTO.md)).

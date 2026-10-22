@@ -118,6 +118,7 @@ jobs:
         run: |
           "$RUNNER_TEMP/qt-tests/bin/python" tests/appearance_smoke.py
           "$RUNNER_TEMP/qt-tests/bin/python" tests/desktop_smoke.py
+          "$RUNNER_TEMP/qt-tests/bin/python" tests/session_smoke.py build
           "$RUNNER_TEMP/qt-tests/bin/python" tests/icon_library_test.py --qt
       - name: Capturas del renderizado
         if: always()
@@ -127,4 +128,5 @@ jobs:
           path: |
             build/appearance-*.png
             build/desktop-*.png
+            build/session-*.png
           if-no-files-found: warn

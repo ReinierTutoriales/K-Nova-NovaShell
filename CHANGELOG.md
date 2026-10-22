@@ -6,6 +6,18 @@ versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
 
 ## [Sin publicar]
 
+### Añadido
+- Splash de inicio de sesión NovaShell (paquete look-and-feel por usuario,
+  solo splash) con progreso determinado por etapas de `ksplashqml`.
+- Fondo NovaShell claro/oscuro como paquete de Plasma, reproducible con
+  `tools/render-wallpapers.py`, y marca propia.
+- `desktop-profile` activa también el splash y el fondo de la pantalla de
+  bloqueo, de forma reversible; migra los registros de 0.1.0.
+
+### Cambiado
+- `novactl install` toma la lista de archivos instalados de CMake
+  (`install_manifest.txt`) en lugar de enumerarlos a mano.
+
 ## [0.1.0] — 2026-10-22 · pre-release
 
 Primera versión funcional. Probada con Quickshell 0.3.2 y Qt 6.12.0 reales
