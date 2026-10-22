@@ -5,3 +5,4 @@ IconButton 1.0 IconButton.qml
 NovaSlider 1.0 NovaSlider.qml
 NovaSwitch 1.0 NovaSwitch.qml
 SegmentedChoice 1.0 SegmentedChoice.qml
+NovaTextField 1.0 NovaTextField.qml

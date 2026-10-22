@@ -16,7 +16,12 @@ ColumnLayout {
     signal pinRequested(string id)
     signal refreshRequested()
     spacing: Theme.space.md
-    TextField {
+    function launchCurrent() {
+        if (!results.length) return;
+        const index = Math.min(results.length - 1, Math.max(0, grid.currentIndex));
+        launchRequested(results[index].id);
+    }
+    NovaTextField {
         id: search
         objectName: "launcherSearch"
         Layout.fillWidth: true
@@ -25,8 +30,8 @@ ColumnLayout {
         color: Theme.color.text
         focus: true
         onTextChanged: grid.currentIndex = 0
-        onAccepted: if (launcher.results.length) launcher.launchRequested(launcher.results[Math.max(0, grid.currentIndex)].id)
-        Keys.onDownPressed: grid.forceActiveFocus()
+        onAccepted: launcher.launchCurrent()
+        Keys.onDownPressed: if (launcher.results.length) grid.forceActiveFocus()
         Accessible.name: placeholderText
     }
     RowLayout {
@@ -69,8 +74,13 @@ ColumnLayout {
             }
             TapHandler { acceptedButtons: Qt.RightButton; onTapped: actions.popup() }
         }
-        Keys.onReturnPressed: if (launcher.results.length) launcher.launchRequested(launcher.results[currentIndex].id)
-        Keys.onUpPressed: if (currentIndex < Math.floor(width / cellWidth)) search.forceActiveFocus(); else currentIndex -= Math.max(1, Math.floor(width / cellWidth))
+        Keys.onReturnPressed: launcher.launchCurrent()
+        Keys.onEnterPressed: launcher.launchCurrent()
+        Keys.onUpPressed: {
+            const columns = Math.max(1, Math.floor(width / cellWidth));
+            if (currentIndex < columns) search.forceActiveFocus();
+            else currentIndex -= columns;
+        }
     }
     Text {
         visible: !launcher.loading && !launcher.results.length

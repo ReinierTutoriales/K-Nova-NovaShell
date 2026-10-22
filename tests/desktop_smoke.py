@@ -31,6 +31,58 @@ def find(item, name):
 
 
 class DesktopSmoke(unittest.TestCase):
+    def test_launcher_theme_and_keyboard(self):
+        with tempfile.TemporaryDirectory(prefix="nova-launcher-theme-") as temporary:
+            Path(temporary, "qs").symlink_to(ROOT / "shell", target_is_directory=True)
+            WARNINGS.clear()
+            engine = QQmlApplicationEngine()
+            engine.addImportPath(temporary)
+            engine.loadData(b'''import QtQuick
+import qs.nova.theme
+import qs.nova.desktop
+Window {
+    id: window; width: 840; height: 680; visible: true
+    property string mode: "light"
+    onModeChanged: Theme.mode = mode
+    Component.onCompleted: Theme.mode = mode
+    property string launched: ""
+    color: Theme.color.surface
+    LauncherView {
+        anchors.fill: parent; anchors.margins: 16
+        applications: [{id:"files.desktop",name:"Archivos",icon:"folder"}, {id:"terminal.desktop",name:"Terminal",icon:"terminal"}]
+        onLaunchRequested: id => window.launched = id
+    }
+}''', QUrl.fromLocalFile(str(ROOT / "tests/launcher-theme-harness.qml")))
+            self.assertEqual(len(engine.rootObjects()), 1, "\n".join(WARNINGS))
+            window = engine.rootObjects()[0]
+            search = find(window.contentItem(), "launcherSearch")
+            grid = find(window.contentItem(), "launcherGrid")
+            background = search.property("background")
+            for mode, expected, foreground in [("dark", "#303239", "#f5f6fa"), ("light", "#f4f5f8", "#17191e")]:
+                window.setProperty("mode", mode)
+                QTest.qWait(30)
+                self.assertEqual(background.property("color").name(), expected)
+                self.assertEqual(search.property("color").name(), foreground)
+                self.assertGreater(background.property("radius"), 0)
+                (ROOT / "build").mkdir(exist_ok=True)
+                self.assertTrue(window.grabWindow().save(str(ROOT / "build" / f"desktop-launcher-{mode}.png")))
+            search.setProperty("text", "terminal")
+            search.forceActiveFocus()
+            QTest.keyClick(window, Qt.Key.Key_Down)
+            self.assertTrue(grid.hasActiveFocus())
+            QTest.keyClick(window, Qt.Key.Key_Enter)
+            self.assertEqual(window.property("launched"), "terminal.desktop")
+            QTest.keyClick(window, Qt.Key.Key_Up)
+            self.assertTrue(search.hasActiveFocus())
+            search.setProperty("text", "no-results")
+            window.setProperty("launched", "")
+            QTest.keyClick(window, Qt.Key.Key_Return)
+            self.assertEqual(window.property("launched"), "")
+            self.assertEqual(WARNINGS, [], "\n".join(WARNINGS))
+            window.close()
+            del engine
+            APP.processEvents()
+
     def test_views_and_launcher_keyboard(self):
         cases = {
             "launcher": '''LauncherView { applications: [{id: "files.desktop", name: "Archivos", icon: "folder"}, {id: "terminal.desktop", name: "Terminal", icon: "terminal"}]; onLaunchRequested: id => window.launched = id }''',

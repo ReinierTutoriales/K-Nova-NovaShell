@@ -180,6 +180,6 @@ ScrollView {
         onOpened: password.clear()
         onAccepted: center.backend.connectNetwork(network, password.text)
         onClosed: password.clear()
-        TextField { id: password; echoMode: TextInput.Password; placeholderText: qsTr("Contraseña; vacía para una red guardada"); Accessible.name: qsTr("Contraseña de Wi-Fi") }
+        NovaTextField { id: password; echoMode: TextInput.Password; placeholderText: qsTr("Contraseña; vacía para una red guardada"); Accessible.name: qsTr("Contraseña de Wi-Fi") }
     }
 }
