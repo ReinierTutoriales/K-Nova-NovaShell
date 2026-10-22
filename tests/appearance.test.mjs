@@ -102,18 +102,13 @@ test("exported freedesktop themes have complete assets and inheritance", () => {
         const names = readdirSync(temporary);
         assert.equal(names.length, 4);
         for (const name of names) {
-            assert.equal(readdirSync(join(temporary, name, "scalable/apps")).length, 19);
+            assert.equal(readdirSync(join(temporary, name, "scalable/apps")).length, 16);
             assert.equal(readdirSync(join(temporary, name, "scalable/places")).length, folderNames.length);
             assert.equal(readdirSync(join(temporary, name, "16x16/places")).length, folderNames.length);
-            for (const id of ["org.kde.dolphin", "system-file-manager", "dolphin"]) {
-                const small = readFileSync(join(temporary, name, "16x16/apps", id + ".svg"), "utf8");
-                assert.doesNotMatch(small, /<filter\b|filter="/);
-                const full = readFileSync(join(temporary, name, "scalable/apps", id + ".svg"), "utf8");
-                assert.match(full, /<filter\b/);
-            }
             const index = readFileSync(join(temporary, name, "index.theme"), "utf8");
             assert.match(index, /Inherits=.*hicolor/);
             assert.match(index, /Context=Applications/);
+            if (name === "NovaGlass" || name === "NovaGlass-dark") assert.match(index, /Inherits=NovaGlass-GoldenGate-/);
         }
         assert.equal(readdirSync(join(temporary, "NovaGlass", "scalable/actions")).length,
             Icons.symbolNames.length);

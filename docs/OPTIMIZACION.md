@@ -62,9 +62,8 @@ La comprobación de iconos incluye carpetas de documentos, descargas, imágenes,
 música, vídeos, remotas, abiertas y personales en cuatro variantes y cinco
 tamaños: 440 resoluciones y renderizados Qt. Resolver un nombre no certifica
 que su dibujo corresponda a una versión específica de otro sistema.
-El icono de Dolphin conserva su vector completo para tamaños normales; su
-variante de 16 px omite filtros gaussianos de detalle subpíxel que provocaban
-avisos de buffers en Qt SVG. Las pruebas de resolución fallan ante cualquier
+Dolphin usa ahora el PNG acotado de GoldenGate v3, evitando los filtros
+subpíxel del vector anterior que provocaban avisos de buffers en Qt SVG. Las pruebas de resolución fallan ante cualquier
 aviso del renderizador, además de comprobar imágenes no vacías.
 
 Medir con el QML Profiler y una sesión Plasma: coste de abrir paneles,
@@ -95,8 +94,10 @@ una especificación de rendimiento para Linux.
 | Dolphin | Paletas y tamaños de vista nativos | Estilo Qt Widgets y materiales de cabecera/barra lateral |
 | Iconos/carpetas | Biblioteca offline y 13 roles de carpetas propios en cuatro apariencias | Migración y auditoría visual completas frente a 27 |
 
-La biblioteca empaquetada conserva su revisión y licencia en el manifiesto;
-su base es Tahoe, en su última revisión publicada comprobada el 22-10-2026.
+La biblioteca base conserva su revisión y licencia en el manifiesto;
+su base vectorial es Tahoe y funciona como respaldo. La capa de aplicaciones
+se actualizó a GoldenGate v3, publicación comunitaria clara/oscura, con los
+SHA-256 de ambos archivos de origen y del paquete generado.
 La capa propia de carpetas inicia la adaptación visual a Golden Gate:
 `assets/icon-appearance.json` registra explícitamente una migración parcial,
 separada de la versión de la biblioteca base. Usa vectores sin filtros,
@@ -105,3 +106,32 @@ apariencias no dependen de generar imágenes en tiempo de ejecución.
 No se etiqueta la colección completa como un paquete oficial o verificado de 27.
 Las barras de copia y los errores de operaciones de archivos pertenecen a
 KIO/Plasma: un control QML del shell no modifica su estilo Qt Widgets.
+
+## Capa de aplicaciones GoldenGate v3
+
+La instalación incluye dos capas adicionales con 85 imágenes claras y 84
+oscuras, y más de 1.500 nombres resueltos por variante. No sustituye la
+cobertura vectorial de 16.602 nombres: las aplicaciones no cubiertas conservan
+su respaldo. Las apariencias transparente/teñida de los iconos externos siguen
+heredando el color normal; no se atribuye a v3 una variante que no distribuye.
+
+Los PNG se reducen una sola vez al empaquetar, conservando la proporción y
+limitando la dimensión mayor a 256 px. Se eliminan duplicados por hash; los
+alias son relativos y apuntan directamente al recurso. La instalación no
+descarga ni transforma imágenes. Se corrigieron las identidades de code,
+xterm/terminales y Dolphin, distinguiendo el emulador del explorador. Se
+excluyeron dos imágenes con texto de advertencia que sustituían a Vim; sus
+alias conservan el respaldo vectorial válido.
+
+El paquete comunitario no certifica que todos sus dibujos sean idénticos a
+los de un sistema Apple 27. La comprobación Qt compara los píxeles resueltos
+por herencia con el recurso nuevo para evitar que se siga mostrando el antiguo.
+`build/desktop-goldengate-apps.png` muestra la resolución real clara/oscura.
+
+Reconstrucción: `PYTHONPATH=/ruta/qt612 python3 tools/vendor-goldengate.py
+/ruta/archivos-v3`. La herramienta solo lee los archivos con los hashes fijados;
+Qt se necesita para reconstruir, no como dependencia Python de la instalación.
+
+La comprobación programada de versiones consulta también la última publicación
+estable de GoldenGate y marca una actualización para revisar; no instala
+recursos nuevos sin comprobar hashes, identidades y renderizado.

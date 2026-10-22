@@ -68,6 +68,12 @@ def main():
     messages, outdated = evaluate([("Qt", pinned_qt, latest_qt),
                                    ("Quickshell", pinned_qs, latest_qs)])
     print("\n".join(messages))
+    artwork = json.loads((ROOT / "assets/goldengate-library.json").read_text())
+    release = json_url("https://api.github.com/repos/PuzzlePieceee/Golden-Gate-app-icons-by-PVZL/releases/latest")
+    latest_artwork = release["tag_name"]
+    print(f"GoldenGate: configured={artwork['release']}, stable={latest_artwork}")
+    if artwork["release"] != latest_artwork:
+        outdated.append(f"GoldenGate {artwork['release']} -> {latest_artwork}")
     if outdated:
         raise SystemExit("Stable update requires validation: " + ", ".join(outdated))
 

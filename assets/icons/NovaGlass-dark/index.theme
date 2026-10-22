@@ -1,13 +1,8 @@
 [Icon Theme]
 Name=NovaGlass-dark
 Comment=NovaShell layered vector icons
-Inherits=NovaGlass-System-dark,NovaGlass,breeze,hicolor
-Directories=16x16/apps,scalable/apps,16x16/places,scalable/places
-
-[16x16/apps]
-Size=16
-Type=Fixed
-Context=Applications
+Inherits=NovaGlass-GoldenGate-dark,NovaGlass-System-dark,NovaGlass,breeze,hicolor
+Directories=scalable/apps,16x16/places,scalable/places
 
 [16x16/places]
 Size=16

@@ -2,12 +2,7 @@
 Name=NovaGlass-tinted
 Comment=NovaShell layered vector icons
 Inherits=NovaGlass,NovaGlass-System-light,breeze,hicolor
-Directories=16x16/apps,scalable/apps,16x16/places,scalable/places
-
-[16x16/apps]
-Size=16
-Type=Fixed
-Context=Applications
+Directories=scalable/apps,16x16/places,scalable/places
 
 [16x16/places]
 Size=16

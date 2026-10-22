@@ -126,3 +126,10 @@ colores, caché, exportación e identidades.
 portátiles reales, recorre 24 combinaciones, cambia accesibilidad, reabre la
 galería y comprueba todos los SVG con QtSvg. Genera capturas en `build/`.
 No incluye un sustituto de Quickshell ni simula validación Wayland.
+
+La revisión visual 2 añade `goldengate-library.json`: capas de aplicaciones
+GoldenGate v3 clara/oscura, PNG preparados a un máximo de 256 px y alias
+corregidos. El cambio mantiene el nombre NovaGlass en la configuración del
+usuario; la herencia selecciona la nueva capa y después el respaldo vectorial.
+No requiere seleccionar otro tema tras actualizar la instalación. Aplicaciones
+Qt ya abiertas pueden necesitar volver a abrirse para refrescar su caché.
