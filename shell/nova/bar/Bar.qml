@@ -65,8 +65,8 @@ PanelWindow {
             IconButton {
                 iconSize: Theme.icons.bar
                 flat: true
-                label: qsTr("Aplicaciones")
-                symbol: "grid"
+                label: qsTr("Buscar y abrir aplicaciones")
+                symbol: "launcher"
                 onClicked: { Platform.reloadApplications(); ShellState.toggle("launcher", bar.screen); }
             }
             IconButton {
