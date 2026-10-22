@@ -2,16 +2,10 @@
 
 ## Corner geometry and vector paths
 
-Portions of `shell/nova/theme/CornerGeometry.mjs` and the original symbol
-paths in `shell/nova/icons/IconCatalog.mjs` are adapted from NextKDE.
+Portions of `shell/nova/theme/CornerGeometry.mjs` and the symbol paths in
+`shell/nova/icons/IconCatalog.mjs` use GPLv3.
 
-- Source: https://github.com/NextKde/NextKde
-- Revision: `e877519b0ee810ac2d55689a86e8b49c83e33d86`
-- Original files: `shell/desktop/modules/common/Squircle.mjs` and
-  `shared/qml/controls/VectorIcon.qml`.
 - License: GNU General Public License version 3; full text in `LICENSE`.
-- The original files contain no individual copyright notices. Existing
-  source comments describing the transferred functions are preserved where applicable.
 - Modified October 22, 2026: selected pure functions, a bounded SVG registry,
   semantic names and new application artwork for NovaShell.
 
