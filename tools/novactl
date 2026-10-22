@@ -49,6 +49,13 @@ version_at_least() {
     [[ "$(printf '%s\n' "$required" "$installed" | sort -V | head -n1)" == "$required" ]]
 }
 
+display_manager() {
+    local unit
+    unit="$(readlink -e /etc/systemd/system/display-manager.service 2>/dev/null || true)"
+    unit="${unit##*/}"
+    printf '%s\n' "${unit%.service}"
+}
+
 require_user() {
     if [[ "$(id -u)" -eq 0 ]]; then
         die "No ejecutes novactl como root ni con sudo: NovaShell se instala solo en tu \$HOME."
@@ -142,6 +149,16 @@ cmd_doctor() {
         fail "No se encontraron las cabeceras/CMake de Qt 6 (qt6-base-dev / qt6-qtbase-devel / qt6-base)"
         problems=$((problems + 1))
     fi
+
+    # Pantalla de inicio de sesión: informativo, no bloquea.
+    local manager
+    manager="$(display_manager)"
+    case "$manager" in
+        sddm) ok "Gestor de sesión SDDM: admite el tema NovaShell (novactl login-theme)" ;;
+        plasmalogin) warn "Gestor de sesión Plasma Login Manager: no admite temas; el tema NovaShell requiere SDDM (novactl login-theme)" ;;
+        "") warn "Gestor de sesión no detectado" ;;
+        *) warn "Gestor de sesión $manager: el tema NovaShell es para SDDM" ;;
+    esac
 
     if [[ -n "${XDG_RUNTIME_DIR:-}" ]]; then
         ok "XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR"
@@ -257,6 +274,10 @@ cmd_uninstall() {
     rm -rf -- "$SHELL_DEST" "$(dirname -- "$MANIFEST")"
     systemctl --user daemon-reload 2>/dev/null || true
 
+    if [[ -d /usr/share/sddm/themes/novashell ]]; then
+        warn "El tema SDDM sigue instalado en el sistema. Para retirarlo: sudo $SDDM_INSTALLER uninstall"
+    fi
+
     if (( purge )); then
         rm -rf -- "$STATE_HOME/quickshell/novashell"
         ok "NovaShell desinstalado, incluidos tus datos y ajustes."
@@ -313,6 +334,38 @@ cmd_version() {
     fi
 }
 
+# Tema SDDM: novactl lo prepara en tu usuario y lo prueba sin root. Copiarlo
+# al sistema necesita root una vez; novactl no usa sudo: imprime la orden.
+readonly SDDM_STAGE="$PREFIX/share/novashell/sddm/novashell"
+readonly SDDM_INSTALLER="$REPO_DIR/packaging/sddm/install-theme.sh"
+cmd_login_theme() {
+    require_user
+    case "${1:-status}" in
+        preview)
+            [[ -f "$SDDM_STAGE/metadata.desktop" ]] || die "Tema no preparado; ejecuta: novactl install"
+            local greeter
+            greeter="$(command -v sddm-greeter-qt6 || true)"
+            [[ -n "$greeter" ]] || die "Falta sddm-greeter-qt6 (paquete sddm con Qt 6)"
+            info "Vista previa en una ventana; ciérrala o pulsa Esc para salir."
+            "$greeter" --test-mode --theme "$SDDM_STAGE"
+            ;;
+        install)
+            [[ -f "$SDDM_STAGE/metadata.desktop" ]] || die "Tema no preparado; ejecuta: novactl install"
+            info "Instalar el tema en el sistema requiere root una sola vez. Revisa el script y ejecuta:"
+            printf '  sudo %q install %q\n' "$SDDM_INSTALLER" "$SDDM_STAGE"
+            ;;
+        uninstall)
+            info "Para retirar el tema del sistema:"
+            printf '  sudo %q uninstall\n' "$SDDM_INSTALLER"
+            ;;
+        status)
+            if [[ -f "$SDDM_STAGE/metadata.desktop" ]]; then ok "Tema preparado en $SDDM_STAGE"; else warn "Tema no preparado (novactl install)"; fi
+            bash "$SDDM_INSTALLER" status
+            ;;
+        *) die "Uso: novactl login-theme preview|install|uninstall|status" ;;
+    esac
+}
+
 cmd_desktop_profile() {
     require_user
     have python3 || die "El perfil nativo requiere Python 3"
@@ -335,7 +388,9 @@ Uso: novactl <orden>
   dev                Ejecuta el shell desde las fuentes (recarga en caliente)
   version            Versión de las fuentes y la instalada
   desktop-profile preview|apply|restore|status [balanced|glass|reduced]
-                     Perfil reversible para Dolphin y efectos de KWin
+                     Perfil reversible: Dolphin, KWin, splash y fondo de bloqueo
+  login-theme preview|install|uninstall|status
+                     Tema SDDM: vista previa sin root; instalar imprime la orden con sudo
 EOF
 }
 
@@ -344,6 +399,7 @@ main() {
     shift || true
     case "$command" in
         desktop-profile) cmd_desktop_profile "$@" ;;
+        login-theme) cmd_login_theme "$@" ;;
         doctor|build|install|uninstall|start|stop|restart|enable|disable|status|logs|dev|version)
             "cmd_$command" "$@" ;;
         help|-h|--help) usage ;;
