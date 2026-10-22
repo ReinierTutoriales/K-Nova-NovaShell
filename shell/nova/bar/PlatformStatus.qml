@@ -8,6 +8,8 @@ import qs.nova.theme
 // Solo muestra texto cuando hay un problema; en estado normal es un punto.
 RowLayout {
     id: root
+    // Con el servicio sano no ocupa sitio en la barra (estilo macOS).
+    visible: !Platform.connected
 
     spacing: Theme.space.xs
 

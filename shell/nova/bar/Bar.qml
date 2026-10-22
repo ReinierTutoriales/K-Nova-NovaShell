@@ -78,7 +78,7 @@ PanelWindow {
 
             PlatformStatus {}
             TrayRow { window: bar }
-            IconButton { label: qsTr("Centro de control"); symbol: "volume"; onClicked: ShellState.toggle("controls", bar.screen) }
+            StatusIndicators { onActivated: ShellState.toggle("controls", bar.screen) }
             IconButton { label: qsTr("Portapapeles"); symbol: "panel"; onClicked: ShellState.toggle("clipboard", bar.screen) }
             IconButton { label: qsTr("Notificaciones"); symbol: "notification"; onClicked: ShellState.toggle("notifications", bar.screen) }
             IconButton { label: qsTr("Hoy"); symbol: "calendar"; onClicked: ShellState.toggle("widgets", bar.screen) }
