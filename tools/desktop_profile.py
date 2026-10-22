@@ -66,7 +66,7 @@ class KConfigStore:
 
     def write(self, key, value):
         arguments = [self.writer, *self.arguments(key), "--notify"]
-        arguments += ["--delete"] if value is None else [value]
+        arguments += ["--delete"] if value is None else ["--", value]
         self.run(arguments)
         if self.read(key) != value:
             raise RuntimeError("KConfig no conservó el valor solicitado")

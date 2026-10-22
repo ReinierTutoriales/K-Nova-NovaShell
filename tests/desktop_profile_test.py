@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("desktop_profile", ROOT / "tools/desktop_profile.py")
@@ -40,6 +41,17 @@ class ProfileTest(unittest.TestCase):
         self.assertEqual(len(self.controller.preview("balanced")), len(PROFILE.KEYS))
         self.assertEqual(self.store.writes, 0)
         self.assertFalse(self.controller.state.exists())
+
+    def test_restored_values_cannot_become_cli_options(self):
+        store = object.__new__(PROFILE.KConfigStore)
+        store.config = Path(self.directory.name)
+        store.writer = "/usr/bin/kwriteconfig6"
+        value = "--file=/tmp/not-a-profile-target"
+        with patch.object(store, "run", return_value="") as run, patch.object(store, "read", return_value=value):
+            store.write("files.icons", value)
+            arguments = run.call_args.args[0]
+            self.assertEqual(arguments[-2:], ["--", value])
+            self.assertEqual(arguments[arguments.index("--file") + 1], str(store.config / "dolphinrc"))
 
     def test_apply_and_restore_absent_and_custom_keys(self):
         self.store.values["files.icons"] = "48"
