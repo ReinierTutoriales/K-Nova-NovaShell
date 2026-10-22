@@ -78,6 +78,8 @@ Las conexiones lentas se cierran al superar 128 KiB pendientes de escritura.
 | `wallpaper.set` | `url` de imagen local ≤ 64 MiB; `screen` 0–31 | `accepted`, `token`; API de wallpaper de Plasma |
 | `brightness.get` | — | `available`, `displays`; lectura asíncrona y caché de 1 s |
 | `brightness.set` | `id` de pantalla enumerada; `percent` entero 1–100 | `accepted`, `token`; API ScreenBrightness de KDE |
+| `blur.get` | — | `strength` 1–15 (`[Effect-blur] BlurStrength` de kwinrc; 15 si no está), `writable`. Solo lectura del archivo. |
+| `blur.set` | `strength` entero 1–15 | `accepted`, `token`; `kwriteconfig6` con argumentos fijos y recarga del efecto Blur de KWin por D-Bus |
 | `system.metrics` | — | `available`, `cpuPercent`, `memoryTotal`, `memoryUsed`; lecturas acotadas de `/proc` |
 | `compositor.capabilities` | — | Ver abajo. Solo lectura. |
 <!-- operaciones:fin -->

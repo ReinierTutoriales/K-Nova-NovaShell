@@ -14,6 +14,7 @@
 #include <QStandardPaths>
 #include <QUrl>
 #include <QUuid>
+#include <algorithm>
 #include <memory>
 
 namespace nova {
@@ -184,5 +185,75 @@ Reply DesktopActions::metrics() {
         {QStringLiteral("memoryUsed"), static_cast<qint64>(totalMemory - qMin(totalMemory, availableMemory))}};
     m_metricsAge.start();
     return m_metrics;
+}
+// ---------------------------------------------------------------- desenfoque
+// KWin aplica el desenfoque de ext-background-effect-v1 con su efecto Blur;
+// su intensidad es [Effect-blur] BlurStrength de kwinrc (1–15, 15 por
+// defecto). Se lee el archivo directamente (solo lectura) y se escribe con la
+// herramienta oficial kwriteconfig6 con argumentos fijos y un entero acotado;
+// después se pide a KWin que recargue el efecto por D-Bus.
+int DesktopActions::parseBlurStrength(const QString &kwinrc) {
+    bool inGroup = false;
+    int value = 0;
+    const auto lines = QStringView(kwinrc).split(QLatin1Char('\n'));
+    for (const auto raw : lines) {
+        const QStringView line = raw.trimmed();
+        if (line.startsWith(QLatin1Char('['))) { inGroup = line == QLatin1String("[Effect-blur]"); continue; }
+        if (!inGroup || !line.startsWith(QLatin1String("BlurStrength"))) continue;
+        const qsizetype equals = line.indexOf(QLatin1Char('='));
+        if (equals < 0 || line.left(equals).trimmed() != QLatin1String("BlurStrength")) continue;
+        bool ok = false;
+        const int parsed = line.mid(equals + 1).trimmed().toInt(&ok);
+        value = ok && parsed >= 1 && parsed <= 15 ? parsed : 0;
+    }
+    return value;
+}
+Reply DesktopActions::blur() {
+    int strength = 0;
+    // Mismo orden que KConfig: sistema primero, usuario después (gana el último).
+    QStringList files = QStandardPaths::locateAll(QStandardPaths::GenericConfigLocation, QStringLiteral("kwinrc"));
+    std::reverse(files.begin(), files.end());
+    for (const QString &path : files) {
+        QFile file(path);
+        if (file.size() > 1024 * 1024 || !file.open(QIODevice::ReadOnly)) continue;
+        if (const int found = parseBlurStrength(QString::fromUtf8(file.readAll()))) strength = found;
+    }
+    return QJsonObject{{QStringLiteral("strength"), strength ? strength : 15},
+        {QStringLiteral("writable"), !QStandardPaths::findExecutable(QStringLiteral("kwriteconfig6")).isEmpty()}};
+}
+Reply DesktopActions::setBlur(const QJsonObject &payload) {
+    const QJsonValue value = payload.value(QStringLiteral("strength"));
+    if (!value.isDouble() || value.toDouble() != value.toInt(-1) || value.toInt() < 1 || value.toInt() > 15)
+        return invalid(QStringLiteral("strength debe ser un entero de 1 a 15"));
+    const QString writer = QStandardPaths::findExecutable(QStringLiteral("kwriteconfig6"));
+    if (writer.isEmpty()) return protocol::Error{QStringLiteral("unavailable"), QStringLiteral("falta kwriteconfig6 (KConfig 6)"), false};
+    if (m_blurBusy) return protocol::Error{QStringLiteral("unavailable"), QStringLiteral("cambio de desenfoque en curso"), true};
+    m_blurBusy = true;
+    const QString token = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    auto *process = new QProcess(this);
+    connect(process, &QProcess::finished, this, [this, process, token](int code, QProcess::ExitStatus status) {
+        m_blurBusy = false;
+        process->deleteLater();
+        const bool written = status == QProcess::NormalExit && code == 0;
+        if (written) {
+            auto message = method(QStringLiteral("org.kde.KWin"), QStringLiteral("/Effects"),
+                QStringLiteral("org.kde.kwin.Effects"), QStringLiteral("reconfigureEffect"));
+            message << QStringLiteral("blur");
+            dispatch(QDBusConnection::sessionBus(), message);
+        }
+        emit event(QStringLiteral("system.action"), {{QStringLiteral("token"), token}, {QStringLiteral("ok"), written},
+            {QStringLiteral("message"), written ? QString() : QStringLiteral("kwriteconfig6 no guardó el valor")}});
+    });
+    connect(process, &QProcess::errorOccurred, this, [this, process, token](QProcess::ProcessError error) {
+        if (error != QProcess::FailedToStart) return;
+        m_blurBusy = false;
+        process->deleteLater();
+        emit event(QStringLiteral("system.action"), {{QStringLiteral("token"), token}, {QStringLiteral("ok"), false},
+            {QStringLiteral("message"), QStringLiteral("no se pudo ejecutar kwriteconfig6")}});
+    });
+    process->start(writer, {QStringLiteral("--file"), QStringLiteral("kwinrc"), QStringLiteral("--group"),
+        QStringLiteral("Effect-blur"), QStringLiteral("--key"), QStringLiteral("BlurStrength"),
+        QStringLiteral("--notify"), QStringLiteral("--"), QString::number(value.toInt())});
+    return QJsonObject{{QStringLiteral("accepted"), true}, {QStringLiteral("token"), token}};
 }
 }
