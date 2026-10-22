@@ -50,6 +50,7 @@ ShellRoot {
     property bool resolved: false
     property bool cancelled: false
     property bool expired: false
+    property bool oversized: false
     property JsonlClient offline: JsonlClient {
         socketPath: ""
         readOperations: ["platform.ping"]
@@ -72,6 +73,8 @@ ShellRoot {
             if (root.phase === 0) {
                 live.request("platform.ping", {}, response => root.disabledRejected = !response.ok);
                 if (!root.check(root.disabledRejected && live._pendingCount === 0, "disabled request")) return;
+                offline.request("platform.ping", {text:"界".repeat(25000)}, response => root.oversized = response.error.code === "request-too-large");
+                if (!root.check(root.oversized && offline._pendingCount === 0, "UTF-8 size limit")) return;
                 offline.request("platform.ping", {}, response => root.expired = response.error.code === "timeout");
                 live.enabled = true;
                 root.phase = 1;
@@ -80,7 +83,8 @@ ShellRoot {
                 live.request("platform.ping", {}, response => root.cancelled = response.error.code === "disconnected");
                 live.request("platform.ping", {}, response => root.saturated = response.error.code === "unavailable");
                 if (!root.check(root.saturated && live._pendingCount === 2, "pending bound")) return;
-                for (const line of ["null", "[]", "42", JSON.stringify({version:2, requestId:first, ok:true})]) live._readLine(line);
+                for (const line of ["null", "[]", "42", JSON.stringify({version:2, requestId:first, ok:true}),
+                    JSON.stringify({version:1, requestId:first}), JSON.stringify({version:1, requestId:first, ok:true, result:null})]) live._readLine(line);
                 if (!root.check(live._pendingCount === 2, "invalid response")) return;
                 live._readLine(JSON.stringify({version:1, requestId:first, ok:true, result:{ready:true}}));
                 live.enabled = false;

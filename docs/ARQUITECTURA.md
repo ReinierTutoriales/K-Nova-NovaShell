@@ -77,6 +77,8 @@
   solicitan, también sin conexión; fallo de todo lo pendiente al desconectar.
 - Deshabilitar el cliente cierra su socket y cancela las peticiones; sin ruta
   de socket no arranca el temporizador de reconexión.
+- El cliente rechaza peticiones mayores de 64 KiB UTF-8 antes de escribirlas,
+  evitando que el daemon cierre una conexión con otras peticiones pendientes.
 - Reconexión con espera exponencial 0,5 s → 8 s creando un `Socket` nuevo
   (aislamiento de eventos tardíos entre conexiones).
 
