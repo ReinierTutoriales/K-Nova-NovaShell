@@ -221,6 +221,10 @@ cmd_install() {
     {
         printf '%s\n' "$PREFIX/libexec/nova-platform"
         printf '%s\n' "$PREFIX/share/novashell/kwin/windows.js"
+        local scheme
+        for scheme in "$REPO_DIR"/packaging/color-schemes/*.colors; do
+            printf '%s\n' "$PREFIX/share/color-schemes/${scheme##*/}"
+        done
         local icon_file
         while IFS= read -r -d '' icon_file; do
             printf '%s\n' "$PREFIX/share/icons/${icon_file#"$REPO_DIR/assets/icons/"}"
@@ -241,6 +245,10 @@ cmd_uninstall() {
     require_user
     local purge=0
     [[ "${1:-}" == --purge ]] && purge=1
+
+    if [[ -e "$STATE_HOME/novashell/desktop-profile.json" ]]; then
+        cmd_desktop_profile restore || die "No se pudo restaurar el perfil nativo; conserva el registro antes de desinstalar."
+    fi
 
     systemctl --user disable --now "${UNITS[@]}" 2>/dev/null || true
 
@@ -310,6 +318,12 @@ cmd_version() {
     fi
 }
 
+cmd_desktop_profile() {
+    require_user
+    have python3 || die "El perfil nativo requiere Python 3"
+    python3 -I "$REPO_DIR/tools/desktop_profile.py" "$@"
+}
+
 usage() {
     cat <<EOF
 novactl $VERSION — gestor de NovaShell (sin root)
@@ -325,6 +339,8 @@ Uso: novactl <orden>
   logs [N]           Últimas N líneas del registro (100 por defecto)
   dev                Ejecuta el shell desde las fuentes (recarga en caliente)
   version            Versión de las fuentes y la instalada
+  desktop-profile preview|apply|restore|status [balanced|glass|reduced]
+                     Perfil reversible para Dolphin y efectos de KWin
 EOF
 }
 
@@ -332,6 +348,7 @@ main() {
     local command="${1:-help}"
     shift || true
     case "$command" in
+        desktop-profile) cmd_desktop_profile "$@" ;;
         doctor|build|install|uninstall|start|stop|restart|enable|disable|status|logs|dev|version)
             "cmd_$command" "$@" ;;
         help|-h|--help) usage ;;

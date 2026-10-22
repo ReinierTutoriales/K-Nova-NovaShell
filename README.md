@@ -79,6 +79,11 @@ ni cambia automáticamente el tema global de iconos.
 
 ## Desarrollo y verificación
 
+Para coordinar Dolphin y las transiciones de las aplicaciones con los efectos
+incluidos en KWin, hay un [perfil nativo reversible](docs/ESCRITORIO-NATIVO.md)
+(`novactl desktop-profile`) y paletas NovaGlass claras/oscuras para KDE.
+La instalación conserva las preferencias actuales hasta que se aplique un perfil.
+
 [Guía de desarrollo](docs/DESARROLLO.md):
 
 ```sh

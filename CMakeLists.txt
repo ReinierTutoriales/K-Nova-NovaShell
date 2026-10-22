@@ -45,6 +45,7 @@ add_subdirectory(daemon)
 install(DIRECTORY assets/icons/
     DESTINATION ${CMAKE_INSTALL_DATADIR}/icons)
 install(FILES packaging/kwin/windows.js DESTINATION ${CMAKE_INSTALL_DATADIR}/novashell/kwin)
+install(DIRECTORY packaging/color-schemes/ DESTINATION ${CMAKE_INSTALL_DATADIR}/color-schemes)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)
