@@ -1,0 +1,12 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [{ "Name": "ReinierTutoriales" }],
+        "Description": "Pantalla de carga de NovaShell (solo splash; no cambia el resto del tema global)",
+        "Id": "org.knova.novashell",
+        "License": "GPL-3.0-or-later",
+        "Name": "NovaShell",
+        "Website": "https://github.com/ReinierTutoriales/K-Nova-NovaShell"
+    },
+    "X-Plasma-APIVersion": "2"
+}

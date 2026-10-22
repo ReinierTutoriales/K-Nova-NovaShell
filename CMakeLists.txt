@@ -47,6 +47,19 @@ install(DIRECTORY assets/icons/
 install(FILES packaging/kwin/windows.js DESTINATION ${CMAKE_INSTALL_DATADIR}/novashell/kwin)
 install(DIRECTORY packaging/color-schemes/ DESTINATION ${CMAKE_INSTALL_DATADIR}/color-schemes)
 
+# Sesión: fondo claro/oscuro como paquete de Plasma (lo usan escritorio,
+# bloqueo y splash) y paquete look-and-feel que solo aporta el splash.
+set(NOVA_WALLPAPER_DIR ${CMAKE_INSTALL_DATADIR}/wallpapers/NovaShell)
+install(FILES session/wallpaper/metadata.json DESTINATION ${NOVA_WALLPAPER_DIR})
+install(FILES assets/wallpapers/nova-light.jpg DESTINATION ${NOVA_WALLPAPER_DIR}/contents/images RENAME 3840x2160.jpg)
+install(FILES assets/wallpapers/nova-dark.jpg DESTINATION ${NOVA_WALLPAPER_DIR}/contents/images_dark RENAME 3840x2160.jpg)
+set(NOVA_LNF_DIR ${CMAKE_INSTALL_DATADIR}/plasma/look-and-feel/org.knova.novashell)
+install(FILES session/lookandfeel/metadata.json DESTINATION ${NOVA_LNF_DIR})
+install(FILES session/splash/Splash.qml DESTINATION ${NOVA_LNF_DIR}/contents/splash)
+install(DIRECTORY shell/nova/theme/ DESTINATION ${NOVA_LNF_DIR}/contents/splash/theme)
+install(FILES assets/brand/nova-mark.svg assets/wallpapers/nova-light.jpg assets/wallpapers/nova-dark.jpg
+    DESTINATION ${NOVA_LNF_DIR}/contents/splash/images)
+
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()

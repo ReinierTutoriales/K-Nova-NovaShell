@@ -1,0 +1,12 @@
+{
+    "KPlugin": {
+        "Authors": [{ "Name": "ReinierTutoriales" }],
+        "Id": "NovaShell",
+        "License": "GPL-3.0-or-later",
+        "Name": "NovaShell"
+    },
+    "X-KDE-PlasmaImageWallpaper-AccentColor": {
+        "Light": "#3478f6",
+        "Dark": "#3478f6"
+    }
+}
