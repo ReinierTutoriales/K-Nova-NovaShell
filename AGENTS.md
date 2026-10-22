@@ -1,6 +1,6 @@
 # NovaShell — instrucciones para agentes de código
 
-Shell Quickshell 0.3.x para KDE Plasma 6 Wayland. Daemon C++/Qt6 + QML. Nunca root. Sin plugins KWin nativos en el núcleo.
+Shell Quickshell 0.3.2+ para KDE Plasma 6.8+ Wayland y Qt 6.12+. Daemon C++/Qt6 + QML. Nunca root. Sin plugins KWin nativos en el núcleo.
 
 Lee primero `docs/ARQUITECTURA.md`, `docs/CONTRATO-IPC-v1.md` y `docs/HOJA-DE-RUTA.md`.
 

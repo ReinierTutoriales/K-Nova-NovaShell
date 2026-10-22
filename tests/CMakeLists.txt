@@ -1,4 +1,4 @@
-find_package(Qt6 6.4 REQUIRED COMPONENTS Test)
+find_package(Qt6 ${NOVA_QT_VERSION} REQUIRED COMPONENTS Test)
 
 add_executable(tst_protocol tst_protocol.cpp)
 target_link_libraries(tst_protocol PRIVATE nova_protocol Qt6::Test)

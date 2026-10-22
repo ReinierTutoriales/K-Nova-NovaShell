@@ -21,9 +21,16 @@ include(cmake/IconLibrary.cmake)
 
 option(NOVA_WERROR "Tratar warnings como errores" OFF)
 
-# El daemon solo usa QtCore + QtNetwork; 6.4 permite compilarlo en CI (Ubuntu 24.04).
-# El shell (Quickshell 0.3.x) exige Qt 6.6+ en tiempo de ejecución, no aquí.
-find_package(Qt6 6.4 REQUIRED COMPONENTS Core Network)
+# The SDK and portable UI checks share one reviewed stable Qt version.
+file(STRINGS "${PROJECT_SOURCE_DIR}/tests/requirements-ci.txt" NOVA_QT_REQUIREMENT
+    REGEX "^PySide6-Essentials==[0-9]+\\.[0-9]+\\.[0-9]+$")
+if(NOT NOVA_QT_REQUIREMENT MATCHES "==([0-9]+\\.[0-9]+\\.[0-9]+)$")
+    message(FATAL_ERROR "Missing pinned stable Qt version")
+endif()
+set(NOVA_QT_VERSION "${CMAKE_MATCH_1}")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${PROJECT_SOURCE_DIR}/tests/requirements-ci.txt")
+find_package(Qt6 ${NOVA_QT_VERSION} REQUIRED COMPONENTS Core Network)
 
 add_compile_options(-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wno-sign-conversion)
 if(NOVA_WERROR)

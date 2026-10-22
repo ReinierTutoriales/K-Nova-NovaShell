@@ -55,6 +55,5 @@ las integraciones de la barra ni la aceptación en una sesión Plasma real.
 
 ## Pendientes de verificación técnica
 
-- Qué versión mínima de Plasma 6 funciona realmente sin plugins KWin
-  (objetivo: incluir Debian 13, que trae Plasma 6.3).
+- Validar Plasma 6.8 Wayland con Quickshell 0.3.2 y Qt 6.12 en una sesión real.
 - Lint QML completo en CI con Quickshell instalado (hoy: sintaxis + reglas).

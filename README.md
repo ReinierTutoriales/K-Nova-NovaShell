@@ -2,7 +2,7 @@
 
 <p align="center"><strong>Un escritorio Quickshell para KDE Plasma 6, con identidad propia y sin root.</strong></p>
 
-<p align="center"><code>Plasma 6 / Wayland</code> · <code>Quickshell 0.3.x</code> · <code>Qt 6.6+</code></p>
+<p align="center"><code>Plasma 6.8+ / Wayland</code> · <code>Quickshell 0.3.2+</code> · <code>Qt 6.12+</code></p>
 
 Estado: base de desarrollo `0.1.0-dev`. Hay daemon IPC, barra por pantalla,
 biblioteca visual, galería de apariencia, temas de iconos, instalador y CI.
@@ -40,9 +40,9 @@ Los componentes QML tienen un límite de 400 líneas.
 
 ## Requisitos
 
-KDE Plasma 6 Wayland, Quickshell 0.3.x y Qt 6.6+ para la interfaz.
-El daemon requiere CMake ≥ 3.21, Ninja, C++20 y Qt 6 Core/Network
-(compilable desde Qt 6.4). Para SVG se necesita el plugin de imágenes Qt SVG;
+KDE Plasma 6.8+ Wayland, Quickshell 0.3.2+ y Qt 6.12.0+.
+El daemon requiere CMake ≥ 3.21, Ninja, C++20 y Qt Core/Network.
+Para SVG se necesita el plugin de imágenes Qt SVG;
 Qt Quick Controls se usa en la galería.
 
 | Distribución | Compilación y módulos de interfaz adicionales |
@@ -92,7 +92,16 @@ node --test tests/appearance.test.mjs
 
 Node.js solo sirve para pruebas y regeneración de SVG; no es una dependencia
 de instalación ni de ejecución. CI carga QML real y renderiza los recursos con Qt
-6.6 y 6.11. Eso no acredita el blur, los controladores GPU ni una sesión Plasma real.
+6.12.0. El daemon también se compila con ese SDK. Eso no acredita el blur,
+los controladores GPU ni una sesión Plasma real.
+
+`tests/requirements-ci.txt` fija la versión estable de Qt para el SDK y las
+pruebas. Dependabot propone actualizaciones semanales de Qt/PySide y acciones;
+CI semanal detecta nuevas versiones estables de Qt y Quickshell. Los cambios
+requieren pruebas antes de integrarse. Quickshell debe recompilarse para la
+versión exacta de Qt instalada, porque utiliza sus API privadas.
+`packaging/runtime.env` fija los mínimos de Plasma y Quickshell, comprobados
+por `novactl doctor`. El objetivo es la rama estable más reciente, sin betas.
 
 ## Licencias
 

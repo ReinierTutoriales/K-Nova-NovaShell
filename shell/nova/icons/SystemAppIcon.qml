@@ -17,7 +17,7 @@ Item {
         anchors.fill: parent
         source: root.source
         asynchronous: false
-        visible: root.source !== "" && backer.status === Image.Ready
+        visible: root.source !== "" && status === Image.Ready
     }
     AppIcon {
         anchors.fill: parent

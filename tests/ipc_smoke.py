@@ -140,6 +140,27 @@ def main():
                 check(True, "línea sobredimensionada se corta")
             abuser.close()
 
+            # Padding cannot bypass the limit when a newline is included.
+            padded = Client(sock_path)
+            padded.send_raw(b" " * (65 * 1024) + b"\n")
+            check(padded.read_line()["error"]["code"] == "request-too-large",
+                  "el límite cuenta bytes antes de eliminar espacios")
+            try:
+                check(padded.sock.recv(1) == b"", "una línea gigante con salto cierra el socket")
+            except (ConnectionError, OSError):
+                check(True, "una línea gigante con salto cierra el socket")
+            padded.close()
+
+            # Exact limit, fragmented delivery, and adjacent requests remain valid.
+            boundary = Client(sock_path)
+            request = b'{"version":1,"requestId":"edge","operation":"platform.ping"}'
+            exact = request + b" " * (64 * 1024 - len(request))
+            boundary.send_raw(exact[:32000])
+            boundary.send_raw(exact[32000:] + b'\n{"version":1,"requestId":"next","operation":"platform.ping"}\n')
+            check([boundary.read_line()["requestId"], boundary.read_line()["requestId"]] == ["edge", "next"],
+                  "el límite exacto y las líneas fragmentadas conservan el orden")
+            boundary.close()
+
             check(process.poll() is None, "el daemon sigue vivo tras entradas inválidas")
 
             second = subprocess.run([daemon, "--socket", sock_path], capture_output=True, timeout=5)

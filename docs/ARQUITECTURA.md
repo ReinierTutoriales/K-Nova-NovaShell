@@ -58,7 +58,7 @@
   escrituras fallan al instante (nunca se "reproducen" tarde).
 - Caducidad de peticiones (10 s) y fallo de todo lo pendiente al desconectar.
 - Reconexión con espera exponencial 0,5 s → 8 s creando un `Socket` nuevo
-  (el de Quickshell no reconecta solo).
+  (aislamiento de eventos tardíos entre conexiones).
 
 ## Arranque (systemd de usuario)
 

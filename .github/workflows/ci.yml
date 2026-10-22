@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: '23 7 * * 1'
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -14,81 +16,61 @@ permissions:
   contents: read
 
 jobs:
-  daemon:
-    name: daemon (build + tests)
+  verify:
+    name: Qt estable (daemon, QML e iconos)
     runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v7.0.1
-
-      - name: Dependencias
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build g++ qt6-base-dev python3
-
-      - name: Configurar
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DNOVA_WERROR=ON
-
-      - name: Compilar
-        run: cmake --build build --parallel
-
-      - name: Tests (unitarios + extremo a extremo)
-        run: ctest --test-dir build --output-on-failure
-
-  rules:
-    name: reglas (QML, shell, licencias)
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v7.0.1
-
-      - name: Dependencias
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            shellcheck qt6-declarative-dev-tools python3
-
-      - name: Reglas de arquitectura y sintaxis QML
-        run: python3 -I tools/check-sources.py --qmlformat /usr/lib/qt6/bin/qmlformat
-
-      - name: shellcheck
-        run: shellcheck -x tools/novactl
-
-      - name: Contratos de apariencia y exportación reproducible
-        run: |
-          node --test tests/appearance.test.mjs
-          node tools/export-icons.mjs build/icon-check
-          diff -r assets/icons build/icon-check
-
-  appearance:
-    name: apariencia (PySide ${{ matrix.pyside }})
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        # 6.6.3.1 fixes the upstream 6.6.3 Quick Controls wheel packaging.
-        pyside: ['6.6.3.1', '6.11.2']
     env:
       QT_QPA_PLATFORM: offscreen
       QT_QUICK_BACKEND: software
       QT_QUICK_CONTROLS_STYLE: Basic
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Bibliotecas gráficas para Qt
+      - name: Detectar nuevas versiones estables
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: python3 tools/check-updates.py
+      - name: Dependencias de compilación
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libegl1 libopengl0 libgl1 libxkbcommon0 libdbus-1-3
-      - name: Qt Quick y SVG
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build g++ shellcheck python3-venv libegl1 libopengl0 libgl1 libxkbcommon0 libdbus-1-3
+      - name: Versión estable compartida por SDK y pruebas
+        id: qt
+        run: |
+          version=$(sed -n 's/^PySide6-Essentials==\([0-9.]*\)$/\1/p' tests/requirements-ci.txt)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: SDK Qt estable
+        uses: jurplel/install-qt-action@v4.4.1
+        with:
+          version: ${{ steps.qt.outputs.version }}
+          cache: true
+      - name: Configurar y compilar
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DNOVA_WERROR=ON
+          cmake --build build --parallel
+      - name: Contratos y regresiones de IPC
+        run: ctest --test-dir build --output-on-failure
+      - name: Reglas, sintaxis QML y shellcheck
+        run: |
+          python3 -I tools/check-sources.py --qmlformat "$QT_ROOT_DIR/bin/qmlformat"
+          shellcheck -x tools/novactl
+      - name: Exportación reproducible
+        run: |
+          node --test tests/appearance.test.mjs
+          node tools/export-icons.mjs build/icon-check
+          diff -r assets/icons build/icon-check
+      - name: Qt Quick y SVG sin módulos innecesarios
         run: |
           python3 -m venv "$RUNNER_TEMP/qt-tests"
-          "$RUNNER_TEMP/qt-tests/bin/python" -m pip install --disable-pip-version-check "PySide6==${{ matrix.pyside }}"
-      - name: Cargar componentes reales y renderizar SVG
-        run: '"$RUNNER_TEMP/qt-tests/bin/python" tests/appearance_smoke.py'
-      - name: Resolver la biblioteca completa con Qt
-        run: '"$RUNNER_TEMP/qt-tests/bin/python" tests/icon_library_test.py --qt'
+          "$RUNNER_TEMP/qt-tests/bin/python" -m pip install --disable-pip-version-check -r tests/requirements-ci.txt
+      - name: Apariencia e iconos con Qt estable
+        run: |
+          "$RUNNER_TEMP/qt-tests/bin/python" tests/appearance_smoke.py
+          "$RUNNER_TEMP/qt-tests/bin/python" tests/icon_library_test.py --qt
       - name: Capturas del renderizado
         if: always()
         uses: actions/upload-artifact@v7.0.2
         with:
-          name: appearance-qt-${{ matrix.pyside }}
+          name: appearance-qt-stable
           path: build/appearance-*.png
           if-no-files-found: warn

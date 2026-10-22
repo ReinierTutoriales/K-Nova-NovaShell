@@ -23,7 +23,9 @@ readonly SHELL_DEST="$CONFIG_HOME/quickshell/novashell"
 readonly UNIT_DIR="$CONFIG_HOME/systemd/user"
 readonly MANIFEST="$DATA_HOME/novashell/install-manifest"
 readonly UNITS=(nova-platform.service novashell.service)
-readonly MIN_PLASMA_MAJOR=6
+# shellcheck source-path=SCRIPTDIR/..
+# shellcheck source=packaging/runtime.env
+source "$REPO_DIR/packaging/runtime.env"
 
 # ---------------------------------------------------------------- utilidades
 
@@ -40,6 +42,12 @@ fail() { printf '%s✘%s %s\n' "$C_ERR" "$C_RST" "$*" >&2; }
 die()  { fail "$*"; exit 1; }
 
 have() { command -v "$1" >/dev/null 2>&1; }
+
+version_at_least() {
+    local installed="$1" required="$2"
+    [[ "$installed" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || return 1
+    [[ "$(printf '%s\n' "$required" "$installed" | sort -V | head -n1)" == "$required" ]]
+}
 
 require_user() {
     if [[ "$(id -u)" -eq 0 ]]; then
@@ -82,10 +90,10 @@ cmd_doctor() {
     if have plasmashell; then
         local plasma_version
         plasma_version="$(plasmashell --version 2>/dev/null | awk '{print $NF}')"
-        if [[ "${plasma_version%%.*}" -ge "$MIN_PLASMA_MAJOR" ]] 2>/dev/null; then
+        if version_at_least "$plasma_version" "$NOVA_MIN_PLASMA"; then
             ok "Plasma $plasma_version"
         else
-            fail "Plasma ${plasma_version:-desconocido}; se requiere 6.x"
+            fail "Plasma ${plasma_version:-desconocido}; se requiere $NOVA_MIN_PLASMA o posterior"
             problems=$((problems + 1))
         fi
     else
@@ -94,9 +102,17 @@ cmd_doctor() {
 
     local qs
     if qs="$(quickshell_bin)"; then
-        ok "Quickshell: $qs ($("$qs" --version 2>/dev/null | head -n1 || echo 'versión desconocida'))"
+        local qs_output qs_version
+        qs_output="$("$qs" --version 2>/dev/null)" || qs_output=""
+        qs_version="$(sed -nE 's/.*[v ]([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' <<< "$qs_output" | head -n1)"
+        if version_at_least "$qs_version" "$NOVA_MIN_QUICKSHELL"; then
+            ok "Quickshell $qs_version ($qs)"
+        else
+            fail "Quickshell ${qs_version:-desconocido}; se requiere $NOVA_MIN_QUICKSHELL o posterior"
+            problems=$((problems + 1))
+        fi
     else
-        fail "Quickshell no encontrado (se necesita la 0.3.x; define NOVA_QS_BIN si está fuera del PATH)"
+        fail "Quickshell no encontrado (se necesita $NOVA_MIN_QUICKSHELL; define NOVA_QS_BIN si está fuera del PATH)"
         problems=$((problems + 1))
     fi
 

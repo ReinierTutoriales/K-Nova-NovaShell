@@ -11,8 +11,8 @@ import Quickshell.Io
 //   nunca se ejecuta minutos después de que el usuario lo pulsó.
 // - Toda petición enviada caduca (requestTimeoutMs); una desconexión falla
 //   todo lo pendiente, así ningún consumidor queda esperando para siempre.
-// - El Socket de Quickshell solo intenta conectar una vez por instancia, así
-//   que la reconexión crea un Socket nuevo con espera exponencial.
+// - La reconexión crea un Socket nuevo con espera exponencial y aísla
+//   los eventos tardíos de conexiones anteriores.
 QtObject {
     id: client
 
