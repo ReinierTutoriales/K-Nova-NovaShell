@@ -53,8 +53,18 @@ Window {
             window = engine.rootObjects()[0]
             progress = find(window.contentItem(), "catalogProgress")
             self.assertFalse(progress.property("animating"))
+            # Carga rápida (< progressDelay): la barra nunca llega a mostrarse.
             window.setProperty("loading", True)
             QTest.qWait(30)
+            self.assertFalse(progress.property("visible"))
+            self.assertFalse(progress.property("animating"))
+            window.setProperty("loading", False)
+            QTest.qWait(400)
+            self.assertFalse(progress.property("visible"))
+            # Carga larga: aparece tras el retardo y el barrido corre.
+            window.setProperty("loading", True)
+            QTest.qWait(400)
+            self.assertTrue(progress.property("visible"))
             self.assertTrue(progress.property("indeterminate"))
             self.assertTrue(progress.property("animating"))
             window.setProperty("progress", 0.5)

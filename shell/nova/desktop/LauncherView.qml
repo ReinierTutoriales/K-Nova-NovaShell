@@ -11,6 +11,8 @@ ColumnLayout {
     property var applications: []
     property bool loading: false
     property real progress: -1
+    property int loadedCount: 0
+    property int totalCount: 0
     property var iconResolver: name => ""
     readonly property var results: Policy.search(applications, search.text)
     signal launchRequested(string id)
@@ -38,7 +40,10 @@ ColumnLayout {
     }
     RowLayout {
         Text {
-            text: launcher.loading ? qsTr("Actualizando aplicaciones…") : qsTr("%1 aplicaciones").arg(launcher.results.length)
+            // Etiqueta concreta (Apple HIG): qué se hace y cuánto falta.
+            text: !launcher.loading ? qsTr("%1 aplicaciones").arg(launcher.results.length)
+                : launcher.totalCount > 0 ? qsTr("Leyendo aplicaciones instaladas: %1 de %2").arg(launcher.loadedCount).arg(launcher.totalCount)
+                : qsTr("Buscando aplicaciones instaladas…")
             color: Theme.color.textMuted
             font.pixelSize: Theme.font.small
             Layout.fillWidth: true
@@ -48,7 +53,7 @@ ColumnLayout {
     NovaProgressBar {
         objectName: "catalogProgress"
         Layout.fillWidth: true
-        visible: launcher.loading
+        active: launcher.loading
         indeterminate: launcher.progress < 0
         value: Math.max(0, launcher.progress)
         Accessible.name: qsTr("Carga del catálogo de aplicaciones")

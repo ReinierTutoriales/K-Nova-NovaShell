@@ -16,6 +16,7 @@ Scope {
         content: Component { LauncherView {
             applications: Platform.applications; loading: Platform.applicationsLoading
             progress: Platform.applicationsProgress
+            loadedCount: Platform.applicationsLoaded; totalCount: Platform.applicationsTotal
             iconResolver: name => Platform.iconUrl(name)
             onLaunchRequested: id => { Platform.launch(id); ShellState.close(); }
             onPinRequested: id => Platform.preferences.togglePin(id)
@@ -86,6 +87,7 @@ Scope {
             Repeater {
                 model: Platform.notifications ? Platform.notifications.banners : []
                 NotificationCard {
+                    floating: true
                     required property var modelData
                     entry: modelData
                     iconSource: Platform.iconUrl(modelData.icon)

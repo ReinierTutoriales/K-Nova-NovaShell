@@ -24,6 +24,9 @@ Singleton {
     property bool applicationsLoading: false
     // -1 until the daemon supplies a known total; never invent a percentage.
     property real applicationsProgress: -1
+    // Recuento real para etiquetas concretas ("24 de 230"), no "Cargando…".
+    property int applicationsLoaded: 0
+    property int applicationsTotal: 0
     property var brightness: ({available: false, displays: []})
     property var metrics: ({available: false})
     property int _catalogGeneration: 0
@@ -108,6 +111,8 @@ Singleton {
         const generation = ++_catalogGeneration;
         applicationsLoading = true;
         applicationsProgress = -1;
+        applicationsLoaded = 0;
+        applicationsTotal = 0;
         let collected = [];
         function page(offset) {
             request("applications.list", {offset: offset, limit: 24}, response => {
@@ -115,6 +120,8 @@ Singleton {
                 if (!response.ok) { applicationsLoading = false; lastError = response.error.message; return; }
                 collected = collected.concat(response.result.applications);
                 const total = response.result.total;
+                applicationsLoaded = collected.length;
+                applicationsTotal = Number.isFinite(total) && total > 0 ? total : 0;
                 applicationsProgress = Number.isFinite(total) && total > 0
                     ? Math.min(1, collected.length / total) : -1;
                 if (response.result.next > offset && response.result.next < response.result.total && collected.length < 10000)
