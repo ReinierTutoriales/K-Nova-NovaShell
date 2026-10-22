@@ -8,6 +8,7 @@ porque el contenedor de pruebas no tiene sesión systemd de usuario.
 
 Uso: install_smoke.py   (como usuario normal; novactl rechaza root)
 """
+import json
 import os
 from pathlib import Path
 import shutil
@@ -25,6 +26,37 @@ def fake_tool(directory, name, body):
     path.write_text("#!/bin/sh\n" + body + "\n")
     path.chmod(path.stat().st_mode | stat.S_IXUSR)
     return path
+
+
+# KConfig en memoria (archivo JSON): permite probar el perfil nativo que
+# install aplica y uninstall restaura sin tocar la configuración real.
+FAKE_KCONFIG = r"""
+import json, sys
+from pathlib import Path
+store = Path(sys.argv[1]); mode = sys.argv[2]; args = sys.argv[3:]
+data = json.loads(store.read_text()) if store.exists() else {}
+if mode == "scheme":
+    data["kdeglobals|General|ColorScheme"] = args[-1]
+else:
+    path, groups, key, value, delete = None, [], None, None, False
+    i = 0
+    while i < len(args):
+        a = args[i]
+        if a == "--file": path = Path(args[i + 1]).name; i += 2
+        elif a == "--group": groups.append(args[i + 1]); i += 2
+        elif a == "--key": key = args[i + 1]; i += 2
+        elif a == "--default": value = args[i + 1]; i += 2
+        elif a == "--delete": delete = True; i += 1
+        elif a == "--notify": i += 1
+        elif a == "--": value = args[i + 1]; i += 2
+        else: raise SystemExit("argumento inesperado " + a)
+    name = "|".join([path, *groups, key])
+    if mode == "read":
+        print(data.get(name, value)); raise SystemExit(0)
+    if delete: data.pop(name, None)
+    else: data[name] = value
+store.write_text(json.dumps(data))
+"""
 
 
 def run(env, *arguments, check=True):
@@ -57,6 +89,13 @@ def main():
         calls = base / "systemctl.log"
         fake_tool(tools, "systemctl", f'echo "$*" >> "{calls}"')
         quickshell = fake_tool(tools, "qs", 'echo "Quickshell: v0.3.2"')
+        kconfig, kstore = base / "kconfig.py", base / "kconfig.json"
+        kconfig.write_text(FAKE_KCONFIG)
+        original = {"kdeglobals|General|ColorScheme": "BreezeDark", "kdeglobals|General|AccentColor": "61,174,233",
+                    "kdeglobals|Colors:Window|BackgroundNormal": "32,33,36"}
+        kstore.write_text(json.dumps(original))
+        for name, mode in (("kreadconfig6", "read"), ("kwriteconfig6", "write"), ("plasma-apply-colorscheme", "scheme")):
+            fake_tool(tools, name, f'exec "{sys.executable}" -I "{kconfig}" "{kstore}" {mode} "$@"')
         env = {
             "HOME": str(home), "PATH": f"{tools}:{os.environ['PATH']}", "LANG": "C.UTF-8",
             "NOVA_QS_BIN": str(quickshell), "NOVA_BUILD_DIR": str(base / "build"),
@@ -96,6 +135,12 @@ def main():
             assert str(prefix / "libexec") in text or str(quickshell) in text, f"{unit} con rutas inesperadas"
         assert (share / "novashell/installed-version").read_text().strip() == (ROOT / "VERSION").read_text().strip()
         assert "daemon-reload" in calls.read_text()
+        # Aspecto aplicado al instalar: sigue la paleta oscura actual y deja el acento neutro.
+        applied = json.loads(kstore.read_text())
+        assert applied["kdeglobals|General|ColorScheme"] == "NovaGlassDark", applied
+        assert applied["kdeglobals|Icons|Theme"] == "NovaGlass-dark", applied
+        assert "kdeglobals|General|AccentColor" not in applied, applied
+        assert applied["ksplashrc|KSplash|Theme"] == "org.knova.novashell", applied
 
         status = run(env, "login-theme", "status")
         assert "Tema preparado" in status.stdout, status.stdout
@@ -106,7 +151,9 @@ def main():
         settings.write_text('{"mode":"dark"}')
         run(env, "uninstall")
         assert settings.exists(), "uninstall sin --purge debe conservar los ajustes"
-        run(env, "install")  # incremental: reutiliza la compilación
+        assert json.loads(kstore.read_text()) == original, "uninstall debe restaurar la configuración de KDE"
+        run(env, "install", "--no-profile")  # incremental: reutiliza la compilación
+        assert json.loads(kstore.read_text()) == original, "--no-profile no debe tocar KDE"
         run(env, "uninstall", "--purge")
         assert not settings.parent.exists(), "--purge debe borrar los ajustes del daemon"
         remaining = leftovers(share) + leftovers(prefix / "libexec") if (prefix / "libexec").exists() else leftovers(share)

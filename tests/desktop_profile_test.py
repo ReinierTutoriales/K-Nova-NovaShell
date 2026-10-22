@@ -38,7 +38,8 @@ class ProfileTest(unittest.TestCase):
         self.controller = PROFILE.NativeProfile(self.store, Path(self.directory.name) / "nova/profile.json")
 
     def test_preview_does_not_write(self):
-        self.assertEqual(len(self.controller.preview("balanced")), len(PROFILE.KEYS))
+        changes = [key for key, value in PROFILE.profile("balanced").items() if value is not None]
+        self.assertEqual(sorted(self.controller.preview("balanced")), sorted(changes))
         self.assertEqual(self.store.writes, 0)
         self.assertFalse(self.controller.state.exists())
 
@@ -160,6 +161,62 @@ class ProfileTest(unittest.TestCase):
                 colors = palette[f"Colors:{group}"]
                 bg, fg = luminance(colors["BackgroundNormal"]), luminance(colors["ForegroundNormal"])
                 self.assertGreaterEqual((max(bg, fg) + 0.05) / (min(bg, fg) + 0.05), 4.5, (variant, group))
+
+    def test_look_follows_appearance_and_neutral_accent(self):
+        self.store.values["look.accent"] = "61,174,233"
+        self.store.values["look.accentWallpaper"] = "true"
+        self.store.background = "32,33,36"
+        self.store.window_background = lambda: self.store.background
+        original = self.store.values.copy()
+        self.controller.apply("balanced")
+        self.assertEqual(self.store.values["look.icons"], "NovaGlass-dark")
+        self.assertEqual(self.store.values["look.colors"], "NovaGlassDark")
+        self.assertIsNone(self.store.values["look.accent"])
+        self.assertEqual(self.store.values["look.accentWallpaper"], "false")
+        self.controller.restore()
+        self.assertEqual(self.store.values, original)
+        self.assertEqual(PROFILE.profile("glass")["look.colors"], "NovaGlassLight")
+        self.assertEqual(list(PROFILE.KEYS)[-1], "look.colors")  # palette last: accent first
+
+    def test_keep_look_leaves_icons_accent_and_palette(self):
+        self.store.values["look.colors"] = "BreezeDark"
+        self.store.values["look.accent"] = "61,174,233"
+        self.controller.apply("balanced", look=False)
+        self.assertEqual(self.store.values["look.colors"], "BreezeDark")
+        self.assertEqual(self.store.values["look.accent"], "61,174,233")
+        self.assertIsNone(self.store.values["look.icons"])
+        self.assertEqual(self.store.values["windows.blur"], "true")
+
+    def test_dark_detection_is_bounded(self):
+        self.assertTrue(PROFILE.is_dark("14,15,18"))
+        self.assertFalse(PROFILE.is_dark("239,240,241"))
+        for bad in (None, "", "a,b,c", "300,0,0", "1,2"):
+            self.assertFalse(PROFILE.is_dark(bad))
+
+    def test_reapply_after_upgrade_only_checks_owned_keys(self):
+        # A v2 journal knew nothing of look keys; the user's palette is kept as "before".
+        legacy = {key: None for key in PROFILE.KEYS_V2}
+        applied = {key: value for key, value in PROFILE.profile("glass").items() if key in PROFILE.KEYS_V2}
+        for key, value in applied.items():
+            self.store.values[key] = value
+        self.store.values["look.colors"] = "BreezeDark"
+        self.controller.save({"version": 2, "profile": "glass", "phase": "active",
+                              "before": legacy, "applied": applied})
+        self.controller.apply("balanced")
+        self.assertEqual(self.controller.load()["before"]["look.colors"], "BreezeDark")
+        self.controller.restore()
+        self.assertEqual(self.store.values["look.colors"], "BreezeDark")
+        self.assertTrue(all(self.store.values[key] is None for key in PROFILE.KEYS_V2))
+
+    def test_palette_restore_returns_to_plasma_default(self):
+        store = object.__new__(PROFILE.KConfigStore)
+        store.config = Path(self.directory.name)
+        store.writer, store.reader = "/usr/bin/kwriteconfig6", "/usr/bin/kreadconfig6"
+        store.colors, store.icons = "/usr/bin/plasma-apply-colorscheme", None
+        with patch.object(store, "run", return_value="") as run, patch.object(store, "read", return_value=None):
+            store.write("look.colors", None)
+        self.assertEqual(run.call_args_list[0].args[0], [store.colors, "--", "BreezeLight"])
+        self.assertIn("--delete", run.call_args_list[1].args[0])
 
 
 if __name__ == "__main__":

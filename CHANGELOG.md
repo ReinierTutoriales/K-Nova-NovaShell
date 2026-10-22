@@ -6,6 +6,24 @@ versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
 
 ## [Sin publicar]
 
+### Añadido
+- `novactl install` aplica el aspecto nativo de forma reversible: iconos
+  NovaGlass, paleta NovaGlass clara u oscura según la actual, acento Liquid
+  Glass neutro (retira el acento personalizado o del fondo), Dolphin,
+  transiciones de KWin, splash y fondo de bloqueo. `--no-profile` lo omite;
+  `uninstall` lo restaura.
+- Perfil nativo: claves de iconos, acento y paleta (`--appearance
+  auto|light|dark`, `--keep-look`) y efectos Blur, Maximize, Slide y Fading
+  Popups (desactivados en `reduced`). Registro versión 3 con migración.
+- 73 sinónimos de carpetas (Dolphin, KIO, biblioteca heredada) enlazados a los
+  13 roles propios.
+
+### Cambiado
+- Carpetas NovaGlass en vidrio monocromo (perla y grafito) en las cuatro
+  apariencias; sin tonos azules.
+- Reinstalar reaplica el perfil activo: solo se bloquea si el usuario cambió
+  una clave que el perfil gestiona.
+
 ## [0.3.0] — 2026-10-22 · pre-release
 
 Liquid Glass sin acento de color en todo el sistema, intensidad del vidrio y

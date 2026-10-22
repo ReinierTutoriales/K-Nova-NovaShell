@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Original vectors. Golden Gate visual target; not extracted Apple artwork.
+// Original vectors (not extracted Apple artwork), Liquid Glass monochrome.
 export const folders = Object.freeze({
     folder: "", "folder-open": "", "inode-directory": "",
     "folder-documents": "M25 30h10l4 4v12H25zM35 30v5h4M29 39h6M29 42h6",
@@ -14,25 +14,45 @@ export const folders = Object.freeze({
     "folder-templates": "M25 29h14v18H25zM28 33h8M28 37h8M28 41h5"
 });
 export const folderNames = Object.freeze(Object.keys(folders));
+// Synonyms used by Dolphin, KIO and the inherited library. They point at a
+// role so every common folder stays monochrome. Named colours (folder-red,
+// folder_color_*) and states (locked, encrypted, trash) keep their own art.
+export const folderAliases = Object.freeze(Object.fromEntries([
+    ...["folder-downloads", "folder_download", "folder_downloads", "folders-downloads", "folder-download-open"].map(alias => [alias, "folder-download"]),
+    ...["folder-documents-open", "folders-documents", "folder-text", "folder-txt", "folder-notes", "folder-book"].map(alias => [alias, "folder-documents"]),
+    ...["folder-pictures-open", "folder-picture", "folder-image", "folder-images", "folder_images", "folder_pictures", "folder-photo", "folder-photos", "folder-camera", "user-images", "user-pictures"].map(alias => [alias, "folder-pictures"]),
+    ...["folder-music-open", "folders-music", "folder-sound", "folder-podcast"].map(alias => [alias, "folder-music"]),
+    ...["folder-videos-open", "folders-videos", "folder-video", "folder-videocamera"].map(alias => [alias, "folder-videos"]),
+    ...["folder-remote-open", "folder-remote-ftp", "folder-remote-nfs", "folder-remote-smb", "folder-remote-ssh", "folder-network", "folder-cloud", "folder-gdrive", "folder-dropbox", "folder-onedrive", "folder-owncloud"].map(alias => [alias, "folder-remote"]),
+    ...["folder-home", "folder_home", "user-home-open"].map(alias => [alias, "user-home"]),
+    ...["user-desktop"].map(alias => [alias, "folder-desktop"]),
+    ...["folder-public", "folder-publicshare-open", "folders-publicshare", "user-share"].map(alias => [alias, "folder-publicshare"]),
+    ...["folder-templates-open"].map(alias => [alias, "folder-templates"]),
+    ...["folder_open", "folder-drag-accept"].map(alias => [alias, "folder-open"]),
+    ...["folder_color_default", "folder-development", "folder-code", "folder-projects", "folder-git", "folder-github", "folder-build", "folder-script", "folder-html", "folder_html", "folder-temp", "folder-recent", "folder-favorites", "folder-bookmark", "folder-bookmarks", "folder-games", "folder-steam", "folder-root", "folder-library", "folder-log", "folder-tar"].map(alias => [alias, "folder"]),
+]));
 
 export function folderSvg(name, mode = "default", small = false) {
     if (!Object.hasOwn(folders, name)) throw new TypeError("Unknown folder role");
     if (!["default", "dark", "clear", "tinted"].includes(mode)) throw new TypeError("Unknown appearance");
     const dark = mode === "dark";
     const clear = mode === "clear";
-    const top = dark ? "#395467" : mode === "tinted" ? "#86acf4" : clear ? "#e3edf5" : "#85d0ed";
-    const bottom = dark ? "#253e51" : mode === "tinted" ? "#487cd3" : clear ? "#c3d5e4" : "#57a7cf";
-    const ink = dark ? "#dceef9" : clear ? "#3a566b" : "#184f72";
+    // Liquid Glass monocromo: perla en claro, grafito en oscuro; sin tinte azul.
+    const tinted = mode === "tinted";
+    const top = dark ? "#55585f" : tinted ? "#b8bbc2" : clear ? "#f3f4f6" : "#e3e5e9";
+    const bottom = dark ? "#303237" : tinted ? "#8a8d95" : clear ? "#d5d8dd" : "#b6bac2";
+    const ink = dark ? "#eceef2" : tinted ? "#1d1f24" : "#33363d";
+    const symbol = dark ? "#d9dbe0" : "#3a3d44";
     const outline = 'M7 19v-4a4 4 0 0 1 4-4h14l5 5h23a4 4 0 0 1 4 4v29a4 4 0 0 1-4 4H11a4 4 0 0 1-4-4z';
     const badge = folders[name];
     const open = name === "folder-open";
     // Optical small-size rendition: semantic symbol, without subpixel effects.
     if (small) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="'
         + (badge || outline) + '" fill="none" stroke="'
-        + (dark ? "#76bcff" : clear ? "#3a566b" : "#087bff")
+        + symbol
         + '" stroke-width="' + (badge ? 2.2 : 4) + '" stroke-linecap="round" stroke-linejoin="round"'
         + (badge ? ' transform="translate(-32 -44) scale(2)"' : "") + '/>'
-        + (open ? '<path d="M10 25h47l-6 27H8z" fill="none" stroke="' + (dark ? "#76bcff" : "#087bff")
+        + (open ? '<path d="M10 25h47l-6 27H8z" fill="none" stroke="' + symbol
             + '" stroke-width="4" stroke-linejoin="round"/>' : "") + '</svg>';
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs>'
         + '<linearGradient id="front" x2="0" y2="1"><stop stop-color="' + top

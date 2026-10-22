@@ -77,8 +77,12 @@ Ver [sesión](SESION.md).
 - ✅ Carpetas e iconos: 440 renderizados Qt; variante de Dolphin de 16 px sin
   filtros subpíxel problemáticos, conservando el vector completo a otros tamaños.
 - ⬜ Comparación visual completa de iconos y carpetas frente a macOS 27.
-- ✅ Carpetas propias con estética macOS 27 (Golden Gate): 13 roles, cuatro
-  apariencias y símbolos ópticos a 16 px. Iconos de aplicaciones: MacTahoe.
+- ✅ Carpetas propias en vidrio monocromo (Golden Gate): 13 roles y 73
+  sinónimos, cuatro apariencias y símbolos ópticos a 16 px. Iconos de
+  aplicaciones: MacTahoe.
+- 🟡 Aspecto nativo aplicado al instalar (iconos, paleta, acento neutro,
+  Dolphin, transiciones KWin, sesión), reversible: probado con KConfig
+  simulado de extremo a extremo; falta Plasma 6.8 real.
 - ⬜ Estilo Qt Widgets para materiales de Dolphin y progreso KIO/Plasma.
 
 - Sesión real Plasma 6.8 Wayland con Quickshell 0.3.2 y Qt 6.12: blur, GPU,

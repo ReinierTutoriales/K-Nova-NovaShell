@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Build-time only. NovaShell has no Node.js runtime dependency.
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { resolve, join } from "node:path";
 import * as Catalog from "../shell/nova/icons/IconCatalog.mjs";
-import { folderNames, folderSvg } from "../shell/nova/icons/FolderCatalog.mjs";
+import { folderAliases, folderNames, folderSvg } from "../shell/nova/icons/FolderCatalog.mjs";
 import { pathToFileURL } from "node:url";
 import { styleForPalette } from "../shell/nova/theme/IconTokens.mjs";
 
@@ -55,6 +55,13 @@ export function exportTheme(destination) {
             writeFileSync(join(directory, "scalable/places", id + ".svg"), notice + folderSvg(id, mode) + "\n");
             writeFileSync(join(directory, "16x16/places", id + ".svg"), notice + folderSvg(id, mode, true) + "\n");
         }
+        // Relative links: one drawing per role, no duplicated bytes.
+        for (const [alias, role] of Object.entries(folderAliases))
+            for (const size of ["scalable", "16x16"]) {
+                const link = join(directory, size, "places", alias + ".svg");
+                rmSync(link, { force: true });
+                symlinkSync(role + ".svg", link);
+            }
         if (actions) {
             for (const id of Catalog.symbolNames)
                 writeFileSync(join(directory, "scalable/actions", "nova-" + id + ".svg"),

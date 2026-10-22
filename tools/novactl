@@ -221,7 +221,12 @@ render_unit() {
 
 cmd_install() {
     require_user
-    local qs
+    local qs apply_profile=1
+    case "${1:-}" in
+        "") ;;
+        --no-profile) apply_profile=0 ;;
+        *) die "Opción desconocida: $1 (admite --no-profile)" ;;
+    esac
     qs="$(quickshell_bin)" || die "Quickshell no encontrado; ejecuta: novactl doctor"
 
     cmd_build
@@ -245,6 +250,7 @@ cmd_install() {
 
     systemctl --user daemon-reload
     ok "NovaShell $VERSION instalado en tu usuario (sin root)."
+    (( apply_profile )) && install_profile
     info "Siguiente paso: novactl start   (y 'novactl enable' para arrancar al iniciar sesión)"
 }
 
@@ -291,6 +297,27 @@ cmd_uninstall() {
         ok "NovaShell desinstalado, incluidos tus datos y ajustes."
     else
         ok "NovaShell desinstalado. Tus ajustes siguen en $CONFIG_HOME/novashell (usa --purge para borrarlos)."
+    fi
+}
+
+# Aspecto nativo listo tras instalar: iconos, paleta y acento Liquid Glass,
+# Dolphin, transiciones de KWin, splash y fondo de bloqueo. Reversible
+# (uninstall lo restaura) y nunca bloquea la instalación.
+install_profile() {
+    if ! have kreadconfig6 || ! have kwriteconfig6 || ! have python3; then
+        info "Sin herramientas de KDE: perfil nativo omitido (novactl desktop-profile apply)"
+        return 0
+    fi
+    local journal="$STATE_HOME/novashell/desktop-profile.json" name=balanced
+    if [[ -f "$journal" ]]; then
+        # Reaplica el perfil elegido: las claves nuevas de esta versión se suman.
+        name="$(python3 -I -c 'import json, sys; print(json.load(open(sys.argv[1])).get("profile", ""))' "$journal" 2>/dev/null)" || name=""
+        [[ "$name" =~ ^(balanced|glass|reduced)$ ]] || name=balanced
+    fi
+    if cmd_desktop_profile apply "$name" > /dev/null; then
+        ok "Aspecto NovaShell aplicado (perfil $name). Para deshacerlo: novactl desktop-profile restore"
+    else
+        warn "Perfil nativo no aplicado; revisa: novactl desktop-profile preview"
     fi
 }
 
@@ -388,7 +415,9 @@ Uso: novactl <orden>
 
   doctor             Comprueba sesión, Plasma, Quickshell y herramientas
   build              Compila el daemon en $BUILD_DIR
-  install            Compila e instala en tu usuario
+  install [--no-profile]
+                     Compila e instala en tu usuario y aplica el aspecto nativo
+                     (reversible; --no-profile no toca la configuración de KDE)
   uninstall [--purge] Desinstala (con --purge también borra tus ajustes)
   start | stop | restart | status
   enable | disable   Arranque automático al iniciar sesión
@@ -396,7 +425,8 @@ Uso: novactl <orden>
   dev                Ejecuta el shell desde las fuentes (recarga en caliente)
   version            Versión de las fuentes y la instalada
   desktop-profile preview|apply|restore|status [balanced|glass|reduced]
-                     Perfil reversible: Dolphin, KWin, splash y fondo de bloqueo
+                     Perfil reversible: iconos, paleta, Dolphin, KWin, splash y bloqueo
+                     (opciones: --appearance auto|light|dark, --keep-look)
   login-theme preview|install|uninstall|status
                      Tema SDDM: vista previa sin root; instalar imprime la orden con sudo
 EOF
