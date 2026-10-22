@@ -83,6 +83,8 @@ python3 tools/check-sources.py        # reglas de arquitectura
 ./tools/novactl dev                   # shell desde las fuentes, recarga en caliente
 ```
 
+El repositorio incluye skills, agentes y reglas (`AGENTS.md`, `.claude/skills/`, `.cursor/rules/`) para que los asistentes de código produzcan cambios eficientes y de alta calidad, siempre verificados y sin atribución de IA.
+
 ## Licencia
 
 [GPL-3.0-or-later](LICENSE). Compatible con NextKDE (GPL-3.0) y con Quickshell.
