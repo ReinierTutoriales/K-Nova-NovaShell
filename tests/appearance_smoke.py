@@ -87,7 +87,7 @@ AppearancePreview {
                     for icons in ("default", "dark", "clear", "tinted"):
                         theme.setProperty("iconMode", icons)
                         QTest.qWait(15)
-                        self.assertGreaterEqual(theme.property("surfaceAlpha"), 0.88)
+                        self.assertGreaterEqual(theme.property("surfaceAlpha"), 0.55)
                 theme.setProperty("material", "frosted")
                 theme.setProperty("iconMode", "default")
                 QTest.qWait(15)

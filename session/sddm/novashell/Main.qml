@@ -33,6 +33,9 @@ Rectangle {
             Theme.glassAccent = false;
         }
         Theme.reduceMotion = config.boolValue("reduceMotion");
+        // Intensidad del vidrio (0 = más opaco, 1 = más transparente).
+        const amount = config.realValue("transparency");
+        Theme.transparency = amount >= 0 && amount <= 1 && config.stringValue("transparency") !== "" ? amount : 0.5;
         enter.start();
     }
 

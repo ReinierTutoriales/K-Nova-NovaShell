@@ -64,6 +64,28 @@ relleno principal se oscurece lo justo para que el texto blanco cumpla 4,5:1
 (`AppearancePolicy.readableFill`) y el foco se deriva del acento. El material
 predeterminado es Cristal (`liquid`).
 
+## Intensidad del vidrio y desenfoque
+
+Ajustes → Apariencia (y la bienvenida) tienen dos controles:
+
+- **Vidrio** (de *Opaco* a *Transparente*, preferencia `transparency`): se ve
+  en vivo al arrastrar y se guarda al soltar. Rangos de opacidad de la
+  superficie (`AppearancePolicy.surfaceAlpha`):
+
+  | Material | Con desenfoque del compositor | Sin desenfoque |
+  | :--- | :--- | :--- |
+  | Cristal (`liquid`) | 0,85 → 0,10 | 0,95 → 0,55 |
+  | Esmerilado (`frosted`) | 0,92 → 0,32 | 0,97 → 0,70 |
+  | Sólido | 1 | 1 |
+
+  Sin desenfoque se conserva un mínimo legible porque el fondo se ve nítido.
+  Reducir transparencia y alto contraste fuerzan opacidad 1.
+- **Desenfoque** (1–15): la intensidad del efecto Blur de KWin
+  (`[Effect-blur] BlurStrength`), el que aplica a NovaShell vía
+  `ext-background-effect-v1`. Se cambia con `blur.set` del daemon
+  (`kwriteconfig6` + recarga del efecto por D-Bus) y solo aparece si
+  `kwriteconfig6` está instalado.
+
 ## Transparencia y blur
 
 `GlassSurface` dibuja un relleno y acabado, sin capturar lo que hay detrás.

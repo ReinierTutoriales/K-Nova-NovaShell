@@ -20,6 +20,10 @@ RowLayout {
     signal patchRequested(var changes)
     signal wallpaperRequested(string url)
     signal welcomeRequested()
+    // Desenfoque de KWin (1–15); lo rellena Desktop.qml desde Platform.blur.
+    property int blurStrength: 15
+    property bool blurWritable: false
+    signal blurRequested(int strength)
     spacing: Theme.space.lg
 
     function update(key, value) { const patch = {}; patch[key] = value; patchRequested(patch); }
@@ -138,12 +142,20 @@ RowLayout {
                 }
             }
             SettingsRow {
-                visible: settings.section === "appearance"; label: qsTr("Transparencia")
-                NovaSlider {
-                    Layout.fillWidth: true; from: 0; to: 1
+                visible: settings.section === "appearance"; label: qsTr("Vidrio")
+                GlassIntensity {
                     value: settings.values.transparency ?? 0.5
-                    Accessible.name: qsTr("Transparencia")
-                    onPressedChanged: if (!pressed) settings.update("transparency", value)
+                    onCommitted: value => settings.update("transparency", value)
+                }
+            }
+            SettingsRow {
+                visible: settings.section === "appearance" && settings.blurWritable
+                label: qsTr("Desenfoque")
+                NovaSlider {
+                    Layout.fillWidth: true; from: 1; to: 15; stepSize: 1
+                    value: settings.blurStrength
+                    Accessible.name: qsTr("Intensidad del desenfoque de KWin")
+                    onPressedChanged: if (!pressed) settings.blurRequested(Math.round(value))
                 }
             }
             NovaSwitch {

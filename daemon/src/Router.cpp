@@ -72,6 +72,8 @@ Router Router::makeDefault()
     router.add(QStringLiteral("brightness.get"), [actions](const QJsonObject &) { return actions->brightness(); });
     router.add(QStringLiteral("brightness.set"), [actions](const QJsonObject &p) { return actions->setBrightness(p); });
     router.add(QStringLiteral("system.metrics"), [actions](const QJsonObject &) { return actions->metrics(); });
+    router.add(QStringLiteral("blur.get"), [actions](const QJsonObject &) { return actions->blur(); });
+    router.add(QStringLiteral("blur.set"), [actions](const QJsonObject &p) { return actions->setBlur(p); });
     router.m_windowBridge = std::make_shared<WindowBridge>();
     const auto windows = router.m_windowBridge;
     router.add(QStringLiteral("windows.list"), [windows](const QJsonObject &) { return windows->snapshot(); });

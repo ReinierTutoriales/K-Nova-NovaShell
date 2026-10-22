@@ -16,12 +16,18 @@ public:
     Reply brightness();
     Reply setBrightness(const QJsonObject &payload);
     Reply metrics();
+    // Intensidad del desenfoque de KWin ([Effect-blur] BlurStrength, 1–15).
+    Reply blur();
+    Reply setBlur(const QJsonObject &payload);
+    // Lee BlurStrength del texto de un kwinrc; 0 si no aparece o es inválido.
+    static int parseBlurStrength(const QString &kwinrc);
 signals:
     void event(const QString &name, const QJsonObject &payload);
 private:
     Reply dispatch(const QDBusConnection &bus, const QDBusMessage &message);
     void finishBrightness();
     int m_pending = 0;
+    bool m_blurBusy = false;
     bool m_brightnessBusy = false;
     QJsonObject m_brightness;
     QHash<QString, QJsonObject> m_displays;

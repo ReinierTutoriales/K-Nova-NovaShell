@@ -45,6 +45,15 @@ private slots:
         QVERIFY(std::holds_alternative<protocol::Error>(second.patch({{QStringLiteral("pins"), QJsonArray{"same.desktop", "same.desktop"}}})));
         QVERIFY(!(QFile::permissions(path) & (QFileDevice::ReadGroup | QFileDevice::ReadOther)));
     }
+    void blurStrengthIsParsedAndBounded() {
+        QCOMPARE(DesktopActions::parseBlurStrength(QStringLiteral("[Effect-blur]\nBlurStrength=7\n")), 7);
+        QCOMPARE(DesktopActions::parseBlurStrength(QStringLiteral("[Plugins]\nBlurStrength=7\n[Effect-blur]\nNoiseStrength=3\n")), 0);
+        QCOMPARE(DesktopActions::parseBlurStrength(QStringLiteral("[Effect-blur]\nBlurStrength=99\n")), 0);
+        QCOMPARE(DesktopActions::parseBlurStrength(QStringLiteral("[Effect-blur]\nBlurStrengthX=4\nBlurStrength = 3\n")), 3);
+        DesktopActions actions;
+        for (const QJsonValue &bad : {QJsonValue(0), QJsonValue(16), QJsonValue(2.5), QJsonValue(QStringLiteral("9"))})
+            QVERIFY(std::holds_alternative<protocol::Error>(actions.setBlur({{QStringLiteral("strength"), bad}})));
+    }
     void welcomeStartsPendingAndOnlyAcceptsBool() {
         QTemporaryDir directory;
         Preferences preferences(directory.filePath(QStringLiteral("settings.json")));

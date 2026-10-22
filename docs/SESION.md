@@ -131,6 +131,7 @@ llamadas al proxy de SDDM.
 | :--- | :--- | :--- |
 | `appearance` | `auto`, `light`, `dark` | `auto` |
 | `accent` | vacío (Liquid Glass) o `#rrggbb` para un acento de color | vacío |
+| `transparency` | `0` (más opaco) – `1` (más transparente) | `0.5` |
 | `background` | ruta absoluta a una imagen; vacío usa el fondo NovaShell | vacío |
 | `reduceMotion` | `true`, `false` | `false` |
 
