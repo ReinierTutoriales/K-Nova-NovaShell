@@ -123,6 +123,8 @@ QtObject {
         readonly property int title: 16
         readonly property int heading: 25
         readonly property int display: 44
+        // Reloj de la pantalla de inicio de sesión.
+        readonly property int hero: 88
     }
     readonly property QtObject motion: QtObject {
         readonly property int progressCycle: 1400
@@ -173,6 +175,11 @@ QtObject {
         readonly property int settingsHeight: 620
         readonly property int welcomeWidth: 560
         readonly property int welcomeHeight: 460
+        readonly property int loginAvatar: 96
+        readonly property int loginAvatarSmall: 56
+        readonly property int loginFieldWidth: 260
+        // Desenfoque del fondo en la pantalla de inicio de sesión (0..1).
+        readonly property real loginBackdropBlur: 0.7
         // Fracción superior de la superficie que cubre el brillo especular.
         readonly property real sheenHeight: 0.55
     }
