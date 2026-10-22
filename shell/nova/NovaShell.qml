@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import qs.nova.bar
 import qs.nova.theme
 import qs.nova.preview
@@ -39,6 +40,24 @@ Scope {
             }
             Component.onCompleted: requestActivate()
         }
+    }
+
+    // IPC propia de Quickshell para atajos de teclado (Ajustes de KDE →
+    // Atajos → comando `qs ipc call novashell toggle launcher`, etc.).
+    // Solo abre paneles conocidos; no ejecuta nada del sistema.
+    IpcHandler {
+        target: "novashell"
+        // Sin propiedades: IpcHandler expone las suyas por IPC y un array no cabe.
+        function toggle(panel: string): string {
+            const panels = ["launcher", "controls", "notifications", "settings",
+                "overview", "clipboard", "widgets"];
+            if (panels.indexOf(panel) < 0)
+                return "panel desconocido: " + panel;
+            ShellState.toggle(panel, ShellState.screen || Quickshell.screens[0]);
+            return ShellState.panel;
+        }
+        function close(): void { ShellState.close(); }
+        function appearance(): void { root.showAppearance(); }
     }
 
     function showAppearance() {
