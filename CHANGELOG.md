@@ -4,6 +4,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/);
 versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
 `0.x`, cualquier versión menor puede romper compatibilidad.
 
+## [Sin publicar]
+
 ## [0.1.0] — 2026-10-22 · pre-release
 
 Primera versión funcional. Probada con Quickshell 0.3.2 y Qt 6.12.0 reales
@@ -50,4 +52,5 @@ del sistema), por eso se publica como pre-release.
 - Capa de iconos GoldenGate v3: su autor la describe como una recopilación
   de iconos de terceros, por lo que su licencia no cubría ese arte.
 
+[Sin publicar]: https://github.com/ReinierTutoriales/K-Nova-NovaShell/compare/v0.1.0...main
 [0.1.0]: https://github.com/ReinierTutoriales/K-Nova-NovaShell/releases/tag/v0.1.0
