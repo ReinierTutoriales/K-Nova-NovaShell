@@ -1,4 +1,4 @@
-# Dolphin y transiciones de ventanas
+# Dolphin, transiciones de ventanas y sesión
 
 NovaShell usa Dolphin como explorador y los efectos que distribuye KWin 6.8.
 El perfil nativo aplica preferencias de KDE; no añade plugins binarios ni una
@@ -30,6 +30,10 @@ Los tamaños base de iconos son 64 px en iconos, 24 en detalles y 32 en compacto
 Las propiedades guardadas por carpeta pueden prevalecer sobre esos valores.
 No se cambian asociaciones, confirmaciones, papelera, pestañas ni vista previa.
 
+Los tres perfiles activan también el splash NovaShell (`ksplashrc`) y el fondo
+NovaShell en la pantalla de bloqueo (`kscreenlockerrc`); `apply` exige que
+`novactl install` haya instalado esos paquetes. Ver [sesión](SESION.md).
+
 La recarga usa `org.kde.KWin /KWin reconfigure`. Los cambios se notifican con
 `kwriteconfig6 --notify`; algunas preferencias de vista de Dolphin requieren
 abrir otra vista. No se cierran ventanas ni procesos de aplicaciones.
@@ -58,12 +62,14 @@ global en ventanas, vídeos, menús o contenido de archivos.
 ## Recuperación y coste
 
 El registro privado `$XDG_STATE_HOME/novashell/desktop-profile.json` conserva
-solo las doce claves gestionadas, incluidos valores ausentes. Se escribe de
+solo las quince claves gestionadas, incluidos valores ausentes. Se escribe de
 forma atómica antes de aplicar cambios. Un bloqueo impide dos escritores.
 Los fallos de escritura intentan rollback; si no puede completarse, se conserva
 el registro para `restore`. Una aplicación interrumpida también es recuperable.
 
-Restaurar preserva los valores que el usuario cambió después. Cambiar de perfil
+Restaurar preserva los valores que el usuario cambió después. Los registros
+de la versión 0.1.0 (sin claves de sesión) se migran al leerlos sin tocar el
+splash ni el bloqueo que el usuario tenga. Cambiar de perfil
 mantiene la copia original; si hay cambios externos, se requiere restaurar antes
 de aplicar otro. `novactl uninstall` restaura un perfil activo antes de retirar
 los componentes. La selección manual de paleta sigue siendo una preferencia KDE.
