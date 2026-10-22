@@ -1,0 +1,14 @@
+module qs.nova.desktop
+Desktop 1.0 Desktop.qml
+Dock 1.0 Dock.qml
+DesktopPanel 1.0 DesktopPanel.qml
+LauncherView 1.0 LauncherView.qml
+ControlCenterView 1.0 ControlCenterView.qml
+NotificationView 1.0 NotificationView.qml
+NotificationCard 1.0 NotificationCard.qml
+SettingsView 1.0 SettingsView.qml
+OverviewView 1.0 OverviewView.qml
+ClipboardView 1.0 ClipboardView.qml
+WidgetsView 1.0 WidgetsView.qml
+ApplicationTile 1.0 ApplicationTile.qml
+TrayRow 1.0 TrayRow.qml

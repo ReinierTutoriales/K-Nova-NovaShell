@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Server.h"
+#include "WindowBridge.h"
 
 #include <QFile>
 #include <QLocalSocket>
@@ -35,6 +36,15 @@ Server::Server(Router router, QObject *parent)
     m_server.setSocketOptions(QLocalServer::UserAccessOption);
     m_server.setMaxPendingConnections(MaxClients);
     connect(&m_server, &QLocalServer::newConnection, this, &Server::acceptConnections);
+    if (auto *windows = m_router.windowBridge()) {
+        connect(windows, &WindowBridge::changed, this, [this](const QJsonObject &snapshot) {
+            const QByteArray event = protocol::encodeEvent(QStringLiteral("windows.changed"), snapshot);
+            for (auto *socket : m_buffers.keys()) {
+                if (socket->bytesToWrite() > 128 * 1024) socket->abort();
+                else socket->write(event);
+            }
+        });
+    }
 }
 
 Server::~Server()

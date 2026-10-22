@@ -2,6 +2,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import "DesktopPolicy.mjs" as Policy
 
 // Única puerta del shell hacia el sistema. La UI nunca ejecuta comandos
 // (nmcli, wpctl, systemctl, qdbus…): pide operaciones del contrato IPC v1
@@ -13,6 +14,80 @@ Singleton {
     // Datos de platform.version; vacío hasta la primera conexión.
     property string daemonVersion: ""
     property var operations: []
+    property string lastError: ""
+    property var applications: []
+    property var windows: []
+    property var desktops: []
+    property string activeWindow: ""
+    property string currentDesktop: ""
+    property bool windowBridgeAvailable: false
+    property bool applicationsLoading: false
+    property int _catalogGeneration: 0
+    property string _pendingWindow: ""
+    property string _pendingSource: ""
+    property double _pendingAt: 0
+    property PreferencesBridge preferences: PreferencesBridge {
+        onPatchRequested: changes => platform.call("settings.patch", changes, result => preferences.apply(result.values))
+    }
+    property NativeDesktop desktop: NativeDesktop {
+        scanning: ShellState.panel === "controls"
+        clipboardEnabled: platform.preferences.values.clipboardEnabled || false
+        onError: message => platform.lastError = message
+    }
+    property Loader notificationLoader: Loader {
+        active: platform.preferences.values.notificationServer || false
+        sourceComponent: Component {
+            NotificationBackend { doNotDisturb: platform.preferences.values.doNotDisturb || false }
+        }
+    }
+    readonly property var notifications: notificationLoader.item
+    readonly property var dockItems: Policy.dock(applications, preferences.values.pins || [], windows)
+    function call(operation, payload, success) {
+        return request(operation, payload, response => {
+            if (response.ok) { lastError = ""; if (success) success(response.result); }
+            else lastError = response.error?.message || qsTr("Operación no disponible");
+        });
+    }
+    function launch(id) { call("application.launch", {id: id}); }
+    function iconUrl(name) {
+        if (!name) return "";
+        if (name.startsWith("/") || name.startsWith("file:") || name.startsWith("image:"))
+            return name.startsWith("/") ? "file://" + encodeURI(name) : name;
+        return Quickshell.iconPath(name, true);
+    }
+    function windowAction(action, id) { call("window.action", Array.isArray(id) ? {action: action, ids: id} : {action: action, id: id || ""}); }
+    function activateApplication(entry) {
+        if (!entry.windows.length) { launch(entry.id); return; }
+        const next = Policy.nextWindow(entry.windows, activeWindow, _pendingWindow, _pendingSource, Date.now() - _pendingAt);
+        _pendingWindow = next.id;
+        _pendingSource = activeWindow;
+        _pendingAt = Date.now();
+        windowAction("activate", next.id);
+    }
+    function applyWindows(snapshot) {
+        windows = snapshot.windows || [];
+        desktops = snapshot.desktops || [];
+        activeWindow = snapshot.activeWindow || "";
+        currentDesktop = snapshot.currentDesktop || "";
+        windowBridgeAvailable = snapshot.available || false;
+    }
+    function reloadApplications() {
+        if (!connected || applicationsLoading) return;
+        const generation = ++_catalogGeneration;
+        applicationsLoading = true;
+        let collected = [];
+        function page(offset) {
+            request("applications.list", {offset: offset, limit: 24}, response => {
+                if (generation !== _catalogGeneration) return;
+                if (!response.ok) { applicationsLoading = false; lastError = response.error.message; return; }
+                collected = collected.concat(response.result.applications);
+                if (response.result.next > offset && response.result.next < response.result.total && collected.length < 10000)
+                    page(response.result.next);
+                else { applications = collected; applicationsLoading = false; }
+            });
+        }
+        page(0);
+    }
 
     function request(operation, payload, callback) {
         return client.request(operation, payload, callback)
@@ -27,13 +102,19 @@ Singleton {
     property JsonlClient client: JsonlClient {
         logName: "Platform"
         socketPath: Quickshell.env("XDG_RUNTIME_DIR") + "/novashell/platform.sock"
-        readOperations: ["platform.ping", "platform.version", "platform.capabilities"]
+        readOperations: ["platform.ping", "platform.version", "platform.capabilities", "applications.list", "settings.get", "windows.list"]
 
-        onEventReceived: (name, payload) => platform.eventReceived(name, payload)
+        onEventReceived: (name, payload) => {
+            if (name === "windows.changed") platform.applyWindows(payload);
+            platform.eventReceived(name, payload);
+        }
         onConnectedChanged: {
             if (!connected) {
                 platform.daemonVersion = ""
                 platform.operations = []
+                ++platform._catalogGeneration;
+                platform.applicationsLoading = false;
+                platform.applyWindows({});
                 return
             }
             request("platform.version", {}, response => {
@@ -44,6 +125,9 @@ Singleton {
                 if (response.ok)
                     platform.operations = response.result.operations
             })
+            platform.call("settings.get", {}, result => platform.preferences.apply(result.values));
+            platform.call("windows.list", {}, result => platform.applyWindows(result));
+            platform.reloadApplications();
         }
     }
 }

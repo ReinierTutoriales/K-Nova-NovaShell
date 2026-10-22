@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Router.h"
+#include "Applications.h"
+#include "Preferences.h"
+#include "WindowBridge.h"
 
 #include <QJsonArray>
 
 #include <exception>
+#include <memory>
 
 namespace nova {
 
@@ -59,6 +63,16 @@ QStringList Router::operations() const
 Router Router::makeDefault()
 {
     Router router;
+    router.m_windowBridge = std::make_shared<WindowBridge>();
+    const auto windows = router.m_windowBridge;
+    router.add(QStringLiteral("windows.list"), [windows](const QJsonObject &) { return windows->snapshot(); });
+    router.add(QStringLiteral("window.action"), [windows](const QJsonObject &p) { return windows->action(p); });
+    const auto applications = std::make_shared<Applications>();
+    const auto preferences = std::make_shared<Preferences>();
+    router.add(QStringLiteral("applications.list"), [applications](const QJsonObject &p) { return applications->list(p); });
+    router.add(QStringLiteral("application.launch"), [applications](const QJsonObject &p) { return applications->launch(p); });
+    router.add(QStringLiteral("settings.get"), [preferences](const QJsonObject &) { return preferences->read(); });
+    router.add(QStringLiteral("settings.patch"), [preferences](const QJsonObject &p) { return preferences->patch(p); });
     router.add(QStringLiteral("platform.ping"), [](const QJsonObject &) -> Reply {
         return QJsonObject{{QStringLiteral("ready"), true}};
     });

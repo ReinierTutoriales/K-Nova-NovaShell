@@ -4,6 +4,8 @@ import Quickshell
 import qs.nova.bar
 import qs.nova.theme
 import qs.nova.preview
+import qs.nova.desktop
+import qs.nova.services
 
 // Raíz del escritorio: crea una barra por pantalla y la retira sola cuando
 // una pantalla se desconecta (Variants sigue a Quickshell.screens).
@@ -27,11 +29,17 @@ Scope {
     Variants {
         model: Quickshell.screens
 
-        Bar {
+        Scope {
+            id: outputScope
+            required property var modelData
+            Desktop { output: outputScope.modelData }
+            Bar {
+            modelData: outputScope.modelData
             onAppearanceRequested: {
                 appearance.visible = true;
                 appearance.raise();
                 appearance.requestActivate();
+            }
             }
         }
     }

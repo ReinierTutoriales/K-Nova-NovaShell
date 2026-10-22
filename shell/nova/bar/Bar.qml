@@ -5,6 +5,8 @@ import Quickshell
 import Quickshell.Wayland
 import qs.nova.theme
 import qs.nova.controls
+import qs.nova.services
+import qs.nova.desktop
 
 // Barra superior de una pantalla. Solo compone widgets: la lógica vive en
 // cada widget y los datos del sistema en qs.nova.services.
@@ -60,6 +62,11 @@ PanelWindow {
             }
 
             IconButton {
+                label: qsTr("Aplicaciones")
+                symbol: "grid"
+                onClicked: { Platform.reloadApplications(); ShellState.toggle("launcher", bar.screen); }
+            }
+            IconButton {
                 label: qsTr("Apariencia")
                 symbol: "theme"
                 onClicked: bar.appearanceRequested()
@@ -70,6 +77,11 @@ PanelWindow {
             }
 
             PlatformStatus {}
+            TrayRow { window: bar }
+            IconButton { label: qsTr("Centro de control"); symbol: "volume"; onClicked: ShellState.toggle("controls", bar.screen) }
+            IconButton { label: qsTr("Portapapeles"); symbol: "panel"; onClicked: ShellState.toggle("clipboard", bar.screen) }
+            IconButton { label: qsTr("Notificaciones"); symbol: "notification"; onClicked: ShellState.toggle("notifications", bar.screen) }
+            IconButton { label: qsTr("Hoy"); symbol: "calendar"; onClicked: ShellState.toggle("widgets", bar.screen) }
 
             ClockWidget {}
         }

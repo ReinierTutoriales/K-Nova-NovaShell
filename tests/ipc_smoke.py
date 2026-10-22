@@ -130,6 +130,20 @@ def main():
                   "varias líneas en un paquete se procesan en orden")
             client.close()
 
+            desktop = Client(sock_path)
+            page = desktop.request("apps", "applications.list", {"limit": 2})
+            check(page.get("ok") and len(page["result"]["applications"]) <= 2, "catálogo paginado de aplicaciones")
+            settings = desktop.request("prefs", "settings.get")
+            check(settings.get("ok") and isinstance(settings["result"]["values"].get("dockAutoHide"), bool),
+                  "preferencias con tipos validados")
+            rejected = desktop.request("reject-prefs", "settings.patch", {"arbitrary-command": "false"})
+            check(not rejected["ok"] and rejected["error"]["code"] == "invalid-request", "claves de preferencias desconocidas se rechazan")
+            rejected = desktop.request("reject-launch", "application.launch", {"id": "../bad.desktop"})
+            check(not rejected["ok"], "el lanzamiento rechaza rutas en lugar de identificadores")
+            windows = desktop.request("windows", "windows.list")
+            check(windows.get("ok") and isinstance(windows["result"]["windows"], list), "instantánea de ventanas con ausencia de KWin tolerada")
+            desktop.close()
+
             # Línea gigante sin salto: el daemon corta la conexión, no crece en memoria.
             abuser = Client(sock_path)
             try:

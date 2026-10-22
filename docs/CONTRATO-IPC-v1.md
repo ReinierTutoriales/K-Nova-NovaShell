@@ -45,7 +45,8 @@ Los eventos llegan sin `requestId` y con `event`:
 {"version":1,"event":"grupo.nombre","payload":{}}
 ```
 
-v1 aún no emite eventos; el formato queda fijado para no romper clientes.
+`windows.changed` publica la instantánea de ventanas y escritorios cuando cambia.
+Las conexiones lentas se cierran al superar 128 KiB pendientes de escritura.
 
 ## Códigos de error
 
@@ -66,6 +67,12 @@ v1 aún no emite eventos; el formato queda fijado para no romper clientes.
 | `platform.ping` | — | `{"ready": true}` |
 | `platform.version` | — | `{"version": "0.1.0-dev", "protocol": 1}` |
 | `platform.capabilities` | — | `{"protocol": 1, "operations": ["…"]}` (lista ordenada) |
+| `applications.list` | `offset` ≥ 0, `limit` 1–32 | `applications`, `next`, `total`; páginas de hasta 48 KiB |
+| `application.launch` | `id`: identificador `.desktop` instalado | `launched`, `id`; resolución GIO, sin comando arbitrario |
+| `settings.get` | — | `values`: preferencias validadas del usuario |
+| `settings.patch` | Claves permitidas de `Preferences::defaults()` | `values`; escritura atómica, rechazo completo si hay una clave inválida |
+| `windows.list` | — | `available`, `windows`, `desktops`, `activeWindow`, `currentDesktop` |
+| `window.action` | `action`: activate/minimize/maximize/close/desktop; `id` existente | `accepted`; falla si KWin no está preparado, nunca se encola para más tarde |
 <!-- operaciones:fin -->
 
 ## Reglas para añadir una operación

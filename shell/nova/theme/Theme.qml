@@ -103,6 +103,19 @@ QtObject {
         readonly property int slow: theme.reduceMotion ? 0 : 320
     }
     readonly property QtObject metrics: QtObject {
+        readonly property int popupWidth: 440
+        readonly property int popupHeight: 680
+        readonly property int launcherWidth: 840
+        readonly property int launcherHeight: 640
+        readonly property int launcherCellWidth: 128
+        readonly property int launcherCellHeight: 120
+        readonly property int dockHeight: 112
+        readonly property int dockButtonSize: 72
+        readonly property real dockMaxScale: 1.15
+        readonly property int notificationWidth: 360
+        readonly property int notificationHeight: 160
+        readonly property int widgetWidth: 320
+        readonly property int widgetHeight: 420
         readonly property int statusSize: 8
         readonly property int controlHeight: 36
         readonly property int controlWidth: 100

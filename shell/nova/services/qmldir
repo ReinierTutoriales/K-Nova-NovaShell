@@ -1,3 +1,7 @@
 module qs.nova.services
 singleton Platform 1.0 Platform.qml
 internal JsonlClient JsonlClient.qml
+internal PreferencesBridge PreferencesBridge.qml
+internal NativeDesktop NativeDesktop.qml
+internal NotificationBackend NotificationBackend.qml
+singleton ShellState 1.0 ShellState.qml

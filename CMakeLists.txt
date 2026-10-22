@@ -30,7 +30,7 @@ endif()
 set(NOVA_QT_VERSION "${CMAKE_MATCH_1}")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/tests/requirements-ci.txt")
-find_package(Qt6 ${NOVA_QT_VERSION} REQUIRED COMPONENTS Core Network)
+find_package(Qt6 ${NOVA_QT_VERSION} REQUIRED COMPONENTS Core Network DBus)
 
 add_compile_options(-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wno-sign-conversion)
 if(NOVA_WERROR)
@@ -42,6 +42,7 @@ add_subdirectory(daemon)
 # Prebuilt vector themes: no Node.js dependency on the user's machine.
 install(DIRECTORY assets/icons/
     DESTINATION ${CMAKE_INSTALL_DATADIR}/icons)
+install(FILES packaging/kwin/windows.js DESTINATION ${CMAKE_INSTALL_DATADIR}/novashell/kwin)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)
