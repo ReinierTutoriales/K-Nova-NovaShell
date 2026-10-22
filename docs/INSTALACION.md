@@ -11,7 +11,7 @@ excepción opcional es copiar el tema de inicio de sesión al sistema.
 | KDE Plasma en **Wayland** | 6.8 o posterior | `plasmashell --version` y `echo $XDG_SESSION_TYPE` (debe decir `wayland`) |
 | Qt | 6.12.0 o posterior | `qtpaths6 --qt-version` |
 | Quickshell | 0.3.2 o posterior, **compilado para tu misma versión de Qt** | `qs --version -v` |
-| Compilación | CMake ≥ 3.21, Ninja, compilador C++20, Qt Core/Network/DBus, cabeceras de Wayland | `novactl doctor` |
+| Compilación | CMake ≥ 3.21, Ninja, compilador C++20, Qt Core/Network/DBus, GLib/GIO ≥ 2.80, cabeceras de Wayland | `novactl doctor` |
 | Perfil nativo (opcional) | `kreadconfig6`/`kwriteconfig6` (KConfig 6), Python 3 | — |
 | Inicio de sesión (opcional) | SDDM 0.21+ con `sddm-greeter-qt6` | `command -v sddm-greeter-qt6` |
 
@@ -22,9 +22,9 @@ no ofrece Plasma 6.8 y Qt 6.12, NovaShell no funcionará: `novactl doctor` lo di
 
 | Distribución | Orden |
 | :--- | :--- |
-| Arch / CachyOS | `sudo pacman -S --needed cmake ninja gcc pkgconf wayland qt6-base qt6-declarative qt6-svg qt6-imageformats` |
-| Fedora | `sudo dnf install cmake ninja-build gcc-c++ pkgconf wayland-devel qt6-qtbase-devel qt6-qtdeclarative qt6-qtsvg` |
-| Debian / Ubuntu | `sudo apt install cmake ninja-build g++ pkg-config libwayland-dev qt6-base-dev libqt6svg6 qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-window qml6-module-qtqml-workerscript` |
+| Arch / CachyOS | `sudo pacman -S --needed cmake ninja gcc pkgconf glib2 wayland qt6-base qt6-declarative qt6-svg qt6-imageformats` |
+| Fedora | `sudo dnf install cmake ninja-build gcc-c++ pkgconf glib2-devel wayland-devel qt6-qtbase-devel qt6-qtdeclarative qt6-qtsvg` |
+| Debian / Ubuntu | `sudo apt install cmake ninja-build g++ pkg-config libglib2.0-dev libwayland-dev qt6-base-dev libqt6svg6 qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-window qml6-module-qtqml-workerscript` |
 
 ### Quickshell
 
@@ -46,7 +46,7 @@ reinstala Quickshell.
 ## 2. Obtener NovaShell
 
 ```sh
-git clone --branch v0.2.0 https://github.com/ReinierTutoriales/K-Nova-NovaShell.git
+git clone --branch v0.3.0 https://github.com/ReinierTutoriales/K-Nova-NovaShell.git
 cd K-Nova-NovaShell
 ```
 
@@ -121,7 +121,10 @@ sistema → Fondo de pantalla.
 
 ## 7. Pantalla de inicio de sesión (opcional)
 
-Requiere **SDDM**. Plasma Login Manager no admite temas ([detalles](SESION.md#inicio-de-sesión-sddm)).
+Requiere **SDDM** con `sddm-greeter-qt6` y los módulos QML de efectos y
+formas de Qt (en Debian/Ubuntu: `qml6-module-qtquick-effects` y
+`qml6-module-qtquick-shapes`; en Arch y Fedora vienen con qt6-declarative).
+Plasma Login Manager no admite temas ([detalles](SESION.md#inicio-de-sesión-sddm)).
 
 ```sh
 ./tools/novactl login-theme status     # gestor, tema instalado y tema efectivo
