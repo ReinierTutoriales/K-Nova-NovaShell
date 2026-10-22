@@ -27,7 +27,8 @@ Singleton {
     property JsonlClient client: JsonlClient {
         logName: "Platform"
         socketPath: Quickshell.env("XDG_RUNTIME_DIR") + "/novashell/platform.sock"
-        readOperations: ["platform.ping", "platform.version", "platform.capabilities"]
+        readOperations: ["platform.ping", "platform.version", "platform.capabilities",
+            "compositor.capabilities"]
 
         onEventReceived: (name, payload) => platform.eventReceived(name, payload)
         onConnectedChanged: {

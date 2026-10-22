@@ -66,7 +66,29 @@ v1 aún no emite eventos; el formato queda fijado para no romper clientes.
 | `platform.ping` | — | `{"ready": true}` |
 | `platform.version` | — | `{"version": "0.1.0-dev", "protocol": 1}` |
 | `platform.capabilities` | — | `{"protocol": 1, "operations": ["…"]}` (lista ordenada) |
+| `compositor.capabilities` | — | Ver abajo. Solo lectura. |
 <!-- operaciones:fin -->
+
+### `compositor.capabilities`
+
+Lista los globals del compositor Wayland de la sesión (`WAYLAND_DISPLAY`) sin
+crear superficies. Plazo máximo de 500 ms; el primer resultado correcto se
+cachea durante la vida del daemon y un fallo se reintenta en la siguiente
+petición.
+
+```json
+{"available": true, "backgroundEffect": true, "kdeBlur": true,
+ "layerShell": true, "fractionalScale": true, "interfaces": ["wl_compositor", "…"]}
+```
+
+| Campo | Significado |
+| :--- | :--- |
+| `available` | Se pudo leer el registro del compositor. Si es `false`, `reason` explica por qué y todos los indicadores son `false`. |
+| `backgroundEffect` | `ext_background_effect_manager_v1`: el protocolo que usa Quickshell `BackgroundEffect`. El shell activa el blur solo si es `true`. |
+| `kdeBlur` | `org_kde_kwin_blur_manager` (privado de KDE). Informativo: Quickshell no lo usa. |
+| `layerShell` | `zwlr_layer_shell_v1`, necesario para barra y dock. |
+| `fractionalScale` | `wp_fractional_scale_manager_v1`. |
+| `interfaces` | Nombres de todos los globals, ordenados (máx. 256). |
 
 ## Reglas para añadir una operación
 

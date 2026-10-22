@@ -3,7 +3,9 @@
 ## Compilar y probar
 
 Objetivo estable: Qt 6.12.0+, Quickshell 0.3.2+ y Plasma 6.8 Wayland.
-El SDK C++ usa la versión fijada en `tests/requirements-ci.txt`.
+Mínimos para usuarios: `packaging/runtime.env` (`NOVA_MIN_QT`, `NOVA_MIN_QUICKSHELL`,
+`NOVA_MIN_PLASMA`). El CI compila y prueba con la Qt fijada en
+`tests/requirements-ci.txt`, que sigue a la última estable.
 Para pruebas visuales: `python3 -m pip install -r tests/requirements-ci.txt`.
 Quickshell debe estar compilado para la misma versión exacta de Qt en ejecución;
 `novactl doctor` comprueba ese dato sin mostrar el diagnóstico completo del entorno.

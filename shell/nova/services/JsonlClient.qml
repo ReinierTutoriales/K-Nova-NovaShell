@@ -43,6 +43,7 @@ QtObject {
         } else if (readOperations.indexOf(operation) >= 0 && _queue.length < maxQueueSize) {
             _queue.push(id)
             _pending.set(id, entry)
+            _syncPending()
         } else {
             _reply(entry, _error("unavailable", "servicio no disponible", true))
         }
@@ -56,6 +57,14 @@ QtObject {
     property var _queue: []            // requestIds en espera de conexión
     property int _nextId: 1
     property int _backoffMs: 500
+    // Espejo de _pending.size: un Map no notifica a los bindings, y este
+    // contador permite que el barrido de caducidad solo corra cuando hay
+    // peticiones en vuelo (cero despertares en reposo).
+    property int _pendingCount: 0
+
+    function _syncPending() {
+        _pendingCount = _pending.size
+    }
 
     function _error(code, message, retryable) {
         return { version: protocolVersion, ok: false,
@@ -75,6 +84,7 @@ QtObject {
     function _send(id, entry) {
         entry.sentAt = Date.now()
         _pending.set(id, entry)
+        _syncPending()
         _socket.write(entry.line)
         _socket.flush()
     }
@@ -93,6 +103,7 @@ QtObject {
         const entries = Array.from(_pending.values())
         _pending = new Map()
         _queue = []
+        _syncPending()
         for (const entry of entries)
             _reply(entry, _error(code, message, true))
     }
@@ -113,6 +124,7 @@ QtObject {
         if (!entry)
             return // respuesta tardía de algo ya caducado
         _pending.delete(message.requestId)
+        _syncPending()
         _reply(entry, message)
     }
 
@@ -124,6 +136,7 @@ QtObject {
                 _reply(entry, _error("timeout", "el daemon no respondió a tiempo", true))
             }
         }
+        _syncPending()
     }
 
     function _connect() {
@@ -181,8 +194,9 @@ QtObject {
     property Timer _expiryTimer: Timer {
         interval: 1000
         repeat: true
-        // Un Map no notifica cambios a los bindings: barrido fijo de 1 s.
-        running: client.enabled
+        // Solo con peticiones enviadas esperando respuesta; las encoladas
+        // sin conexión no caducan (se envían al reconectar).
+        running: client.enabled && client.connected && client._pendingCount > 0
         onTriggered: client._expire()
     }
 }

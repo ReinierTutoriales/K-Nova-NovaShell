@@ -21,15 +21,17 @@ include(cmake/IconLibrary.cmake)
 
 option(NOVA_WERROR "Tratar warnings como errores" OFF)
 
-# The SDK and portable UI checks share one reviewed stable Qt version.
-file(STRINGS "${PROJECT_SOURCE_DIR}/tests/requirements-ci.txt" NOVA_QT_REQUIREMENT
-    REGEX "^PySide6-Essentials==[0-9]+\\.[0-9]+\\.[0-9]+$")
-if(NOT NOVA_QT_REQUIREMENT MATCHES "==([0-9]+\\.[0-9]+\\.[0-9]+)$")
-    message(FATAL_ERROR "Missing pinned stable Qt version")
+# Minimum supported Qt for builds lives in packaging/runtime.env. The CI pin
+# (tests/requirements-ci.txt) tracks the newest stable release and may move
+# ahead on its own: bumping it must not raise what users need to build.
+file(STRINGS "${PROJECT_SOURCE_DIR}/packaging/runtime.env" NOVA_QT_REQUIREMENT
+    REGEX "^NOVA_MIN_QT=[0-9]+\\.[0-9]+\\.[0-9]+$")
+if(NOT NOVA_QT_REQUIREMENT MATCHES "=([0-9]+\\.[0-9]+\\.[0-9]+)$")
+    message(FATAL_ERROR "NOVA_MIN_QT missing from packaging/runtime.env")
 endif()
 set(NOVA_QT_VERSION "${CMAKE_MATCH_1}")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-    "${PROJECT_SOURCE_DIR}/tests/requirements-ci.txt")
+    "${PROJECT_SOURCE_DIR}/packaging/runtime.env")
 find_package(Qt6 ${NOVA_QT_VERSION} REQUIRED COMPONENTS Core Network)
 
 add_compile_options(-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wno-sign-conversion)

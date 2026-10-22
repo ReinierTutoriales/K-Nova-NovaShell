@@ -113,7 +113,7 @@ cmd_doctor() {
         fi
         qt_runtime="$(sed -nE 's/^Qt: ([0-9.]+) \(built against ([0-9.]+)\)$/\1/p' <<< "$qs_output")"
         qt_built="$(sed -nE 's/^Qt: ([0-9.]+) \(built against ([0-9.]+)\)$/\2/p' <<< "$qs_output")"
-        qt_required="$(sed -n 's/^PySide6-Essentials==\([0-9.]*\)$/\1/p' "$REPO_DIR/tests/requirements-ci.txt")"
+        qt_required="$NOVA_MIN_QT"
         if version_at_least "$qt_runtime" "$qt_required" && [[ "$qt_runtime" == "$qt_built" ]]; then
             ok "Qt $qt_runtime; Quickshell compilado para la misma versión"
         else

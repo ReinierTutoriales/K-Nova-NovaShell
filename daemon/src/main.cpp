@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Router.h"
 #include "Server.h"
+#include "WaylandProbe.h"
 
 #include <QCommandLineParser>
 #include <QCoreApplication>
@@ -10,6 +11,8 @@
 #include <QTextStream>
 
 #include <cerrno>
+#include <chrono>
+#include <optional>
 #include <csignal>
 #include <cstdio>
 #include <sys/stat.h>
@@ -122,7 +125,24 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    nova::Server server(nova::Router::makeDefault());
+    nova::Router router = nova::Router::makeDefault();
+    // Los globals del compositor no cambian durante la sesión: se cachea el
+    // primer sondeo correcto. Un fallo (compositor aún no listo) se reintenta
+    // en la siguiente petición. Plazo acotado: nunca bloquea más de 500 ms.
+    router.add(QStringLiteral("compositor.capabilities"),
+        [cache = std::optional<QJsonObject>()](const QJsonObject &) mutable -> nova::Reply {
+            if (cache) {
+                return *cache;
+            }
+            const nova::WaylandGlobals globals =
+                nova::probeWaylandGlobals(std::chrono::milliseconds(500));
+            QJsonObject result = nova::compositorCapabilities(globals);
+            if (globals.available) {
+                cache = result;
+            }
+            return result;
+        });
+    nova::Server server(std::move(router));
     if (!server.listen(socketPath, &error)) {
         err << error << '\n';
         return 1;
