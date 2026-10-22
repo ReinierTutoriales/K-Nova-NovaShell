@@ -15,7 +15,7 @@ Scope {
 
     Component.onCompleted: {
         Theme.mode = Quickshell.env("NOVA_APPEARANCE") || "auto";
-        Theme.material = Quickshell.env("NOVA_MATERIAL") || "frosted";
+        Theme.material = Quickshell.env("NOVA_MATERIAL") || "liquid";
         Theme.iconMode = Quickshell.env("NOVA_ICON_MODE") || "default";
         Theme.reduceMotion = Quickshell.env("NOVA_REDUCE_MOTION") === "1";
         Theme.reduceTransparency = Quickshell.env("NOVA_REDUCE_TRANSPARENCY") === "1";

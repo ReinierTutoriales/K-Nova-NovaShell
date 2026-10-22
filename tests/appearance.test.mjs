@@ -148,3 +148,15 @@ test("folder roles retain identity and have bounded optical size variants", () =
     assert.notEqual(folderSvg("folder", "default", true), folderSvg("folder-open", "default", true));
     assert.match(folderSvg("folder", "clear"), /fill-opacity="0.45"/);
 });
+
+test("accent fill keeps white labels readable for any accent", () => {
+    for (const accent of ["#3478f6", "#f08c00", "#2e9d5b", "#ffd60a", "#ffffff", "#000000", "bad"]) {
+        for (const extra of [0, 0.08, 0.16]) {
+            const fill = Policy.readableFill(accent, extra);
+            assert.match(fill, /^#[0-9a-f]{6}$/);
+            assert.ok(Policy.contrast(fill, "#ffffff") >= 4.5, `${accent} → ${fill}`);
+        }
+    }
+    // Un acento que ya cumple apenas cambia.
+    assert.ok(Policy.contrast(Policy.readableFill("#2f6de0"), "#2f6de0") < 1.15);
+});

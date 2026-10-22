@@ -168,7 +168,7 @@ Window {
             search = find(window.contentItem(), "launcherSearch")
             grid = find(window.contentItem(), "launcherGrid")
             background = search.property("background")
-            for mode, expected, foreground in [("dark", "#303239", "#f5f6fa"), ("light", "#f4f5f8", "#17191e")]:
+            for mode, expected, foreground in [("dark", "#1c1d21", "#f5f6fa"), ("light", "#f4f5f8", "#17191e")]:
                 window.setProperty("mode", mode)
                 QTest.qWait(30)
                 self.assertEqual(background.property("color").name(), expected)

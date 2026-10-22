@@ -14,7 +14,7 @@
 namespace nova {
 QJsonObject Preferences::defaults() {
     static const QJsonObject values{{QStringLiteral("mode"), QStringLiteral("auto")},
-        {QStringLiteral("material"), QStringLiteral("frosted")},
+        {QStringLiteral("material"), QStringLiteral("liquid")},
         {QStringLiteral("iconMode"), QStringLiteral("default")},
         {QStringLiteral("transparency"), 0.5}, {QStringLiteral("dockIconSize"), 56},
         {QStringLiteral("dockAutoHide"), false}, {QStringLiteral("dockMagnify"), false},

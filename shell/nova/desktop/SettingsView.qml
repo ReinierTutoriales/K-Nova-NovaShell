@@ -122,7 +122,7 @@ RowLayout {
             SettingsRow {
                 visible: settings.section === "appearance"; label: qsTr("Material")
                 SegmentedChoice {
-                    accessibleName: qsTr("Material"); value: settings.values.material || "frosted"
+                    accessibleName: qsTr("Material"); value: settings.values.material || "liquid"
                     options: [{value: "liquid", label: qsTr("Cristal")}, {value: "frosted", label: qsTr("Esmerilado")},
                         {value: "solid", label: qsTr("Sólido")}]
                     onSelected: choice => settings.update("material", choice)
