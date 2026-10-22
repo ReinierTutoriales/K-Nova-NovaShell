@@ -55,6 +55,18 @@ printf '%s\n' '{"version":1,"requestId":"1","operation":"platform.capabilities"}
 - Componentes pequeños (≤ 400 líneas); colores y tiempos desde `Theme`.
 - Datos del sistema solo a través de `Platform`.
 
+## Asistentes de código (IA)
+
+El repositorio incluye instrucciones y skills para agentes de código:
+
+- `AGENTS.md` y `CLAUDE.md` en la raíz: reglas, comandos y límites.
+- Skills en `.claude/skills/` (`qml-development`, `ipc-operations`, `code-efficiency`, `commit-hygiene`).
+- Agente `code-optimizer` en `.claude/agents/`.
+- Reglas para Cursor en `.cursor/rules/`.
+- Workflow que bloquea atribución de IA en PRs.
+
+Los agentes deben seguir estas reglas, verificar siempre y **nunca** firmar commits ni crear ramas con nombres de asistentes. Todo el trabajo queda a nombre de ReinierTutoriales.
+
 ## Dónde probar
 
 Las pruebas visuales del shell se hacen en una sesión Plasma 6 Wayland, idealmente
