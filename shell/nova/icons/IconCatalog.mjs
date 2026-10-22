@@ -54,6 +54,9 @@ export const symbols = Object.freeze({
     notification: "M5 17h14l-2-3V9a5 5 0 0 0-10 0v5zM10 21h4",
     lock: "M5 10h14v11H5zM8 10V6a4 4 0 0 1 8 0v4M12 14v3",
     power: "M12 2v10M6 5a9 9 0 1 0 12 0",
+    restart: "M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5",
+    sleep: "M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z",
+    forward: "M5 12h14M13 6l6 6-6 6",
     screenshot: "M7 3H3v4M17 3h4v4M3 17v4h4M21 17v4h-4M6 7h12v10H6z",
     controls: "M3 6h7M14 6h7M3 18h11M18 18h3M10 3v6M14 15v6",
     folder: "M3 7V5h7l2 2h9v13H3z"

@@ -6,10 +6,14 @@ del gestor de sesión; no se parchean binarios ni paquetes del sistema.
 
 | Pantalla | Mecanismo oficial | Root | Estado |
 | :--- | :--- | :--- | :--- |
-| Carga al entrar (splash) | Paquete look-and-feel con `splash/Splash.qml`, leído por `ksplashqml` | No | ✅ |
-| Fondo claro/oscuro | Paquete de fondo de Plasma (`images/` e `images_dark/`) | No | ✅ |
-| Bloqueo | Fondo de `kscreenlocker` (`kscreenlockerrc`) | No | ✅ (solo fondo) |
+| Carga al entrar (splash) | Paquete look-and-feel con `splash/Splash.qml`, leído por `ksplashqml` | No | 🟡 |
+| Fondo claro/oscuro | Paquete de fondo de Plasma (`images/` e `images_dark/`) | No | 🟡 |
+| Bloqueo | Fondo de `kscreenlocker` (`kscreenlockerrc`) | No | 🟡 (solo fondo) |
 | Bienvenida de primer uso | Panel de NovaShell + preferencia `welcomeCompleted` del daemon | No | ✅ |
+| Inicio de sesión | Tema SDDM 0.21+ con Qt 6 (`QtVersion=6`) | Solo para copiarlo al sistema | 🟡 |
+
+✅ probado con Quickshell real · 🟡 probado con Qt real, falta la sesión
+Plasma/SDDM real ([hoja de ruta](HOJA-DE-RUTA.md)).
 
 ## Fondo NovaShell
 
@@ -70,6 +74,52 @@ los valores por defecto ya son razonables (portapapeles desactivado).
 - La acción principal usa el relleno `accentFill` (acento oscurecido): texto
   blanco a 4,8:1 con el acento por defecto (WCAG AA).
 
+## Inicio de sesión (SDDM)
+
+![Pantalla de inicio de sesión NovaShell en oscuro con tres usuarios](images/inicio-sesion.png)
+
+**Por qué SDDM.** Es el único gestor de sesión de Plasma que carga temas.
+Plasma Login Manager (Plasma 6.6+, bifurcación de SDDM) compila su pantalla
+dentro del programa (`qrc:/qt/qml/org/kde/plasma/login/Main.qml`) y solo deja
+cambiar el fondo. `novactl doctor` indica qué gestor usa tu sistema.
+
+**Diseño.** Fondo NovaShell desenfocado una vez (escena estática, sin coste
+mientras nadie escribe), fecha en el formato largo del idioma y hora grande,
+avatar circular (o inicial sobre el acento), campo de contraseña en cápsula
+con botón de flecha, aviso de Bloq Mayús, sacudida breve si la contraseña es
+incorrecta (desactivable) y, abajo, sesión, distribución de teclado y
+suspender/reiniciar/apagar solo si SDDM informa de que el sistema lo permite.
+Con varios usuarios aparece una fila de avatares; sin lista de usuarios, un
+campo de nombre. Las pantallas secundarias muestran fondo y reloj. Con el
+renderizador por software (VM sin GPU) se omiten desenfoque y recorte
+circular en lugar de quedarse sin fondo. Comparte `Theme`, el catálogo de
+símbolos y el fondo con el shell; no ejecuta nada: entrar y la energía son
+llamadas al proxy de SDDM.
+
+`theme.conf`: `appearance` (`auto`, `light`, `dark`), `background` (ruta
+absoluta a una imagen; vacío usa el fondo NovaShell) y `reduceMotion`.
+
+**Instalación.** `novactl install` prepara el tema en
+`~/.local/share/novashell/sddm/novashell`. Desde ahí:
+
+```sh
+./tools/novactl login-theme preview     # ventana de prueba, sin root (sddm-greeter-qt6 --test-mode)
+./tools/novactl login-theme install     # imprime la orden con sudo; novactl nunca usa root
+./tools/novactl login-theme status      # gestor, tema instalado y tema efectivo
+```
+
+`packaging/sddm/install-theme.sh` es lo único de NovaShell que necesita root,
+y lo ejecutas tú con `sudo` después de revisarlo. Valida que la carpeta es el
+tema NovaShell para Qt 6 sin enlaces ni archivos especiales, lo copia a
+`/usr/share/sddm/themes/novashell` (root, 0644/0755) y crea
+`/etc/sddm.conf.d/zz-novashell.conf` con `[Theme] Current=novashell`. SDDM lee
+`/usr/lib/sddm/sddm.conf.d`, después `/etc/sddm.conf.d` en orden alfabético
+y por último `/etc/sddm.conf`: `zz-` queda detrás de `kde_settings.conf` (la
+página de SDDM de Plasma) y el script avisa si `/etc/sddm.conf` fija otro
+tema. `uninstall` borra solo esos dos elementos. No cambia el gestor de sesión;
+si es Plasma Login Manager imprime cómo cambiar a SDDM y volver. Si falta
+`sddm-greeter-qt6`, SDDM usa su tema integrado.
+
 ## Activar y deshacer
 
 El splash y el fondo de bloqueo forman parte del perfil nativo
@@ -96,6 +146,14 @@ en una sesión Plasma real.
 bienvenida empieza pendiente en un perfil nuevo, se recorre entera y queda
 guardada como completada; `tst_desktop` valida el tipo de la preferencia.
 
+El tema SDDM se carga desde la instalación con objetos de contexto que
+reproducen la API de SDDM 0.21 (`sddm`, `userModel`, `sessionModel`,
+`keyboard`, `config`): contraseña incorrecta y correcta, cambio de usuario,
+modo sin lista de usuarios, claro y oscuro, sin avisos de QML. Se ha
+renderizado también con OpenGL en un compositor Wayland headless.
+`sddm_install_test` comprueba la prioridad de configuración de SDDM y que el
+script se niega sin root. Falta probarlo con `sddm-greeter-qt6` real.
+
 ## Código oficial contrastado
 
 - [ksplashqml: tema, etapas y cierre](https://github.com/KDE/plasma-workspace/blob/12d5da86ab603551e12d1e3a358754d329276e61/ksplash/ksplashqml/splashapp.cpp)
@@ -107,5 +165,9 @@ guardada como completada; `tst_desktop` valida el tipo de la preferencia.
 - [Interfaz de bloqueo de Plasma 6.8](https://github.com/KDE/plasma-desktop/tree/71b7f850e0a54597e73dc1379bb013f26012aa71/desktoppackage/contents/lockscreen).
 - [Quickshell `WlSessionLock`](https://quickshell.org/docs/v0.3.2/types/Quickshell.Wayland/WlSessionLock)
   (requiere `ext-session-lock-v1`).
+- [SDDM: API del greeter](https://github.com/sddm/sddm/blob/633c1bf5c08d6c8e5b8435a70edb281b9f7b1550/src/greeter/GreeterApp.cpp),
+  [`QtVersion` y greeter por versión de Qt](https://github.com/sddm/sddm/blob/633c1bf5c08d6c8e5b8435a70edb281b9f7b1550/src/daemon/Greeter.cpp)
+  y [orden de configuración](https://github.com/sddm/sddm/blob/633c1bf5c08d6c8e5b8435a70edb281b9f7b1550/src/common/ConfigReader.cpp).
+- [Plasma Login Manager: pantalla compilada](https://github.com/KDE/plasma-login-manager/blob/01cc484c4ced7a0e615d1b54027aa7624ea30eeb/src/frontend/greeter/main.cpp).
 - [Apple HIG: Onboarding](https://developer.apple.com/design/human-interface-guidelines/onboarding).
 - [kwriteconfig6: grupos anidados con `--group` repetido](https://github.com/KDE/kconfig/blob/75ca805bb010b6a55a0dfd1c5931eab334efeb6d/src/kreadconfig/kwriteconfig.cpp).

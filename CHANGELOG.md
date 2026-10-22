@@ -11,6 +11,10 @@ versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
   solo splash) con progreso determinado por etapas de `ksplashqml`.
 - Fondo NovaShell claro/oscuro como paquete de Plasma, reproducible con
   `tools/render-wallpapers.py`, y marca propia.
+- Tema SDDM (Qt 6) de inicio de sesión con la identidad de NovaShell;
+  `novactl login-theme` lo prueba sin root y la instalación de sistema es un
+  script aparte que se ejecuta con `sudo`. `novactl doctor` detecta el gestor.
+- Símbolos `restart`, `sleep` y `forward`.
 - Bienvenida de primer uso (Apple HIG, *Onboarding*): breve, omitible y con
   cambios en vivo; se reabre desde Ajustes o `toggle welcome`.
 - Estilo de botón principal (`prominent`) con relleno de acento accesible.

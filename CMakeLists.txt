@@ -60,6 +60,17 @@ install(DIRECTORY shell/nova/theme/ DESTINATION ${NOVA_LNF_DIR}/contents/splash/
 install(FILES shell/nova/icons/nova-mark.svg assets/wallpapers/nova-light.jpg assets/wallpapers/nova-dark.jpg
     DESTINATION ${NOVA_LNF_DIR}/contents/splash/images)
 
+# Tema SDDM (Qt 6). Se prepara en el prefijo del usuario; copiarlo a
+# /usr/share/sddm/themes requiere root y lo hace packaging/sddm/install-theme.sh.
+set(NOVA_SDDM_DIR ${CMAKE_INSTALL_DATADIR}/novashell/sddm/novashell)
+file(GLOB NOVA_SDDM_QML CONFIGURE_DEPENDS session/sddm/novashell/*.qml)
+install(FILES ${NOVA_SDDM_QML} session/sddm/novashell/metadata.desktop session/sddm/novashell/theme.conf
+    LICENSE THIRD_PARTY_NOTICES.md DESTINATION ${NOVA_SDDM_DIR})
+install(FILES docs/images/inicio-sesion.png DESTINATION ${NOVA_SDDM_DIR} RENAME preview.png)
+install(DIRECTORY shell/nova/theme/ DESTINATION ${NOVA_SDDM_DIR}/theme)
+install(FILES shell/nova/icons/IconCatalog.mjs DESTINATION ${NOVA_SDDM_DIR}/icons)
+install(FILES assets/wallpapers/nova-light.jpg assets/wallpapers/nova-dark.jpg DESTINATION ${NOVA_SDDM_DIR}/images)
+
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()

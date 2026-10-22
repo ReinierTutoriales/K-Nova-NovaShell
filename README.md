@@ -22,6 +22,7 @@
 | **Ajustes** | Barra lateral: apariencia, escritorio, dock, barra, notificaciones, accesibilidad, privacidad e integración. |
 | **Widgets** | Reloj analógico, uso de CPU/memoria y calendario sobre el fondo. |
 | **Apariencia** | Cristal, Esmerilado y Sólido; claro/oscuro; alto contraste, menos transparencia y menos movimiento. |
+| **Sesión** | Tema SDDM, splash, fondo claro/oscuro, fondo de bloqueo y bienvenida de primer uso. |
 | **Iconos** | Biblioteca MacTahoe (GPL-3.0, 16 602 nombres) y carpetas propias, sin red. |
 
 <p align="center">
@@ -74,6 +75,7 @@ el tema global de iconos. Para desinstalar: `./tools/novactl uninstall`
 | `novactl start \| stop \| restart \| status \| logs` | Gestiona los servicios de usuario. |
 | `novactl version` | Versión de las fuentes y la instalada. |
 | `novactl desktop-profile preview\|apply\|restore\|status [balanced\|glass\|reduced]` | Perfil reversible: Dolphin, efectos de KWin, splash y fondo de bloqueo ([detalles](docs/ESCRITORIO-NATIVO.md)). |
+| `novactl login-theme preview\|install\|uninstall\|status` | Tema SDDM: vista previa sin root; instalarlo en el sistema imprime la orden con `sudo` ([detalles](docs/SESION.md)). |
 | `qs ipc call novashell toggle <launcher\|controls\|notifications\|settings\|overview\|clipboard\|widgets\|welcome>` | Abre o cierra un panel; asígnalo a un atajo en Ajustes de KDE → Atajos. |
 
 ## Documentación
@@ -84,7 +86,7 @@ el tema global de iconos. Para desinstalar: `./tools/novactl uninstall`
 | [Contrato IPC v1](docs/CONTRATO-IPC-v1.md) | Todas las operaciones del daemon. |
 | [Apariencia](docs/APARIENCIA.md) | Materiales, blur, iconos y pautas de Apple aplicadas. |
 | [Escritorio nativo](docs/ESCRITORIO-NATIVO.md) | Perfiles de Dolphin y KWin. |
-| [Sesión](docs/SESION.md) | Splash, fondo, pantalla de bloqueo y bienvenida. |
+| [Sesión](docs/SESION.md) | Inicio de sesión (SDDM), splash, fondo, bloqueo y bienvenida. |
 | [Optimización](docs/OPTIMIZACION.md) | Criterios de rendimiento y su comprobación. |
 | [Desarrollo](docs/DESARROLLO.md) | Compilar, probar y contribuir. |
 | [Lanzamientos](docs/LANZAMIENTO.md) | Cómo se publica una versión. |

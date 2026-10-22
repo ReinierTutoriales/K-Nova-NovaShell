@@ -61,7 +61,8 @@ Ver [sesión](SESION.md).
   reemplaza: KWin no ofrece `ext-session-lock-v1` y `kscreenlocker` la toma
   del paquete de shell de Plasma.
 - ✅ Bienvenida de primer uso: probada con Quickshell y el daemon reales.
-- ⬜ Tema SDDM de inicio de sesión (Plasma Login Manager no admite temas).
+- 🟡 Tema SDDM de inicio de sesión: probado con la API simulada de SDDM 0.21
+  y OpenGL; falta `sddm-greeter-qt6` real. Plasma Login Manager no admite temas.
 
 ## Fase 6 — Distribución 🟡
 
