@@ -20,7 +20,8 @@
 | `shell/nova/theme` | Colores, radios, espacios, tipografía, duraciones. | Lógica. |
 | `shell/nova/icons` | Catálogo vectorial, carga y fallbacks. | Lanzar aplicaciones. |
 | `shell/nova/controls` | Materiales y controles compartidos. | Capturar el escritorio. |
-| `shell/nova/preview` | Galería de apariencia de la sesión. | Simular funciones del sistema. |
+| `shell/nova/preview` | Galería de apariencia; se crea al abrirla y se destruye al cerrarla (`LazyLoader`). | Simular funciones del sistema. |
+| `shell/nova/CompositorBlur.qml` | Activa el blur solo si el compositor anuncia `ext-background-effect-v1`. | Forzar efectos no soportados. |
 | `shell/nova/services` | Único cliente del daemon (`Platform`). | Dibujar UI. |
 | `shell/nova/bar` (y futuros módulos) | Presentación. | Ejecutar comandos; tocar archivos del sistema. |
 | `daemon/` | Integración con el sistema detrás de operaciones acotadas. | UI. |
@@ -51,6 +52,14 @@
   agotar memoria.
 - Un manejador que lanza una excepción devuelve `internal`; el daemon sigue.
 - Una segunda instancia detecta la primera y no le roba el socket.
+
+## Consumo en reposo
+
+- Sin temporizadores periódicos con el escritorio quieto: el reloj despierta
+  una vez por minuto (`SystemClock`), la caducidad IPC solo corre con
+  peticiones en vuelo y la reconexión solo mientras el daemon está caído.
+- Las ventanas secundarias (apariencia) no existen hasta que se abren.
+- El vidrio son nodos estáticos del scene graph; el blur lo hace el compositor.
 
 ## Cliente IPC del shell (`JsonlClient`)
 

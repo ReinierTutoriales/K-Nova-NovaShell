@@ -92,7 +92,9 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         run_dir = os.path.join(tmp, "novashell")
         sock_path = os.path.join(run_dir, "platform.sock")
-        process = subprocess.Popen([daemon, "--socket", sock_path])
+        # Sin compositor: compositor.capabilities debe degradar, no colgarse.
+        env = {k: v for k, v in os.environ.items() if k != "WAYLAND_DISPLAY"}
+        process = subprocess.Popen([daemon, "--socket", sock_path], env=env)
         try:
             check(wait_for_socket(sock_path, process), "el daemon crea el socket")
             if FAILURES:
@@ -114,6 +116,16 @@ def main():
             documented = documented_operations(contract)
             check(live == documented,
                   f"capabilities coincide con el contrato (vivo={live}, doc={documented})")
+
+            started = time.monotonic()
+            reply = client.request("c", "compositor.capabilities")
+            result = reply.get("result", {})
+            check(reply.get("ok") and result.get("available") is False and result.get("reason"),
+                  "compositor.capabilities sin Wayland responde available=false con motivo")
+            check(not any(result.get(key) for key in
+                          ("backgroundEffect", "kdeBlur", "layerShell", "fractionalScale")),
+                  "sin compositor ningún protocolo se anuncia")
+            check(time.monotonic() - started < 1.0, "sin compositor responde de inmediato")
 
             reply = client.request("4", "system.reboot")
             check(not reply["ok"] and reply["error"]["code"] == "unknown-operation",

@@ -21,9 +21,16 @@ if(Python3_Interpreter_FOUND)
     add_test(NAME icon_library
         COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR}/icon_library_test.py)
     set_tests_properties(icon_library PROPERTIES TIMEOUT 120)
+    add_test(NAME check_updates
+        COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR}/check_updates_test.py)
+    set_tests_properties(check_updates PROPERTIES TIMEOUT 30)
     add_test(NAME ipc_smoke
         COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR}/ipc_smoke.py
                 $<TARGET_FILE:nova-platform>
                 ${PROJECT_SOURCE_DIR}/docs/CONTRATO-IPC-v1.md)
     set_tests_properties(ipc_smoke PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 30)
+    add_test(NAME compositor_probe
+        COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR}/compositor_probe.py
+                $<TARGET_FILE:nova-platform>)
+    set_tests_properties(compositor_probe PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 60)
 endif()

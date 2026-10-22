@@ -25,6 +25,7 @@ ColumnLayout {
                 width: Theme.metrics.iconCell
                 spacing: Theme.space.xs
                 AppIcon {
+                    asynchronous: true
                     name: parent.modelData
                     size: Theme.icons.preview
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -57,6 +58,7 @@ ColumnLayout {
             model: Catalog.symbolNames
             Icon {
                 required property string modelData
+                asynchronous: true
                 name: modelData
                 size: Theme.icons.large
                 Accessible.role: Accessible.Graphic

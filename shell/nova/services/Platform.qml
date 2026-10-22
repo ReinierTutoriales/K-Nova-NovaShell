@@ -118,7 +118,9 @@ Singleton {
     property JsonlClient client: JsonlClient {
         logName: "Platform"
         socketPath: Quickshell.env("XDG_RUNTIME_DIR") + "/novashell/platform.sock"
-        readOperations: ["platform.ping", "platform.version", "platform.capabilities", "applications.list", "settings.get", "windows.list", "brightness.get", "system.metrics"]
+        readOperations: ["platform.ping", "platform.version", "platform.capabilities",
+            "compositor.capabilities", "applications.list", "settings.get", "windows.list",
+            "brightness.get", "system.metrics"]
 
         onEventReceived: (name, payload) => {
             if (name === "windows.changed") platform.applyWindows(payload);

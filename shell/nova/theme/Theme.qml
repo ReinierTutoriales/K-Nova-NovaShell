@@ -50,6 +50,13 @@ QtObject {
         readonly property color focus: theme.dark ? "#9ac2ff" : "#1455c0"
         readonly property color previewTop: theme.dark ? "#16243b" : "#dce9fb"
         readonly property color previewBottom: theme.dark ? "#493556" : "#e6d9ec"
+        // Vidrio: brillo especular superior y borde de luz interior. Más
+        // intensos en "liquid", sutiles en "frosted", nulos si es opaco.
+        readonly property real sheenAlpha: theme.opaque || theme.effectiveMaterial === "solid" ? 0
+            : (theme.effectiveMaterial === "liquid" ? (theme.dark ? 0.16 : 0.42)
+                                                    : (theme.dark ? 0.08 : 0.24))
+        readonly property color sheen: Qt.rgba(1, 1, 1, sheenAlpha)
+        readonly property color rim: Qt.rgba(1, 1, 1, sheenAlpha * 0.9)
     }
     readonly property QtObject icons: QtObject {
         readonly property int small: 16
@@ -127,6 +134,8 @@ QtObject {
         readonly property int minimumPanelHeight: 420
         readonly property int focusWidth: 2
         readonly property real disabledOpacity: 0.5
+        // Fracción superior de la superficie que cubre el brillo especular.
+        readonly property real sheenHeight: 0.55
     }
     readonly property int barHeight: 32
 }

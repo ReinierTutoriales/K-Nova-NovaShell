@@ -11,6 +11,12 @@ Item {
     property string appearance: Theme.effectiveIconMode
     property real size: Theme.icons.application
     readonly property var descriptor: Catalog.application(name)
+    // Síncrono por defecto (barra, botones: sin parpadeo); las galerías con
+    // muchos iconos lo activan para no rasterizar en el hilo de la UI.
+    property bool asynchronous: false
+    // Rasteriza a la densidad real de la pantalla, con tope de memoria.
+    readonly property int pixelSize: Math.min(Theme.icons.rasterLimit,
+        Math.ceil(size * Screen.devicePixelRatio))
     implicitWidth: size
     implicitHeight: size
     Image {
@@ -27,9 +33,9 @@ Item {
             highlight: Theme.icons.glassHighlight,
             clearOpacity: Theme.icons.clearOpacity
         })
-        sourceSize: Qt.size(Math.min(Theme.icons.rasterLimit, Math.ceil(root.size * Screen.devicePixelRatio)), Math.min(Theme.icons.rasterLimit, Math.ceil(root.size * Screen.devicePixelRatio)))
+        sourceSize: Qt.size(root.pixelSize, root.pixelSize)
         fillMode: Image.PreserveAspectFit
-        asynchronous: false
+        asynchronous: root.asynchronous
         cache: true
         smooth: true
     }

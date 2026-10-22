@@ -79,7 +79,29 @@ Las conexiones lentas se cierran al superar 128 KiB pendientes de escritura.
 | `brightness.get` | — | `available`, `displays`; lectura asíncrona y caché de 1 s |
 | `brightness.set` | `id` de pantalla enumerada; `percent` entero 1–100 | `accepted`, `token`; API ScreenBrightness de KDE |
 | `system.metrics` | — | `available`, `cpuPercent`, `memoryTotal`, `memoryUsed`; lecturas acotadas de `/proc` |
+| `compositor.capabilities` | — | Ver abajo. Solo lectura. |
 <!-- operaciones:fin -->
+
+### `compositor.capabilities`
+
+Lista los globals del compositor Wayland de la sesión (`WAYLAND_DISPLAY`) sin
+crear superficies. Plazo máximo de 500 ms; el primer resultado correcto se
+cachea durante la vida del daemon y un fallo se reintenta en la siguiente
+petición.
+
+```json
+{"available": true, "backgroundEffect": true, "kdeBlur": true,
+ "layerShell": true, "fractionalScale": true, "interfaces": ["wl_compositor", "…"]}
+```
+
+| Campo | Significado |
+| :--- | :--- |
+| `available` | Se pudo leer el registro del compositor. Si es `false`, `reason` explica por qué y todos los indicadores son `false`. |
+| `backgroundEffect` | `ext_background_effect_manager_v1`: el protocolo que usa Quickshell `BackgroundEffect`. El shell activa el blur solo si es `true`. |
+| `kdeBlur` | `org_kde_kwin_blur_manager` (privado de KDE). Informativo: Quickshell no lo usa. |
+| `layerShell` | `zwlr_layer_shell_v1`, necesario para barra y dock. |
+| `fractionalScale` | `wp_fractional_scale_manager_v1`. |
+| `interfaces` | Nombres de todos los globals, ordenados (máx. 256). |
 
 ## Reglas para añadir una operación
 

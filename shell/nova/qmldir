@@ -1,2 +1,3 @@
 module qs.nova
 NovaShell 1.0 NovaShell.qml
+CompositorBlur 1.0 CompositorBlur.qml
