@@ -18,9 +18,11 @@ public:
     Reply action(const QJsonObject &payload);
 signals:
     void changed(const QJsonObject &snapshot);
+    void shortcutRequested(const QString &panel);
 public slots:
     Q_SCRIPTABLE void Publish(const QString &payload);
     Q_SCRIPTABLE QString TakeCommand();
+    Q_SCRIPTABLE void Shortcut(const QString &panel);
 private:
     void load();
     bool authorized() const;

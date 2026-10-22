@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Server.h"
 #include "WindowBridge.h"
+#include "DesktopActions.h"
 
 #include <QFile>
 #include <QLocalSocket>
@@ -37,8 +38,22 @@ Server::Server(Router router, QObject *parent)
     m_server.setMaxPendingConnections(MaxClients);
     connect(&m_server, &QLocalServer::newConnection, this, &Server::acceptConnections);
     if (auto *windows = m_router.windowBridge()) {
+        connect(windows, &WindowBridge::shortcutRequested, this, [this](const QString &panel) {
+            const auto event = protocol::encodeEvent(QStringLiteral("desktop.shortcut"), {{QStringLiteral("panel"), panel}});
+            for (auto *socket : m_buffers.keys())
+                if (socket->bytesToWrite() <= 128 * 1024) socket->write(event);
+        });
         connect(windows, &WindowBridge::changed, this, [this](const QJsonObject &snapshot) {
             const QByteArray event = protocol::encodeEvent(QStringLiteral("windows.changed"), snapshot);
+            for (auto *socket : m_buffers.keys()) {
+                if (socket->bytesToWrite() > 128 * 1024) socket->abort();
+                else socket->write(event);
+            }
+        });
+    }
+    if (auto *actions = m_router.desktopActions()) {
+        connect(actions, &DesktopActions::event, this, [this](const QString &name, const QJsonObject &payload) {
+            const auto event = protocol::encodeEvent(name, payload);
             for (auto *socket : m_buffers.keys()) {
                 if (socket->bytesToWrite() > 128 * 1024) socket->abort();
                 else socket->write(event);

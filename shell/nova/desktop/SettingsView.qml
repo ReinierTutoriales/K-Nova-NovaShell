@@ -2,6 +2,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import qs.nova.theme
 import qs.nova.controls
 
@@ -10,6 +11,7 @@ ScrollView {
     property var values: ({})
     property bool connected: false
     signal patchRequested(var changes)
+    signal wallpaperRequested(string url)
     clip: true
     contentWidth: availableWidth
     function update(key, value) { const patch = {}; patch[key] = value; patchRequested(patch); }
@@ -18,6 +20,7 @@ ScrollView {
         spacing: Theme.space.md
         enabled: settings.connected
         Text { text: qsTr("Apariencia"); color: Theme.color.text; font.pixelSize: Theme.font.title }
+        NovaButton { text: qsTr("Elegir fondo de pantalla"); symbol: "wallpaper"; Layout.fillWidth: true; onClicked: wallpaper.open() }
         Repeater {
             model: [
                 {key: "mode", label: qsTr("Esquema"), choices: ["auto", "light", "dark"]},
@@ -80,5 +83,11 @@ ScrollView {
             wrapMode: Text.Wrap
             Layout.fillWidth: true
         }
+    }
+    FileDialog {
+        id: wallpaper
+        title: qsTr("Elegir fondo de pantalla")
+        nameFilters: [qsTr("Imágenes (*.png *.jpg *.jpeg *.webp *.avif *.svg)")]
+        onAccepted: settings.wallpaperRequested(selectedFile.toString())
     }
 }

@@ -69,8 +69,8 @@ void WindowBridge::load() {
     connect(watcher, &QDBusPendingCallWatcher::finished, this, [watcher, bus](QDBusPendingCallWatcher *) {
         const QDBusPendingReply<int> loaded = *watcher;
         if (!loaded.isError() && loaded.value() >= 0) {
-            QDBusInterface scripting(KWin, QStringLiteral("/Scripting"), QStringLiteral("org.kde.kwin.Scripting"), bus);
-            scripting.asyncCall(QStringLiteral("start"));
+            QDBusInterface starter(KWin, QStringLiteral("/Scripting"), QStringLiteral("org.kde.kwin.Scripting"), bus);
+            starter.asyncCall(QStringLiteral("start"));
         }
         watcher->deleteLater();
     });
@@ -96,6 +96,10 @@ QString WindowBridge::TakeCommand() {
     m_waiting = true;
     m_heartbeat.start();
     return {};
+}
+void WindowBridge::Shortcut(const QString &panel) {
+    const QStringList allowed{"launcher", "controls", "overview", "clipboard", "widgets"};
+    if (authorized() && allowed.contains(panel)) emit shortcutRequested(panel);
 }
 void WindowBridge::release(const QString &command) {
     if (!m_waiting) return;

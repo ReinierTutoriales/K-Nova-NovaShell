@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Applications.h"
+#include "DesktopActions.h"
 #include "Preferences.h"
 #include <QFile>
 #include <QJsonArray>
@@ -10,6 +11,17 @@ using namespace nova;
 class TestDesktop : public QObject {
     Q_OBJECT
 private slots:
+    void desktopActionsRejectUntrustedArguments() {
+        DesktopActions actions;
+        QVERIFY(std::holds_alternative<protocol::Error>(actions.session({{QStringLiteral("action"), QStringLiteral("sh -c reboot")}})));
+        QVERIFY(std::holds_alternative<protocol::Error>(actions.wallpaper({{QStringLiteral("url"), QStringLiteral("https://example.org/image.png")}, {QStringLiteral("screen"), 0}})));
+        QVERIFY(std::holds_alternative<protocol::Error>(actions.setBrightness({{QStringLiteral("id"), QStringLiteral("../display")}, {QStringLiteral("percent"), 50}})));
+        const auto metrics = std::get<QJsonObject>(actions.metrics());
+        QVERIFY(metrics.value(QStringLiteral("available")).toBool());
+        QVERIFY(metrics.value(QStringLiteral("memoryTotal")).toDouble() > 0);
+        QVERIFY(metrics.value(QStringLiteral("memoryUsed")).toDouble() <= metrics.value(QStringLiteral("memoryTotal")).toDouble());
+        QCOMPARE(std::get<QJsonObject>(actions.metrics()), metrics);
+    }
     void desktopIdentifiersAreBounded() {
         QVERIFY(Applications::validId(QStringLiteral("org.kde.dolphin.desktop")));
         for (const auto &id : {QStringLiteral("../fake.desktop"), QStringLiteral("/tmp/fake.desktop"),

@@ -32,18 +32,21 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build g++ shellcheck python3-venv pkg-config libglib2.0-dev libegl1 libopengl0 libgl1 libxkbcommon0 libdbus-1-3
+            cmake ninja-build g++ shellcheck python3-venv pkg-config libglib2.0-dev libegl1 libopengl0 libgl1 libxkbcommon0 libdbus-1-3 \
+            libdrm-dev libpipewire-0.3-dev libcli11-dev spirv-tools libgl1-mesa-dev dbus-x11
       - name: Versión estable compartida por SDK y pruebas
         id: qt
         run: |
           version=$(sed -n 's/^PySide6-Essentials==\([0-9.]*\)$/\1/p' tests/requirements-ci.txt)
           test -n "$version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "quickshell=$(sed -n 's/^NOVA_MIN_QUICKSHELL=//p' packaging/runtime.env)" >> "$GITHUB_OUTPUT"
       - name: SDK Qt estable
         uses: jurplel/install-qt-action@v4.4.1
         with:
           version: ${{ steps.qt.outputs.version }}
-          archives: icu qtbase qtdeclarative qtsvg qttools
+          archives: icu qtbase qtdeclarative qtsvg qttools qtshadertools
+          modules: qtshadertools
           cache: true
       - name: Configurar y compilar
         run: |
@@ -60,6 +63,25 @@ jobs:
           node --test tests/appearance.test.mjs
           node tools/export-icons.mjs build/icon-check
           diff -r assets/icons build/icon-check
+      - name: Caché del motor Quickshell para pruebas
+        id: quickshell-cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: build/quickshell-prefix
+          key: quickshell-${{ steps.qt.outputs.quickshell }}-qt-${{ steps.qt.outputs.version }}-headless-v1
+      - name: Compilar Quickshell estable para probar servicios reales
+        if: steps.quickshell-cache.outputs.cache-hit != 'true'
+        run: |
+          version=$(sed -n 's/^NOVA_MIN_QUICKSHELL=//p' packaging/runtime.env)
+          git clone --depth 1 --branch "v$version" https://github.com/quickshell-mirror/quickshell.git "$RUNNER_TEMP/quickshell"
+          cmake -S "$RUNNER_TEMP/quickshell" -B "$RUNNER_TEMP/quickshell-build" -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/build/quickshell-prefix" \
+            -DWAYLAND=OFF -DX11=OFF -DI3=OFF -DCRASH_HANDLER=OFF -DUSE_JEMALLOC=OFF \
+            -DSERVICE_PAM=OFF -DSERVICE_POLKIT=OFF -DSERVICE_GREETD=OFF
+          cmake --build "$RUNNER_TEMP/quickshell-build" --parallel 2
+          cmake --install "$RUNNER_TEMP/quickshell-build"
+      - name: Integración con el motor real y el daemon
+        run: dbus-run-session -- python3 tests/quickshell_smoke.py "$PWD/build/quickshell-prefix/bin/qs" "$PWD/build/daemon/nova-platform"
       - name: Qt Quick y SVG sin módulos innecesarios
         run: |
           python3 -m venv "$RUNNER_TEMP/qt-tests"

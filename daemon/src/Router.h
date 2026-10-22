@@ -13,6 +13,7 @@
 
 namespace nova {
 class WindowBridge;
+class DesktopActions;
 
 // Respuesta de un manejador: un resultado o un error, nunca ambos.
 using Reply = std::variant<QJsonObject, protocol::Error>;
@@ -31,10 +32,12 @@ public:
     // Router con las operaciones base de v1 (platform.*).
     static Router makeDefault();
     WindowBridge *windowBridge() const { return m_windowBridge.get(); }
+    DesktopActions *desktopActions() const { return m_desktopActions.get(); }
 
 private:
     QMap<QString, Handler> m_handlers;
     std::shared_ptr<WindowBridge> m_windowBridge;
+    std::shared_ptr<DesktopActions> m_desktopActions;
 };
 
 } // namespace nova

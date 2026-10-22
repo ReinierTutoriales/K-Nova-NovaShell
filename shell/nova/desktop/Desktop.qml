@@ -35,7 +35,11 @@ Scope {
     }
     DesktopPanel {
         output: desktop.output; kind: "settings"; title: qsTr("Preferencias")
-        content: Component { SettingsView { values: Platform.preferences.values; connected: Platform.connected; onPatchRequested: patch => Platform.preferences.patch(patch) } }
+        content: Component { SettingsView {
+            values: Platform.preferences.values; connected: Platform.connected
+            onPatchRequested: patch => Platform.preferences.patch(patch)
+            onWallpaperRequested: url => Platform.call("wallpaper.set", {url: url, screen: Quickshell.screens.indexOf(desktop.output)})
+        } }
     }
     DesktopPanel {
         output: desktop.output; kind: "overview"; title: qsTr("Ventanas y escritorios")
@@ -57,7 +61,7 @@ Scope {
     }
     DesktopPanel {
         output: desktop.output; kind: "widgets"; title: qsTr("Hoy")
-        content: Component { WidgetsView { SystemClock { id: clock; precision: SystemClock.Minutes } now: clock.date } }
+        content: Component { WidgetsView { SystemClock { id: clock; precision: SystemClock.Minutes } now: clock.date; metrics: Platform.metrics } }
     }
     PanelWindow {
         id: banners

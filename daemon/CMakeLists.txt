@@ -10,6 +10,8 @@ add_library(nova_protocol STATIC
     src/Preferences.h
     src/WindowBridge.cpp
     src/WindowBridge.h
+    src/DesktopActions.cpp
+    src/DesktopActions.h
 )
 target_include_directories(nova_protocol PUBLIC src)
 target_compile_definitions(nova_protocol PUBLIC NOVA_VERSION="${NOVA_VERSION_FULL}")

@@ -14,7 +14,8 @@ PanelWindow {
     id: dock
     required property var output
     property bool held: false
-    readonly property bool revealed: !Platform.preferences.values.dockAutoHide || held || ShellState.panel !== ""
+    property var activeMenu: null
+    readonly property bool revealed: !Platform.preferences.values.dockAutoHide || held || !!activeMenu || ShellState.panel !== ""
     readonly property int iconSize: Platform.preferences.values.dockIconSize || Theme.icons.application
     screen: output
     anchors.bottom: true
@@ -82,8 +83,11 @@ PanelWindow {
                             MenuItem { text: modelData.pinned ? qsTr("Quitar del dock") : qsTr("Fijar en el dock"); onTriggered: Platform.preferences.togglePin(modelData.id) }
                             MenuItem { text: qsTr("Minimizar ventanas"); enabled: modelData.windows.length > 0; onTriggered: Platform.windowAction("minimize", modelData.windows.map(window => window.id)) }
                             MenuItem { text: qsTr("Cerrar ventanas"); enabled: modelData.windows.length > 0; onTriggered: Platform.windowAction("close", modelData.windows.map(window => window.id)) }
-                            onAboutToShow: dock.held = true
-                            onClosed: hideTimer.restart()
+                            onAboutToShow: {
+                                if (dock.activeMenu && dock.activeMenu !== menu) dock.activeMenu.close();
+                                dock.activeMenu = menu;
+                            }
+                            onClosed: { if (dock.activeMenu === menu) dock.activeMenu = null; hideTimer.restart(); }
                         }
                         TapHandler { acceptedButtons: Qt.RightButton; onTapped: menu.popup() }
                     }

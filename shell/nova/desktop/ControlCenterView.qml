@@ -62,6 +62,22 @@ ScrollView {
                 onClicked: center.backend.setOutput(modelData)
             }
         }
+        Text { text: qsTr("Brillo"); color: Theme.color.text; font.pixelSize: Theme.font.title }
+        Repeater {
+            model: center.backend.brightnessState?.displays || []
+            ColumnLayout {
+                required property var modelData
+                Layout.fillWidth: true
+                Text { text: modelData.name || modelData.id; color: Theme.color.text; font.pixelSize: Theme.font.body }
+                Slider {
+                    Layout.fillWidth: true
+                    from: 1; to: 100; stepSize: 1
+                    value: modelData.percent
+                    Accessible.name: qsTr("Brillo de %1").arg(modelData.name || modelData.id)
+                    onPressedChanged: if (!pressed) center.backend.setBrightness(modelData.id, Math.round(value))
+                }
+            }
+        }
         NovaButton {
             text: qsTr("No molestar")
             symbol: "notification"
@@ -131,6 +147,29 @@ ScrollView {
             }
         }
         NovaButton { text: qsTr("Preferencias"); symbol: "settings"; Layout.fillWidth: true; onClicked: center.settingsRequested() }
+        NovaButton { text: qsTr("Capturar una región"); symbol: "preview"; Layout.fillWidth: true; onClicked: center.backend.screenshot() }
+        RowLayout {
+            NovaButton { text: qsTr("Bloquear"); symbol: "power"; onClicked: center.backend.session("lock") }
+            NovaButton { text: qsTr("Suspender"); onClicked: center.backend.session("suspend") }
+        }
+        RowLayout {
+            Repeater {
+                model: [{action: "logout", label: qsTr("Cerrar sesión")}, {action: "reboot", label: qsTr("Reiniciar")}, {action: "poweroff", label: qsTr("Apagar")}]
+                NovaButton {
+                    required property var modelData
+                    text: modelData.label
+                    onClicked: { powerDialog.action = modelData.action; powerDialog.title = modelData.label; powerDialog.open(); }
+                }
+            }
+        }
+    }
+    Dialog {
+        id: powerDialog
+        property string action: ""
+        modal: true
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        onAccepted: center.backend.session(action)
+        Label { text: qsTr("Guarda tu trabajo antes de continuar.") }
     }
     Dialog {
         id: networkPassword

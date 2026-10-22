@@ -90,3 +90,11 @@ heartbeat.timeout.connect(() => {
 heartbeat.start();
 snapshot();
 listen();
+if (typeof registerShortcut === "function") {
+    for (const shortcut of [
+        ["nova-launcher", "Nova: Aplicaciones", "Meta+Space", "launcher"],
+        ["nova-control", "Nova: Centro de control", "Meta+Shift+C", "controls"],
+        ["nova-overview", "Nova: Ventanas", "Meta+Shift+W", "overview"],
+        ["nova-clipboard", "Nova: Portapapeles", "Meta+Shift+V", "clipboard"]
+    ]) registerShortcut(shortcut[0], shortcut[1], shortcut[2], () => callDBus(service, path, iface, "Shortcut", shortcut[3]));
+}

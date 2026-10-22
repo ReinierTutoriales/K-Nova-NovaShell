@@ -22,6 +22,8 @@ Singleton {
     property string currentDesktop: ""
     property bool windowBridgeAvailable: false
     property bool applicationsLoading: false
+    property var brightness: ({available: false, displays: []})
+    property var metrics: ({available: false})
     property int _catalogGeneration: 0
     property string _pendingWindow: ""
     property string _pendingSource: ""
@@ -32,6 +34,10 @@ Singleton {
     property NativeDesktop desktop: NativeDesktop {
         scanning: ShellState.panel === "controls"
         clipboardEnabled: platform.preferences.values.clipboardEnabled || false
+        brightnessState: platform.brightness
+        onBrightnessRequested: (id, percent) => platform.call("brightness.set", {id: id, percent: percent})
+        onSessionRequested: action => platform.call("session.action", {action: action})
+        onScreenshotRequested: platform.call("screenshot.capture", {})
         onError: message => platform.lastError = message
     }
     property Loader notificationLoader: Loader {
@@ -42,6 +48,16 @@ Singleton {
     }
     readonly property var notifications: notificationLoader.item
     readonly property var dockItems: Policy.dock(applications, preferences.values.pins || [], windows)
+    property Timer panelRefresh: Timer {
+        interval: 2000
+        repeat: true
+        triggeredOnStart: true
+        running: platform.connected && (ShellState.panel === "controls" || ShellState.panel === "widgets")
+        onTriggered: {
+            if (ShellState.panel === "controls") platform.call("brightness.get", {}, result => platform.brightness = result);
+            if (ShellState.panel === "widgets") platform.call("system.metrics", {}, result => platform.metrics = result);
+        }
+    }
     function call(operation, payload, success) {
         return request(operation, payload, response => {
             if (response.ok) { lastError = ""; if (success) success(response.result); }
@@ -102,10 +118,13 @@ Singleton {
     property JsonlClient client: JsonlClient {
         logName: "Platform"
         socketPath: Quickshell.env("XDG_RUNTIME_DIR") + "/novashell/platform.sock"
-        readOperations: ["platform.ping", "platform.version", "platform.capabilities", "applications.list", "settings.get", "windows.list"]
+        readOperations: ["platform.ping", "platform.version", "platform.capabilities", "applications.list", "settings.get", "windows.list", "brightness.get", "system.metrics"]
 
         onEventReceived: (name, payload) => {
             if (name === "windows.changed") platform.applyWindows(payload);
+            if (name === "brightness.changed") platform.brightness = payload;
+            if (name === "system.action" && !payload.ok) platform.lastError = payload.message;
+            if (name === "desktop.shortcut") ShellState.toggle(payload.panel, ShellState.screen || Quickshell.screens[0]);
             platform.eventReceived(name, payload);
         }
         onConnectedChanged: {

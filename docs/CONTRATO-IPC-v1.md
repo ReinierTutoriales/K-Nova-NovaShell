@@ -73,6 +73,12 @@ Las conexiones lentas se cierran al superar 128 KiB pendientes de escritura.
 | `settings.patch` | Claves permitidas de `Preferences::defaults()` | `values`; escritura atómica, rechazo completo si hay una clave inválida |
 | `windows.list` | — | `available`, `windows`, `desktops`, `activeWindow`, `currentDesktop` |
 | `window.action` | `action`: activate/minimize/maximize/close/desktop; `id` existente | `accepted`; falla si KWin no está preparado, nunca se encola para más tarde |
+| `session.action` | `action`: lock/suspend/logout/reboot/poweroff | `accepted`, `token`; D-Bus tipado, autorización del sistema |
+| `screenshot.capture` | — | `launched`; abre el selector de región de Spectacle con argumentos fijos |
+| `wallpaper.set` | `url` de imagen local ≤ 64 MiB; `screen` 0–31 | `accepted`, `token`; API de wallpaper de Plasma |
+| `brightness.get` | — | `available`, `displays`; lectura asíncrona y caché de 1 s |
+| `brightness.set` | `id` de pantalla enumerada; `percent` entero 1–100 | `accepted`, `token`; API ScreenBrightness de KDE |
+| `system.metrics` | — | `available`, `cpuPercent`, `memoryTotal`, `memoryUsed`; lecturas acotadas de `/proc` |
 <!-- operaciones:fin -->
 
 ## Reglas para añadir una operación

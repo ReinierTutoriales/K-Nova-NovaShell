@@ -14,6 +14,10 @@ QtObject {
     property bool clipboardEnabled: false
     property var clipboardHistory: []
     signal error(string message)
+    signal brightnessRequested(string id, int percent)
+    signal sessionRequested(string action)
+    signal screenshotRequested()
+    property var brightnessState: ({available: false, displays: []})
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property bool audioAvailable: !!sink && sink.ready && !!sink.audio
     readonly property real volume: audioAvailable ? sink.audio.volume : 0
@@ -35,6 +39,9 @@ QtObject {
     property PwObjectTracker audioTracker: PwObjectTracker { objects: desktop.outputs }
     function setVolume(value) { if (audioAvailable) sink.audio.volume = Math.max(0, Math.min(1, value)); }
     function toggleMute() { if (audioAvailable) sink.audio.muted = !sink.audio.muted; }
+    function setBrightness(id, percent) { brightnessRequested(id, percent); }
+    function session(action) { sessionRequested(action); }
+    function screenshot() { screenshotRequested(); }
     function setOutput(node) { if (outputs.indexOf(node) >= 0) Pipewire.preferredDefaultAudioSink = node; }
     function setWifi(value) { Networking.wifiEnabled = value; }
     function setBluetooth(value) { if (bluetoothAdapter) bluetoothAdapter.enabled = value; }
