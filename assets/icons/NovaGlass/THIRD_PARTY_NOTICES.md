@@ -17,6 +17,21 @@ paths in `shell/nova/icons/IconCatalog.mjs` are adapted from NextKDE.
 
 The adapted portions are conservatively marked GPL-3.0-only. Original NovaShell
 files remain GPL-3.0-or-later; a combined distribution must comply with GPLv3.
-No Apple application artwork, SF Symbols, proprietary fonts, wallpaper,
-native compositor plugins or logos from other projects are bundled.
+No extracted Apple system assets, SF Symbols, proprietary fonts, wallpaper
+or native compositor plugins are bundled.
+
+## Complete system icon library
+
+`assets/icon-library.tar.xz` contains the complete SVG sources, aliases and
+Xcursor resources adapted from MacTahoe-icon-theme, distributed under GPLv3.
+
+- Source: https://github.com/vinceliuice/MacTahoe-icon-theme
+- Revision: `839848b9a8a38a92a6936e30c4abe35cc6f2546d`
+- Original `COPYING`, `AUTHORS` and embedded artwork notices are preserved in
+  each installed system theme. These include the upstream authors and credits.
+- Modified October 22, 2026: renamed theme indexes, precomputed light/dark
+  variants, internal relative aliases, deduplicated identical resources and
+  deterministic packaging. Rebuild with `tools/vendor-icon-library.py`.
+
+Application trademarks remain the property of their respective owners.
 

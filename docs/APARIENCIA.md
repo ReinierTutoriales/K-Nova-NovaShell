@@ -67,8 +67,35 @@ Ningún icono necesita MultiEffect, un FBO por delegado ni una animación perman
 Regenerar los temas: `node tools/export-icons.mjs assets/icons`.
 Comparar salida reproducible: exportar a `build/icon-check` y ejecutar
 `diff -r assets/icons build/icon-check`.
-Las variantes heredan el tema base y Breeze/hicolor; no cambian asociaciones
-de aplicaciones ni el tema seleccionado en Plasma.
+Las variantes heredan la biblioteca completa de sistema y Breeze/hicolor;
+no cambian asociaciones de aplicaciones ni el tema seleccionado en Plasma.
+
+## Biblioteca completa de sistema
+
+Se incluyen 16.602 nombres únicos (incluidos alias) y 27.508 entradas SVG en
+el tema base, repartidas entre 11 contextos. El paquete local ocupa 4,55 MB;
+comparte recursos idénticos mediante enlaces relativos. Incluye cursores Xcursor
+y variantes de sistema base, clara y oscura. Todos los temas se instalan juntos
+porque comparten archivos. `assets/icon-library.json` registra revisión,
+SHA-256, recuentos y categorías; CMake verifica el archivo antes de extraerlo.
+No se descarga nada al compilar, instalar o mostrar un icono.
+
+`SystemAppIcon { iconName: "org.kde.dolphin" }` resuelve el nombre mediante
+Quickshell y muestra un icono genérico si falta. La configuración raíz selecciona
+`NovaGlass` solo para el proceso. Para la variante oscura completa, inicia con
+`QS_ICON_THEME=NovaGlass-dark`; para usarla en todo Plasma, selecciona el tema
+en Preferencias del sistema > Colores y temas > Iconos. Los modos clear/tinted
+solo modifican los iconos propios; no convierten toda la biblioteca de sistema.
+
+Es iconografía redistribuible de estilo macOS para Linux, no una extracción de
+los recursos oficiales de macOS 27. La cobertura no garantiza un icono específico
+para todas las aplicaciones existentes. Los créditos y licencias se conservan
+en los archivos legales. Para regenerar el paquete usa un checkout limpio de la
+revisión fijada y `python3 tools/vendor-icon-library.py /ruta/al/checkout`.
+
+`python3 tests/icon_library_test.py` comprueba el hash, todos los SVG, rutas,
+enlaces, índices y cursores. Con `--qt` requiere PySide6 y prueba la resolución
+nativa de aplicaciones y recursos estándar, en cuatro temas y cinco tamaños.
 
 `node --test tests/appearance.test.mjs` valida rangos, esquinas, fallbacks,
 colores, caché, exportación e identidades.

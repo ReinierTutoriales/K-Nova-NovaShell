@@ -18,8 +18,11 @@ Dock, lanzador, notificaciones y controles del sistema siguen en la
 - Reducción de movimiento y transparencia, más alto contraste.
 - Recursos locales, caché acotada y tamaño de rasterización ajustado a la pantalla.
   Sin fuentes de iconos, red, capturas continuas de pantalla ni shaders por icono.
-- Cuatro temas freedesktop `NovaGlass*` instalados en el usuario. Sus nombres
-  `nova-*` no sustituyen iconos de aplicaciones ajenas; heredan Breeze/hicolor.
+- Biblioteca de sistema con 16.602 nombres de iconos: aplicaciones, acciones,
+  carpetas, MIME, dispositivos, estados, categorías, emblemas y cursores.
+  Tres variantes de sistema y cuatro temas `NovaGlass*`, instalados sin red.
+  Los nombres estándar y los identificadores de aplicaciones resuelven mediante
+  herencia freedesktop; Breeze/hicolor cubren las aplicaciones ausentes.
 
 El acabado translúcido y el desenfoque de fondo son distintos. El núcleo utiliza
 el protocolo Wayland estándar cuando se habilita explícitamente y el compositor

@@ -14,6 +14,9 @@ if(NOVA_NODE_EXECUTABLE)
     set_tests_properties(appearance PROPERTIES TIMEOUT 30)
 endif()
 if(Python3_Interpreter_FOUND)
+    add_test(NAME icon_library
+        COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR}/icon_library_test.py)
+    set_tests_properties(icon_library PROPERTIES TIMEOUT 120)
     add_test(NAME ipc_smoke
         COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR}/ipc_smoke.py
                 $<TARGET_FILE:nova-platform>

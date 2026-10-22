@@ -83,6 +83,8 @@ jobs:
           "$RUNNER_TEMP/qt-tests/bin/python" -m pip install --disable-pip-version-check "PySide6==${{ matrix.pyside }}"
       - name: Cargar componentes reales y renderizar SVG
         run: '"$RUNNER_TEMP/qt-tests/bin/python" tests/appearance_smoke.py'
+      - name: Resolver la biblioteca completa con Qt
+        run: '"$RUNNER_TEMP/qt-tests/bin/python" tests/icon_library_test.py --qt'
       - name: Capturas del renderizado
         if: always()
         uses: actions/upload-artifact@v7.0.2

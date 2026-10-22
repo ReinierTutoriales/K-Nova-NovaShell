@@ -199,6 +199,9 @@ cmd_install() {
         while IFS= read -r -d '' icon_file; do
             printf '%s\n' "$PREFIX/share/icons/${icon_file#"$REPO_DIR/assets/icons/"}"
         done < <(find "$REPO_DIR/assets/icons" -type f -print0)
+        while IFS= read -r -d '' icon_file; do
+            printf '%s\n' "$PREFIX/share/icons/${icon_file#"$BUILD_DIR/icon-library/"}"
+        done < <(find "$BUILD_DIR/icon-library" \( -type f -o -type l \) -print0)
         for unit in "${UNITS[@]}"; do printf '%s\n' "$UNIT_DIR/$unit"; done
     } > "$MANIFEST"
     printf '%s\n' "$VERSION" > "$(dirname -- "$MANIFEST")/installed-version"

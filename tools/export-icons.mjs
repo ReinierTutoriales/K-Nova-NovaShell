@@ -24,7 +24,9 @@ export function exportTheme(destination) {
         if (actions) mkdirSync(join(directory, "scalable/actions"), { recursive: true });
         writeFileSync(join(directory, "index.theme"),
             "[Icon Theme]\nName=" + name + "\nComment=NovaShell layered vector icons\n"
-            + "Inherits=" + (actions ? "breeze,hicolor" : "NovaGlass,breeze,hicolor")
+            + "Inherits=" + (mode === "dark" ? "NovaGlass-System-dark,NovaGlass,breeze,hicolor"
+                : actions ? "NovaGlass-System-light,breeze,hicolor"
+                : "NovaGlass,NovaGlass-System-light,breeze,hicolor")
             + "\nDirectories=scalable/apps" + (actions ? ",scalable/actions" : "") + "\n\n"
             + "[scalable/apps]\nSize=64\nMinSize=16\nMaxSize=256\nType=Scalable\nContext=Applications\n"
             + (actions ? "\n[scalable/actions]\nSize=24\nMinSize=16\nMaxSize=64\nType=Scalable\nContext=Actions\n" : ""));

@@ -17,6 +17,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(GNUInstallDirs)
 include(CTest)
+include(cmake/IconLibrary.cmake)
 
 option(NOVA_WERROR "Tratar warnings como errores" OFF)
 
