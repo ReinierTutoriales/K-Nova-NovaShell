@@ -24,6 +24,7 @@ import QtQuick
 import Quickshell
 import qs.nova.services
 import qs.nova.desktop
+import qs.nova.theme
 ShellRoot {
     id: root
     property int attempts: 0
@@ -45,6 +46,10 @@ ShellRoot {
             ++root.attempts;
             if (root.attempts > 100) { console.error("NOVA_RUNTIME_TIMEOUT"); Qt.quit(); return; }
             if (!Platform.connected || !Platform.preferences.values.mode || Platform.applicationsLoading) return;
+            // Regresiones: el catálogo debe pedirse al conectar y las
+            // preferencias deben llegar a Theme (Quickshell.env da null).
+            if (root.phase === 0 && Platform._catalogGeneration === 0) { console.error("NOVA_CATALOG_NOT_REQUESTED"); Qt.quit(); return; }
+            if (root.phase === 0 && Theme.mode !== Platform.preferences.values.mode) { console.error("NOVA_PREFERENCES_NOT_APPLIED " + Theme.mode); Qt.quit(); return; }
             if (root.phase === 0) content.sourceComponent = controls;
             else if (root.phase === 1) content.sourceComponent = preferences;
             else if (root.phase === 2) { console.log("NOVA_RUNTIME_OK"); Qt.quit(); }
@@ -62,7 +67,7 @@ ShellRoot {
             result = subprocess.run([quickshell, "-p", str(directory / "shell.qml")], env=environment,
                                     capture_output=True, text=True, timeout=30)
             output = result.stdout + result.stderr
-            errors = re.findall(r".*(?:ReferenceError|TypeError|Cannot assign|is not a type|is not installed|Binding loop|Failed to load configuration|NOVA_RUNTIME_TIMEOUT).*", output)
+            errors = re.findall(r".*(?:ReferenceError|TypeError|Cannot assign|is not a type|is not installed|Binding loop|Failed to load configuration|NOVA_RUNTIME_TIMEOUT|NOVA_CATALOG_NOT_REQUESTED|NOVA_PREFERENCES_NOT_APPLIED|Duplicate property).*", output)
             if result.returncode or "NOVA_RUNTIME_OK" not in output or errors:
                 raise RuntimeError(output)
             print("Actual Quickshell + daemon + native services + desktop views: OK")
