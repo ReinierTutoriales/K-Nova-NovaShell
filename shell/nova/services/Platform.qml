@@ -48,6 +48,16 @@ Singleton {
     }
     readonly property var notifications: notificationLoader.item
     readonly property var dockItems: Policy.dock(applications, preferences.values.pins || [], windows)
+    // Pantallas con widgets de escritorio visibles (lo mantiene DesktopWidgets).
+    property int desktopWidgetsActive: 0
+    // Métricas para los widgets del escritorio: cada 10 s y solo si existen.
+    property Timer widgetRefresh: Timer {
+        interval: 10000
+        repeat: true
+        triggeredOnStart: true
+        running: platform.connected && platform.desktopWidgetsActive > 0 && ShellState.panel !== "widgets"
+        onTriggered: platform.call("system.metrics", {}, result => platform.metrics = result)
+    }
     property Timer panelRefresh: Timer {
         interval: 2000
         repeat: true

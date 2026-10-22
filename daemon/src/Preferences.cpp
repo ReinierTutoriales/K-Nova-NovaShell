@@ -19,6 +19,7 @@ QJsonObject Preferences::defaults() {
         {QStringLiteral("transparency"), 0.5}, {QStringLiteral("dockIconSize"), 56},
         {QStringLiteral("dockAutoHide"), false}, {QStringLiteral("dockMagnify"), true},
         {QStringLiteral("doNotDisturb"), false}, {QStringLiteral("showSeconds"), false},
+        {QStringLiteral("desktopWidgets"), true},
         {QStringLiteral("notificationServer"), false}, {QStringLiteral("clipboardEnabled"), false},
         {QStringLiteral("reduceMotion"), false}, {QStringLiteral("reduceTransparency"), false},
         {QStringLiteral("highContrast"), false}, {QStringLiteral("backgroundBlur"), true},

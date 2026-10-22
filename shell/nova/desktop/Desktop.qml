@@ -9,6 +9,7 @@ Scope {
     id: desktop
     required property var output
     Dock { output: desktop.output }
+    DesktopWidgets { output: desktop.output }
     DesktopPanel {
         output: desktop.output; kind: "launcher"; title: qsTr("Aplicaciones")
         panelWidth: Theme.metrics.launcherWidth; panelHeight: Theme.metrics.launcherHeight
@@ -34,9 +35,11 @@ Scope {
         content: Component { NotificationView { backend: Platform.notifications; iconResolver: name => Platform.iconUrl(name); onSettingsRequested: ShellState.toggle("settings", desktop.output) } }
     }
     DesktopPanel {
-        output: desktop.output; kind: "settings"; title: qsTr("Preferencias")
+        output: desktop.output; kind: "settings"; title: qsTr("Ajustes")
+        panelWidth: Theme.metrics.settingsWidth; panelHeight: Theme.metrics.settingsHeight
         content: Component { SettingsView {
             values: Platform.preferences.values; connected: Platform.connected
+            daemonVersion: Platform.daemonVersion; compositorBlur: Theme.compositorBlur
             onPatchRequested: patch => Platform.preferences.patch(patch)
             onWallpaperRequested: url => Platform.call("wallpaper.set", {url: url, screen: Quickshell.screens.indexOf(desktop.output)})
         } }

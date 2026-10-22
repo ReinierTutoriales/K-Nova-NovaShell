@@ -12,3 +12,9 @@ ClipboardView 1.0 ClipboardView.qml
 WidgetsView 1.0 WidgetsView.qml
 ApplicationTile 1.0 ApplicationTile.qml
 TrayRow 1.0 TrayRow.qml
+SettingsRow 1.0 SettingsRow.qml
+SettingsToggles 1.0 SettingsToggles.qml
+DesktopWidgets 1.0 DesktopWidgets.qml
+AnalogClock 1.0 AnalogClock.qml
+CalendarCard 1.0 CalendarCard.qml
+SystemCard 1.0 SystemCard.qml
