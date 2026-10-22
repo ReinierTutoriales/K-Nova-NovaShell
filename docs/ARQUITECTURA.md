@@ -18,6 +18,9 @@
 | Directorio | Responsabilidad | No hace |
 | :--- | :--- | :--- |
 | `shell/nova/theme` | Colores, radios, espacios, tipografía, duraciones. | Lógica. |
+| `shell/nova/icons` | Catálogo vectorial, carga y fallbacks. | Lanzar aplicaciones. |
+| `shell/nova/controls` | Materiales y controles compartidos. | Capturar el escritorio. |
+| `shell/nova/preview` | Galería de apariencia de la sesión. | Simular funciones del sistema. |
 | `shell/nova/services` | Único cliente del daemon (`Platform`). | Dibujar UI. |
 | `shell/nova/bar` (y futuros módulos) | Presentación. | Ejecutar comandos; tocar archivos del sistema. |
 | `daemon/` | Integración con el sistema detrás de operaciones acotadas. | UI. |
@@ -55,7 +58,7 @@
   escrituras fallan al instante (nunca se "reproducen" tarde).
 - Caducidad de peticiones (10 s) y fallo de todo lo pendiente al desconectar.
 - Reconexión con espera exponencial 0,5 s → 8 s creando un `Socket` nuevo
-  (el de Quickshell no reconecta solo).
+  (aislamiento de eventos tardíos entre conexiones).
 
 ## Arranque (systemd de usuario)
 

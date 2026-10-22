@@ -1,83 +1,110 @@
 <h1 align="center">K-Nova · NovaShell</h1>
 
-<p align="center"><strong>Un escritorio Quickshell para KDE Plasma 6 — ligero, estable y sin root.</strong></p>
+<p align="center"><strong>Un escritorio Quickshell para KDE Plasma 6, con identidad propia y sin root.</strong></p>
 
-<p align="center"><code>Plasma 6 / Wayland</code> &nbsp; <code>Quickshell 0.3.x</code> &nbsp; <code>Qt 6.6+</code> &nbsp; <code>GPL-3.0-or-later</code></p>
+<p align="center"><code>Plasma 6.8+ / Wayland</code> · <code>Quickshell 0.3.2+</code> · <code>Qt 6.12+</code></p>
 
-> **Estado: base inicial (`0.1.0-dev`).** Hay daemon IPC, barra superior con
-> reloj y estado del servicio, instalador y CI. Dock, lanzador, notificaciones
-> y centro de control están en la [hoja de ruta](docs/HOJA-DE-RUTA.md).
+Estado: base de desarrollo `0.1.0-dev`. Hay daemon IPC, barra por pantalla,
+biblioteca visual, galería de apariencia, temas de iconos, instalador y CI.
+Dock, lanzador, notificaciones y controles del sistema siguen en la
+[hoja de ruta](docs/HOJA-DE-RUTA.md); la galería no simula esas funciones.
 
----
+## Base visual
 
-## Principios de NovaShell
+- 16 iconos de aplicación vectoriales por capas, con modos color, oscuro,
+  transparente y teñido; símbolos semánticos compartidos por toda la interfaz.
+- Colores, materiales, contraste, escalas y movimiento centralizados en `Theme`.
+- Superficies cristal, esmeriladas y sólidas; controles con foco y teclado.
+- Reducción de movimiento y transparencia, más alto contraste.
+- Recursos locales, caché acotada y tamaño de rasterización ajustado a la pantalla.
+  Sin fuentes de iconos, red, capturas continuas de pantalla ni shaders por icono.
+- Biblioteca de sistema con 16.602 nombres de iconos: aplicaciones, acciones,
+  carpetas, MIME, dispositivos, estados, categorías, emblemas y cursores.
+  Tres variantes de sistema y cuatro temas `NovaGlass*`, instalados sin red.
+  Los nombres estándar y los identificadores de aplicaciones resuelven mediante
+  herencia freedesktop; Breeze/hicolor cubren las aplicaciones ausentes.
 
-NovaShell desarrolla una experiencia de escritorio para KDE Plasma 6 con
-Quickshell, una interfaz modular y servicios de usuario.
-
-- Instalación en `~/.local` y `~/.config`, sin root.
-- Núcleo basado en QML, Wayland y un daemon C++/Qt6.
-- Componentes QML de hasta 400 líneas, verificados por CI.
-- Acceso al sistema mediante un [contrato IPC versionado](docs/CONTRATO-IPC-v1.md)
-  y un socket privado con permisos `0600`.
-- Presupuesto de recursos y arranque mediante systemd de usuario.
+El acabado translúcido y el desenfoque de fondo son distintos. El núcleo utiliza
+el protocolo Wayland estándar cuando se habilita explícitamente y el compositor
+lo admite. No incluye plugins nativos de KWin ni promete refracción física.
+Sin soporte confirmado mantiene un relleno de mayor opacidad para legibilidad.
+[Contrato visual y uso](docs/APARIENCIA.md).
 
 ## Arquitectura
 
-```text
-Quickshell (QML)  ──JSONL/Unix socket 0600──►  nova-platform (C++/Qt6)  ──►  sistema
- barra, dock…          contrato IPC v1           operaciones acotadas
-```
-
-Detalle en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
+Un daemon C++/Qt6 integra el sistema mediante un
+[contrato IPC versionado](docs/CONTRATO-IPC-v1.md). QML presenta los datos y nunca
+ejecuta procesos. El socket es privado y verifica el UID del cliente.
+Los componentes QML tienen un límite de 400 líneas.
+[Arquitectura](docs/ARQUITECTURA.md).
 
 ## Requisitos
 
-- KDE Plasma 6 en sesión **Wayland**.
-- [Quickshell](https://quickshell.org) **0.3.x** (comando `qs`).
-- Para compilar: CMake ≥ 3.21, Ninja, compilador C++20 y Qt 6 (Core, Network).
+KDE Plasma 6.8+ Wayland, Quickshell 0.3.2+ y Qt 6.12.0+.
+El daemon requiere CMake ≥ 3.21, Ninja, C++20 y Qt Core/Network.
+Para SVG se necesita el plugin de imágenes Qt SVG;
+Qt Quick Controls se usa en la galería.
 
-Dependencias de compilación por distribución (esto sí usa el gestor de
-paquetes de tu sistema; NovaShell en sí nunca pide root):
-
-| Distribución | Paquetes |
+| Distribución | Compilación y módulos de interfaz adicionales |
 | :--- | :--- |
-| Arch / CachyOS | `sudo pacman -S --needed cmake ninja gcc qt6-base` |
-| Fedora 44 | `sudo dnf install cmake ninja-build gcc-c++ qt6-qtbase-devel` |
-| Debian 13 / Ubuntu 26.04 | `sudo apt install cmake ninja-build g++ qt6-base-dev` |
-| NixOS | Flake pendiente (hoja de ruta). |
+| Arch / CachyOS | `cmake ninja gcc qt6-base qt6-declarative qt6-svg qt6-imageformats` |
+| Fedora | `cmake ninja-build gcc-c++ qt6-qtbase-devel qt6-qtdeclarative qt6-qtsvg` |
+| Debian / Ubuntu | `cmake ninja-build g++ qt6-base-dev libqt6svg6 qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-window qml6-module-qtqml-workerscript` |
 
-Quickshell no está en todos los repositorios oficiales: instálalo según su
-[guía oficial](https://quickshell.org/docs/guide/install-setup/).
+Instala esas dependencias con el gestor de tu distribución y Quickshell desde
+su [guía oficial](https://quickshell.org/docs/guide/install-setup/).
+Las recetas no acreditan validación de escritorio en todas las distribuciones.
 
 ## Empezar
 
 ```sh
 git clone https://github.com/ReinierTutoriales/K-Nova-NovaShell.git
 cd K-Nova-NovaShell
-./tools/novactl doctor     # comprueba sesión, Plasma, Quickshell y herramientas
-./tools/novactl install    # compila e instala en tu usuario
-./tools/novactl start      # arranca daemon + shell
-./tools/novactl enable     # opcional: arrancar al iniciar sesión
+./tools/novactl doctor
+./tools/novactl install
+./tools/novactl start
+./tools/novactl enable  # opcional
 ```
 
-Otras órdenes: `stop`, `restart`, `status`, `logs`, `dev`, `version`,
-`uninstall [--purge]`. NovaShell **convive** con el panel de Plasma; no
-reemplaza `plasmashell` en esta fase.
+La barra incluye el acceso Apariencia. Los cambios de la galería duran la sesión.
+Para abrirla al desarrollar:
 
-## Desarrollo
+```sh
+NOVA_APPEARANCE_PREVIEW=1 ./tools/novactl dev
+```
 
-Ver [docs/DESARROLLO.md](docs/DESARROLLO.md). Resumen:
+Otras órdenes: `stop`, `restart`, `status`, `logs`, `version`,
+`uninstall [--purge]`. NovaShell convive con Plasma; no sustituye su shell
+ni cambia automáticamente el tema global de iconos.
+
+## Desarrollo y verificación
+
+[Guía de desarrollo](docs/DESARROLLO.md):
 
 ```sh
 cmake -S . -B build -G Ninja -DNOVA_WERROR=ON
-cmake --build build && ctest --test-dir build --output-on-failure
-python3 tools/check-sources.py        # reglas de arquitectura
-./tools/novactl dev                   # shell desde las fuentes, recarga en caliente
+cmake --build build
+ctest --test-dir build --output-on-failure
+python3 tools/check-sources.py
+shellcheck -x tools/novactl
+node --test tests/appearance.test.mjs
 ```
 
-El repositorio incluye skills, agentes y reglas (`AGENTS.md`, `.claude/skills/`, `.cursor/rules/`) para que los asistentes de código produzcan cambios eficientes y de alta calidad, siempre verificados y sin atribución de IA.
+Node.js solo sirve para pruebas y regeneración de SVG; no es una dependencia
+de instalación ni de ejecución. CI carga QML real y renderiza los recursos con Qt
+6.12.0. El daemon también se compila con ese SDK. Eso no acredita el blur,
+los controladores GPU ni una sesión Plasma real.
 
-## Licencia
+`tests/requirements-ci.txt` fija la versión estable de Qt para el SDK y las
+pruebas. Dependabot propone actualizaciones semanales de Qt/PySide y acciones;
+CI semanal detecta nuevas versiones estables de Qt y Quickshell. Los cambios
+requieren pruebas antes de integrarse. Quickshell debe recompilarse para la
+versión exacta de Qt instalada, porque utiliza sus API privadas.
+`packaging/runtime.env` fija los mínimos de Plasma y Quickshell, comprobados
+por `novactl doctor`. El objetivo es la rama estable más reciente, sin betas.
 
-[GPL-3.0-or-later](LICENSE).
+## Licencias
+
+[Licencia](LICENSE) y [avisos de terceros](THIRD_PARTY_NOTICES.md).
+El código original usa GPL-3.0-or-later; las partes adaptadas están identificadas
+por archivo y la distribución combinada cumple GPLv3.

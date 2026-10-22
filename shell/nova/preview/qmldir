@@ -1,0 +1,5 @@
+module qs.nova.preview
+AppearancePreview 1.0 AppearancePreview.qml
+AppearancePanel 1.0 AppearancePanel.qml
+AppearanceOptions 1.0 AppearanceOptions.qml
+IconGallery 1.0 IconGallery.qml

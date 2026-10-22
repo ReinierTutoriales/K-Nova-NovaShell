@@ -63,7 +63,7 @@ ParseResult parseRequest(const QByteArray &line)
     }
 
     const QJsonValue versionValue = object.value(QLatin1String("version"));
-    if (!versionValue.isDouble() || versionValue.toInt(-1) != Version) {
+    if (!versionValue.isDouble() || versionValue.toDouble() != static_cast<double>(Version)) {
         out.error = makeError(code::UnsupportedVersion,
             QStringLiteral("versión de protocolo soportada: %1").arg(Version));
         return out;

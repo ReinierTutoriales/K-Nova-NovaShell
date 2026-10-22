@@ -12,6 +12,11 @@ Plasma real) antes de empezar la siguiente.
 
 ## Fase 1 — Barra completa
 
+Base visual transversal disponible: iconos vectoriales y cuatro apariencias,
+materiales, controles accesibles, galería y exportación freedesktop.
+Ver [Apariencia](APARIENCIA.md). Esto no da por completados el dock,
+las integraciones de la barra ni la aceptación en una sesión Plasma real.
+
 - Bandeja del sistema (StatusNotifierItem, nativo en Quickshell).
 - Volumen y dispositivo de salida (PipeWire, nativo en Quickshell).
 - Red y Bluetooth vía daemon (NetworkManager / BlueZ por DBus).
@@ -50,6 +55,5 @@ Plasma real) antes de empezar la siguiente.
 
 ## Pendientes de verificación técnica
 
-- Qué versión mínima de Plasma 6 funciona realmente sin plugins KWin
-  (objetivo: incluir Debian 13, que trae Plasma 6.3).
+- Validar Plasma 6.8 Wayland con Quickshell 0.3.2 y Qt 6.12 en una sesión real.
 - Lint QML completo en CI con Quickshell instalado (hoy: sintaxis + reglas).

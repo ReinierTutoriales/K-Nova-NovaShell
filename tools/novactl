@@ -23,7 +23,9 @@ readonly SHELL_DEST="$CONFIG_HOME/quickshell/novashell"
 readonly UNIT_DIR="$CONFIG_HOME/systemd/user"
 readonly MANIFEST="$DATA_HOME/novashell/install-manifest"
 readonly UNITS=(nova-platform.service novashell.service)
-readonly MIN_PLASMA_MAJOR=6
+# shellcheck source-path=SCRIPTDIR/..
+# shellcheck source=packaging/runtime.env
+source "$REPO_DIR/packaging/runtime.env"
 
 # ---------------------------------------------------------------- utilidades
 
@@ -40,6 +42,12 @@ fail() { printf '%s✘%s %s\n' "$C_ERR" "$C_RST" "$*" >&2; }
 die()  { fail "$*"; exit 1; }
 
 have() { command -v "$1" >/dev/null 2>&1; }
+
+version_at_least() {
+    local installed="$1" required="$2"
+    [[ "$installed" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || return 1
+    [[ "$(printf '%s\n' "$required" "$installed" | sort -V | head -n1)" == "$required" ]]
+}
 
 require_user() {
     if [[ "$(id -u)" -eq 0 ]]; then
@@ -82,10 +90,10 @@ cmd_doctor() {
     if have plasmashell; then
         local plasma_version
         plasma_version="$(plasmashell --version 2>/dev/null | awk '{print $NF}')"
-        if [[ "${plasma_version%%.*}" -ge "$MIN_PLASMA_MAJOR" ]] 2>/dev/null; then
+        if version_at_least "$plasma_version" "$NOVA_MIN_PLASMA"; then
             ok "Plasma $plasma_version"
         else
-            fail "Plasma ${plasma_version:-desconocido}; se requiere 6.x"
+            fail "Plasma ${plasma_version:-desconocido}; se requiere $NOVA_MIN_PLASMA o posterior"
             problems=$((problems + 1))
         fi
     else
@@ -94,9 +102,26 @@ cmd_doctor() {
 
     local qs
     if qs="$(quickshell_bin)"; then
-        ok "Quickshell: $qs ($("$qs" --version 2>/dev/null | head -n1 || echo 'versión desconocida'))"
+        local qs_output qs_version qt_runtime qt_built qt_required
+        qs_output="$("$qs" --version -v 2>/dev/null)" || qs_output=""
+        qs_version="$(sed -nE 's/^Quickshell: v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' <<< "$qs_output" | head -n1)"
+        if version_at_least "$qs_version" "$NOVA_MIN_QUICKSHELL"; then
+            ok "Quickshell $qs_version ($qs)"
+        else
+            fail "Quickshell ${qs_version:-desconocido}; se requiere $NOVA_MIN_QUICKSHELL o posterior"
+            problems=$((problems + 1))
+        fi
+        qt_runtime="$(sed -nE 's/^Qt: ([0-9.]+) \(built against ([0-9.]+)\)$/\1/p' <<< "$qs_output")"
+        qt_built="$(sed -nE 's/^Qt: ([0-9.]+) \(built against ([0-9.]+)\)$/\2/p' <<< "$qs_output")"
+        qt_required="$(sed -n 's/^PySide6-Essentials==\([0-9.]*\)$/\1/p' "$REPO_DIR/tests/requirements-ci.txt")"
+        if version_at_least "$qt_runtime" "$qt_required" && [[ "$qt_runtime" == "$qt_built" ]]; then
+            ok "Qt $qt_runtime; Quickshell compilado para la misma versión"
+        else
+            fail "Qt de Quickshell: ejecución=${qt_runtime:-desconocida}, compilación=${qt_built:-desconocida}; se requiere $qt_required+ y versiones coincidentes"
+            problems=$((problems + 1))
+        fi
     else
-        fail "Quickshell no encontrado (se necesita la 0.3.x; define NOVA_QS_BIN si está fuera del PATH)"
+        fail "Quickshell no encontrado (se necesita $NOVA_MIN_QUICKSHELL; define NOVA_QS_BIN si está fuera del PATH)"
         problems=$((problems + 1))
     fi
 
@@ -159,6 +184,7 @@ install_shell_tree() {
     mkdir -p -- "$parent"
     rm -rf -- "$staging" "$backup"
     cp -R -- "$REPO_DIR/shell" "$staging"
+    install -m 0644 "$REPO_DIR/LICENSE" "$REPO_DIR/THIRD_PARTY_NOTICES.md" "$staging/"
     chmod -R u+rwX,go-w -- "$staging"
     if [[ -e "$SHELL_DEST" ]]; then
         mv -- "$SHELL_DEST" "$backup"
@@ -194,6 +220,13 @@ cmd_install() {
 
     {
         printf '%s\n' "$PREFIX/libexec/nova-platform"
+        local icon_file
+        while IFS= read -r -d '' icon_file; do
+            printf '%s\n' "$PREFIX/share/icons/${icon_file#"$REPO_DIR/assets/icons/"}"
+        done < <(find "$REPO_DIR/assets/icons" -type f -print0)
+        while IFS= read -r -d '' icon_file; do
+            printf '%s\n' "$PREFIX/share/icons/${icon_file#"$BUILD_DIR/icon-library/"}"
+        done < <(find "$BUILD_DIR/icon-library" \( -type f -o -type l \) -print0)
         for unit in "${UNITS[@]}"; do printf '%s\n' "$UNIT_DIR/$unit"; done
     } > "$MANIFEST"
     printf '%s\n' "$VERSION" > "$(dirname -- "$MANIFEST")/installed-version"

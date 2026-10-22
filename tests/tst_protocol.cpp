@@ -79,6 +79,14 @@ private slots:
         QTest::newRow("vacía") << QString();
     }
 
+    void rejectsFractionalVersion()
+    {
+        const auto r = parseRequest(
+            R"({"version":1.5,"requestId":"fraction","operation":"platform.ping"})");
+        QVERIFY(r.error);
+        QCOMPARE(r.error->code, QString::fromLatin1(code::UnsupportedVersion));
+    }
+
     void rejectsBadOperationNames()
     {
         QFETCH(QString, operation);

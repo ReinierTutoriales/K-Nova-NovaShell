@@ -1,0 +1,12 @@
+[Icon Theme]
+Name=NovaGlass-tinted
+Comment=NovaShell layered vector icons
+Inherits=NovaGlass,NovaGlass-System-light,breeze,hicolor
+Directories=scalable/apps
+
+[scalable/apps]
+Size=64
+MinSize=16
+MaxSize=256
+Type=Scalable
+Context=Applications

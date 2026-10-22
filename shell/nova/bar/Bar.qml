@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import qs.nova.theme
+import qs.nova.controls
 
 // Barra superior de una pantalla. Solo compone widgets: la lógica vive en
 // cada widget y los datos del sistema en qs.nova.services.
@@ -11,6 +12,7 @@ PanelWindow {
     id: bar
 
     required property var modelData
+    signal appearanceRequested()
     screen: modelData
 
     anchors {
@@ -19,15 +21,17 @@ PanelWindow {
         right: true
     }
     implicitHeight: Theme.barHeight
-    color: "transparent"
+    color: Theme.color.transparent
+    BackgroundEffect.blurRegion: Theme.blurEnabled ? blurRegion : null
+    Region { id: blurRegion; item: bar.contentItem }
 
     WlrLayershell.namespace: "novashell-bar"
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
-    Rectangle {
+    GlassSurface {
         anchors.fill: parent
-        color: Theme.color.barBackground
+        cornerRadius: Theme.radius.none
 
         Rectangle {
             anchors {
@@ -35,7 +39,7 @@ PanelWindow {
                 right: parent.right
                 bottom: parent.bottom
             }
-            height: 1
+            height: Theme.space.hairline
             color: Theme.color.border
         }
 
@@ -53,6 +57,12 @@ PanelWindow {
                 font.family: Theme.font.family
                 font.pixelSize: Theme.font.body
                 font.weight: Font.DemiBold
+            }
+
+            IconButton {
+                label: qsTr("Apariencia")
+                symbol: "theme"
+                onClicked: bar.appearanceRequested()
             }
 
             Item {

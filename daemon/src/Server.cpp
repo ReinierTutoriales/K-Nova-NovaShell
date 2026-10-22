@@ -82,9 +82,13 @@ void Server::acceptConnections()
             socket->deleteLater();
             continue;
         }
+        socket->setReadBufferSize(protocol::MaxLineBytes + 1);
         m_buffers.insert(socket, QByteArray());
         connect(socket, &QLocalSocket::readyRead, this, [this, socket] { readClient(socket); });
         connect(socket, &QLocalSocket::disconnected, this, [this, socket] { dropClient(socket); });
+        if (socket->bytesAvailable() > 0) {
+            readClient(socket);
+        }
     }
 }
 
@@ -94,28 +98,38 @@ void Server::readClient(QLocalSocket *socket)
     if (it == m_buffers.end()) {
         return;
     }
-    it->append(socket->readAll());
-
-    qsizetype newline = 0;
-    while ((newline = it->indexOf('\n')) >= 0) {
-        const QByteArray line = it->left(newline).trimmed();
-        it->remove(0, newline + 1);
-        if (!line.isEmpty()) {
-            handleLine(socket, line);
+    while (socket->bytesAvailable() > 0) {
+        const qint64 capacity = protocol::MaxLineBytes + 1 - it->size();
+        // QIODevice reserves one byte for the terminating NUL.
+        const QByteArray chunk = socket->readLine(capacity + 1);
+        if (chunk.isEmpty()) {
+            break;
         }
-        it = m_buffers.find(socket); // handleLine puede haber cerrado el cliente
-        if (it == m_buffers.end()) {
+        it->append(chunk);
+        const bool complete = it->endsWith('\n');
+        const qsizetype payloadSize = it->size() - (complete ? 1 : 0);
+        // Check raw bytes before trimming: padding counts toward the limit.
+        if (payloadSize > protocol::MaxLineBytes) {
+            socket->write(protocol::encodeError(QString(),
+                {QString::fromLatin1(protocol::code::RequestTooLarge),
+                 QStringLiteral("línea demasiado larga; conexión cerrada"), false}));
+            socket->flush();
+            m_buffers.remove(socket);
+            socket->disconnectFromServer();
+            socket->deleteLater();
             return;
         }
-    }
-
-    // Sin salto de línea y por encima del límite: cliente roto o abusivo.
-    if (it->size() > protocol::MaxLineBytes) {
-        socket->write(protocol::encodeError(QString(),
-            {QString::fromLatin1(protocol::code::RequestTooLarge),
-             QStringLiteral("línea demasiado larga; conexión cerrada"), false}));
-        socket->flush();
-        socket->disconnectFromServer();
+        if (complete) {
+            const QByteArray line = it->trimmed();
+            it->clear();
+            if (!line.isEmpty()) {
+                handleLine(socket, line);
+            }
+            it = m_buffers.find(socket);
+            if (it == m_buffers.end()) {
+                return;
+            }
+        }
     }
 }
 

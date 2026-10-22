@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "source": "https://github.com/vinceliuice/MacTahoe-icon-theme",
+  "revision": "839848b9a8a38a92a6936e30c4abe35cc6f2546d",
+  "license": "GPL-3.0",
+  "themes": [
+    "NovaGlass-System",
+    "NovaGlass-System-light",
+    "NovaGlass-System-dark"
+  ],
+  "archiveSha256": "c08558e0fd0ee72f7dda3a3a154ddbe4fa8d3b3ab6dab5084f4ad97ba034efe2",
+  "archiveBytes": 4547740,
+  "physicalFiles": 19100,
+  "aliases": 63871,
+  "uniqueIconNames": 16602,
+  "baseIconEntries": 27508,
+  "categories": {
+    "actions": 9578,
+    "animations": 97,
+    "apps": 7458,
+    "categories": 159,
+    "devices": 907,
+    "emotes": 76,
+    "emblems": 174,
+    "mimes": 3112,
+    "places": 1440,
+    "preferences": 453,
+    "status": 4054
+  },
+  "duplicateBytesAvoided": 58031317,
+  "omittedBrokenSourceAliases": []
+}

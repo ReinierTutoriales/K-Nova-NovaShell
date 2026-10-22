@@ -1,0 +1,2 @@
+# Qt Quick, SVG and QtTest only; no WebEngine/PDF runtime for visual checks.
+PySide6-Essentials==6.12.0

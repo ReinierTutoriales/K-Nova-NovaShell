@@ -2,6 +2,12 @@
 
 ## Compilar y probar
 
+Objetivo estable: Qt 6.12.0+, Quickshell 0.3.2+ y Plasma 6.8 Wayland.
+El SDK C++ usa la versión fijada en `tests/requirements-ci.txt`.
+Para pruebas visuales: `python3 -m pip install -r tests/requirements-ci.txt`.
+Quickshell debe estar compilado para la misma versión exacta de Qt en ejecución;
+`novactl doctor` comprueba ese dato sin mostrar el diagnóstico completo del entorno.
+
 ```sh
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DNOVA_WERROR=ON
 cmake --build build
@@ -9,6 +15,8 @@ ctest --test-dir build --output-on-failure
 ```
 
 - `protocol`: tests unitarios (QtTest) del parseo, límites y router.
+- `appearance`: contratos de iconos, materiales y accesibilidad (Node).
+- `icon_library`: integridad del paquete completo de recursos y enlaces.
 - `ipc_smoke`: arranca el daemon real con un socket temporal y verifica
   permisos, respuestas, límites, segunda instancia, cierre por SIGTERM y que
   `platform.capabilities` coincide con `docs/CONTRATO-IPC-v1.md`.

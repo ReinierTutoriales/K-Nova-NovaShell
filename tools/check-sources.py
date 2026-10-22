@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Reglas de arquitectura de NovaShell que el CI hace cumplir.
 
-1. Ningún archivo QML supera MAX_QML_LINES para mantener componentes acotados.
+1. Ningún archivo QML supera MAX_QML_LINES.
 2. El QML no ejecuta procesos: Process, execDetached y similares están
    prohibidos. Todo acceso al sistema pasa por nova-platform (contrato IPC).
 3. Todo archivo de código lleva cabecera SPDX.
