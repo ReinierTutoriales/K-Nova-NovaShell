@@ -1,0 +1,16 @@
+---
+description: Reglas centrales de NovaShell para agentes de código
+globs: ["**/*"]
+alwaysApply: true
+---
+
+Sigue AGENTS.md y CLAUDE.md.
+
+- QML ≤ 400 líneas. Solo Theme para diseño.
+- UI nunca ejecuta procesos. Todo por IPC del daemon.
+- Operaciones nuevas documentadas en CONTRATO-IPC-v1.md en el mismo cambio.
+- SPDX en todo código.
+- Sin root. Sin atribución de IA en commits o ramas.
+- Verifica con cmake + ctest + check-sources.py antes de finalizar.
+
+Usa las skills en .claude/skills/ cuando apliquen.
