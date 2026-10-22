@@ -6,7 +6,7 @@
 
 <p align="center"><img src="docs/images/escritorio-claro.png" alt="Escritorio NovaShell en modo claro: barra superior, widgets de reloj, sistema y calendario, y dock con aplicaciones" width="820"></p>
 
-> **Versión 0.2.0 (pre-release).** Todo lo descrito funciona con Quickshell
+> **Versión 0.3.0 (pre-release).** Todo lo descrito funciona con Quickshell
 > 0.3.2 y Qt 6.12 reales y pasa el CI (incluida una instalación completa en
 > un usuario vacío), pero aún no se ha validado en una sesión Plasma 6.8 ni con
 > SDDM reales (blur de KWin, GPU, consumo en reposo y servicios del sistema). Ver [cambios](CHANGELOG.md) y [hoja de ruta](docs/HOJA-DE-RUTA.md).
@@ -38,27 +38,62 @@ compositor anuncia `ext-background-effect-v1`; sin él la superficie mantiene
 una opacidad legible. No hay plugins nativos de KWin.
 [Contrato visual](docs/APARIENCIA.md).
 
+## Versiones
+
+| Componente | Mínima | Probada (CI) | Para qué | Comprobar |
+| :--- | :--- | :--- | :--- | :--- |
+| KDE Plasma (Wayland) | 6.8.0 | — (pendiente en sesión real) | Escritorio, KWin, splash y bloqueo | `plasmashell --version` · `echo $XDG_SESSION_TYPE` |
+| Qt | 6.12.0 | 6.12.0 | Daemon y QML | `qtpaths6 --qt-version` |
+| Quickshell | 0.3.2, compilado para tu misma Qt | 0.3.2 | Motor del shell | `qs --version -v` |
+| GLib / GIO | 2.80 | 2.80 | Catálogo de aplicaciones | `pkg-config --modversion gio-unix-2.0` |
+| CMake · compilador | 3.21 · C++20 | 3.28 · GCC 13 | Compilar el daemon | `cmake --version` |
+| KConfig 6 (`kwriteconfig6`) | 6.x | — | Opcional: perfil nativo y control de desenfoque | `kwriteconfig6 --help` |
+| SDDM con `sddm-greeter-qt6` y QtQuick Effects/Shapes | 0.21 | API simulada | Opcional: tema de inicio de sesión | `command -v sddm-greeter-qt6` |
+| Python 3 | 3.9 | 3.12 | Opcional: perfil nativo | `python3 --version` |
+
+Los mínimos están en `packaging/runtime.env` y `novactl doctor` los comprueba.
+El desenfoque necesita un KWin que anuncie `ext-background-effect-v1`
+(Ajustes → Estado de integración lo indica); sin él la interfaz funciona con
+superficies más opacas.
+
 ## Instalar
 
-Requisitos: KDE Plasma 6.8+ en Wayland, Qt 6.12+ y
-[Quickshell](https://quickshell.org/docs/v0.3.0/guide/install-setup) 0.3.2+
-compilado para tu misma versión de Qt. La **[guía de instalación](docs/INSTALACION.md)**
-tiene los paquetes por distribución, cada paso explicado y solución de problemas.
+La **[guía de instalación](docs/INSTALACION.md)** explica cada paso, los
+paquetes por distribución, cómo actualizar, desinstalar y resolver problemas.
+
+**1. Paquetes de compilación**
+
+| Distribución | Orden |
+| :--- | :--- |
+| Arch / CachyOS | `sudo pacman -S --needed cmake ninja gcc pkgconf glib2 wayland qt6-base qt6-declarative qt6-svg qt6-imageformats quickshell` |
+| Fedora | `sudo dnf install cmake ninja-build gcc-c++ pkgconf glib2-devel wayland-devel qt6-qtbase-devel qt6-qtdeclarative qt6-qtsvg` y Quickshell desde el COPR `errornointernet/quickshell` |
+| Debian / Ubuntu | `sudo apt install cmake ninja-build g++ pkg-config libglib2.0-dev libwayland-dev qt6-base-dev libqt6svg6 qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-window qml6-module-qtqml-workerscript` y Quickshell ([opciones](https://quickshell.org/docs/v0.3.0/guide/install-setup)) |
+
+**2. Descargar, comprobar e instalar** (todo en tu usuario, sin root)
 
 ```sh
-git clone --branch v0.2.0 https://github.com/ReinierTutoriales/K-Nova-NovaShell.git
+git clone --branch v0.3.0 https://github.com/ReinierTutoriales/K-Nova-NovaShell.git
 cd K-Nova-NovaShell
-./tools/novactl doctor                    # comprueba sesión, Plasma, Quickshell y Qt
-./tools/novactl install                   # compila e instala en tu usuario, sin root
+./tools/novactl doctor                    # ✔ bien · ! aviso · ✘ corregir antes de seguir
+./tools/novactl install                   # compila (Release) e instala en ~/.local
 ./tools/novactl start && ./tools/novactl enable
-./tools/novactl desktop-profile apply     # opcional: splash, fondo de bloqueo, Dolphin y KWin
-./tools/novactl login-theme install       # opcional: tema SDDM (imprime la orden con sudo)
 ```
 
+**3. Opcional**
+
+```sh
+./tools/novactl desktop-profile apply     # splash, fondo de bloqueo, Dolphin y KWin (reversible: restore)
+./tools/novactl login-theme preview       # vista previa del inicio de sesión, sin root
+./tools/novactl login-theme install       # imprime la orden con sudo para instalar el tema SDDM
+```
+
+La primera vez aparece la bienvenida (vidrio, esquema y material). Los
+controles **Vidrio** y **Desenfoque** están en Ajustes → Apariencia.
 NovaShell convive con el panel de Plasma; no sustituye `plasmashell` ni cambia
-el tema global. Para desinstalar: `./tools/novactl uninstall` (`--purge`
-borra también tus ajustes). Actualizar y desinstalar paso a paso:
-[guía](docs/INSTALACION.md#9-actualizar).
+el tema global.
+
+**Actualizar:** `git fetch --tags && git checkout vX.Y.Z && ./tools/novactl install && ./tools/novactl restart`.
+**Desinstalar:** `./tools/novactl uninstall` (`--purge` borra también tus ajustes).
 
 ## Uso
 
