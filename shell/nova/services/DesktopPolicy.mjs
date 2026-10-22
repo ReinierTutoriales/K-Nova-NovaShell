@@ -16,23 +16,28 @@ export function search(applications, query) {
 }
 export function dock(applications, pins, windows) {
     const byId = new Map(applications.map(app => [identity(app.id), app]));
+    // Resolve short IDs once, preserving ambiguity rather than scanning the
+    // full application catalog again for each live window.
+    const shortIds = new Map();
+    for (const app of applications) {
+        const key = identity(app.id), short = key.split(".").pop();
+        shortIds.set(short, shortIds.has(short) ? null : key);
+    }
+    const pinned = new Set(pins.map(identity));
     const groups = new Map();
     for (const window of windows) {
         let key = identity(window.appId);
-        if (!byId.has(key)) {
-            const matches = applications.filter(app => identity(app.id).split(".").pop() === key);
-            if (matches.length === 1) key = identity(matches[0].id);
-        }
+        if (!byId.has(key) && shortIds.get(key)) key = shortIds.get(key);
         if (!groups.has(key)) groups.set(key, []);
         groups.get(key).push(window);
     }
-    const ordered = [...new Set([...pins.map(identity), ...groups.keys()])];
+    const ordered = [...new Set([...pinned, ...groups.keys()])];
     return ordered.map(key => {
         const app = byId.get(key), group = groups.get(key) || [];
         if (!app && group.length === 0) return null;
         return {id: app?.id || key + ".desktop", name: app?.name || group[0].title || key,
             icon: app?.icon || "application-x-executable", windows: group,
-            pinned: pins.some(pin => identity(pin) === key)};
+            pinned: pinned.has(key)};
     }).filter(Boolean);
 }
 export function nextWindow(windows, activeId, pendingId, pendingSource, pendingAge) {
