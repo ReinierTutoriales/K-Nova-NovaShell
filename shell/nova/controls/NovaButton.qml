@@ -8,6 +8,8 @@ import qs.nova.icons
 Button {
     id: root
     property string symbol: ""
+    // Acción principal (una por vista): relleno de acento.
+    property bool prominent: false
     hoverEnabled: true
     focusPolicy: Qt.StrongFocus
     implicitHeight: Theme.metrics.controlHeight
@@ -25,9 +27,11 @@ Button {
         text: root.text
         font.family: Theme.font.family
         font.pixelSize: Theme.font.body
+        font.weight: root.prominent ? Font.DemiBold : Font.Normal
     }
     background: ControlFill {
         flat: root.flat
+        prominent: root.prominent
         radius: Theme.radius.md
         pressed: root.down
         checked: root.checked
@@ -41,14 +45,15 @@ Button {
             visible: root.symbol !== ""
             name: root.symbol
             size: Theme.icons.small
-            tint: Theme.color.text
+            tint: root.prominent ? Theme.color.accentText : Theme.color.text
             Layout.alignment: Qt.AlignVCenter
         }
         Text {
             text: root.text
-            color: Theme.color.text
+            color: root.prominent ? Theme.color.accentText : Theme.color.text
             font.family: Theme.font.family
             font.pixelSize: Theme.font.body
+            font.weight: root.prominent ? Font.DemiBold : Font.Normal
             elide: Text.ElideRight
             horizontalAlignment: Text.AlignHCenter
             Layout.fillWidth: true

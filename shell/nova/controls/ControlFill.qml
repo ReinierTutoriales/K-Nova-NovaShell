@@ -14,13 +14,17 @@ Rectangle {
     property bool focused: false
     // flat: invisible en reposo (barra, dock, iconos); si no, relleno sutil.
     property bool flat: false
+    // prominent: acción principal de una vista (tinte de acento, HIG).
+    property bool prominent: false
     radius: Theme.radius.md
     antialiasing: true
-    color: pressed ? Theme.color.pressed
+    color: prominent ? (pressed ? Theme.color.accentFillPressed
+            : hovered ? Theme.color.accentFillHover : Theme.color.accentFill)
+        : pressed ? Theme.color.pressed
         : checked ? Theme.color.selection
         : hovered ? Theme.color.hover
         : flat ? Theme.color.transparent : Theme.color.controlFill
-    border.width: focused ? Theme.metrics.focusWidth : (flat ? 0 : Theme.space.hairline)
+    border.width: focused ? Theme.metrics.focusWidth : (flat || prominent ? 0 : Theme.space.hairline)
     border.color: focused ? Theme.color.focus : Theme.color.controlBorder
     Behavior on color { ColorAnimation { duration: Theme.motion.fast } }
 }
