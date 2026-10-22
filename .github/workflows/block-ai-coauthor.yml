@@ -1,0 +1,40 @@
+name: block-ai-coauthor
+
+on:
+  pull_request:
+
+concurrency:
+  group: block-ai-coauthor-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  block-ai-coauthor:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base branch tip
+        run: git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
+
+      - name: Reject AI agent attribution in new commits
+        env:
+          PATTERN: '(noreply@anthropic\.com|copilot@github\.com|copilot\[bot\]@users\.noreply\.github\.com|devin-ai-integration\[bot\]@users\.noreply\.github\.com|noreply@qoder\.com|coderabbitai\[bot\]@users\.noreply\.github\.com|claude@anthropic\.com)'
+        run: |
+          set -eu
+
+          if git log "origin/${{ github.base_ref }}..HEAD" --pretty=%B \
+              | grep -qiE "co-authored-by:[[:space:]]*.*${PATTERN}"; then
+            echo "::error::AI agent attribution detected. Strip the Co-authored-by trailer before merging."
+            exit 1
+          fi
+
+          if git log "origin/${{ github.base_ref }}..HEAD" --pretty='%ae|%ce' \
+              | grep -qiE "${PATTERN}"; then
+            echo "::error::AI agent attribution detected. Commit author or committer uses an AI service email."
+            exit 1
+          fi
