@@ -1,0 +1,65 @@
+name: release
+
+# Publica la versión de VERSION cuando el CI de main termina en verde.
+# Solo actúa si VERSION no termina en -dev y su etiqueta vX.Y.Z no existe:
+# re-ejecutar es inofensivo y las etiquetas publicadas no se mueven.
+# Pre-release si la sección del CHANGELOG lo indica (ver docs/LANZAMIENTO.md).
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Publicar si VERSION es una versión nueva
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          version=$(head -n1 VERSION)
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "VERSION=$version no es una versión de lanzamiento; nada que hacer."
+            exit 0
+          fi
+          tag="v$version"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            echo "$tag ya existe; nada que hacer."
+            exit 0
+          fi
+          # Notas: la sección "## [X.Y.Z]" del CHANGELOG hasta la siguiente.
+          notes=$(awk -v v="$version" '
+            $0 ~ "^## \\[" v "\\]" {on=1; next}
+            on && /^## \[/ {exit}
+            on && /^\[[^]]+\]: / {exit}
+            on {print}' CHANGELOG.md)
+          if [[ -z "${notes//[[:space:]]/}" ]]; then
+            echo "::error::CHANGELOG.md no tiene la sección [$version]"
+            exit 1
+          fi
+          heading=$(grep -m1 "^## \[$version\]" CHANGELOG.md)
+          flags=()
+          if [[ "$heading" == *pre-release* ]]; then flags+=(--prerelease); fi
+          {
+            printf '%s\n\n---\n' "$notes"
+            printf 'Instalar: `git clone --branch %s https://github.com/%s.git` y seguir el README.\n' "$tag" "$GITHUB_REPOSITORY"
+          } > notes.md
+          gh release create "$tag" --target "$SHA" --title "NovaShell $version" \
+            --notes-file notes.md "${flags[@]}"
