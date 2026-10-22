@@ -93,7 +93,8 @@ NovaShell convive con el panel de Plasma; no sustituye `plasmashell`.
 
 **Tras instalar** el escritorio queda coherente sin más pasos: iconos y
 carpetas NovaGlass monocromas, paleta NovaGlass clara u oscura (según la que
-uses) con acento Liquid Glass, Dolphin con tamaños de icono cómodos,
+uses) con acento Liquid Glass, terminal Konsole translúcida con colores
+intensos (clara u oscura), Dolphin con tamaños de icono cómodos,
 transiciones de KWin ágiles (factor 0,75, Scale, Squash, Maximize, Slide),
 Blur activo, splash y fondo de bloqueo NovaShell. Todo se deshace con
 `novactl desktop-profile restore` o al desinstalar; `novactl install

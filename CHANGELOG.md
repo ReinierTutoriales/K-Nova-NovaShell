@@ -15,6 +15,10 @@ versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
 - Perfil nativo: claves de iconos, acento y paleta (`--appearance
   auto|light|dark`, `--keep-look`) y efectos Blur, Maximize, Slide y Fading
   Popups (desactivados en `reduced`). Registro versión 3 con migración.
+- Terminal NovaShell para Konsole: perfiles «NovaShell Claro» (perla, 72 %)
+  y «NovaShell Oscuro» (grafito, 64 %) translúcidos con desenfoque y colores
+  intensos legibles (≥ 4,5:1). El perfil nativo los fija como predeterminados
+  y, con Konsole 26.08+, alterna claro/oscuro con el sistema.
 - 73 sinónimos de carpetas (Dolphin, KIO, biblioteca heredada) enlazados a los
   13 roles propios.
 

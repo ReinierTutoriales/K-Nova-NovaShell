@@ -218,6 +218,57 @@ class ProfileTest(unittest.TestCase):
         self.assertEqual(run.call_args_list[0].args[0], [store.colors, "--", "BreezeLight"])
         self.assertIn("--delete", run.call_args_list[1].args[0])
 
+    def test_terminal_profile_follows_appearance(self):
+        self.store.window_background = lambda: "14,15,18"
+        self.controller.apply("balanced")
+        self.assertEqual(self.store.values["look.terminal"], "NovaShell Oscuro.profile")
+        self.assertEqual(self.store.values["look.terminalSync"], "true")
+        self.assertEqual((self.store.values["look.terminalLight"], self.store.values["look.terminalDark"]),
+                         ("NovaShell Claro", "NovaShell Oscuro"))
+        self.assertEqual(PROFILE.profile("reduced")["look.terminal"], "NovaShell Claro.profile")
+
+    def test_version_3_journal_keeps_user_terminal(self):
+        self.store.values["look.terminal"] = "Mio.profile"
+        applied = {key: value for key, value in PROFILE.profile("glass").items() if key in PROFILE.KEYS_V3}
+        before = {key: None for key in PROFILE.KEYS_V3}
+        for key, value in applied.items():
+            self.store.values[key] = value
+        self.controller.save({"version": 3, "profile": "glass", "phase": "active", "before": before, "applied": applied})
+        self.controller.restore()
+        self.assertEqual(self.store.values["look.terminal"], "Mio.profile")
+
+    def test_terminal_schemes_are_translucent_and_readable(self):
+        def color(section):
+            return tuple(int(part) for part in section["Color"].split(","))
+        def luminance(rgb):
+            linear = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in (v / 255 for v in rgb)]
+            return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+        def contrast(a, b):
+            a, b = luminance(a), luminance(b)
+            return (max(a, b) + 0.05) / (min(a, b) + 0.05)
+        directory = ROOT / "packaging/konsole"
+        for scheme in PROFILE.TERMINAL_SCHEMES:
+            parser = configparser.ConfigParser(interpolation=None)
+            parser.optionxform = str
+            parser.read(directory / f"{scheme}.colorscheme")
+            general = parser["General"]
+            self.assertEqual(general["Blur"], "true")
+            self.assertTrue(0.6 <= float(general["Opacity"]) < 1, scheme)
+            background = color(parser["Background"])
+            self.assertGreaterEqual(contrast(color(parser["Foreground"]), background), 12, scheme)
+            for index in range(1, 8):  # Color0 is "black": unreadable on dark by convention
+                self.assertGreaterEqual(contrast(color(parser[f"Color{index}"]), background), 4.5, (scheme, index))
+                self.assertGreaterEqual(contrast(color(parser[f"Color{index}Intense"]), background), 3, (scheme, index))
+            for group in parser.sections():
+                if group != "General":
+                    self.assertEqual(len(color(parser[group])), 3)
+        for name, scheme in zip(PROFILE.TERMINAL_PROFILES.values(), PROFILE.TERMINAL_SCHEMES):
+            parser = configparser.ConfigParser(interpolation=None)
+            parser.optionxform = str
+            parser.read(directory / f"{name}.profile")
+            self.assertEqual(parser["General"]["Name"], name)
+            self.assertEqual(parser["Appearance"]["ColorScheme"], scheme)
+
 
 if __name__ == "__main__":
     unittest.main()

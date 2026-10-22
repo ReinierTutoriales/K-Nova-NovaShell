@@ -79,6 +79,7 @@ configuración de KDE.
 | Shell QML | `~/.config/quickshell/novashell/` |
 | Servicios de usuario | `~/.config/systemd/user/{nova-platform,novashell}.service` |
 | Iconos NovaGlass y paletas de color | `~/.local/share/icons/`, `~/.local/share/color-schemes/` |
+| Perfiles de terminal (Konsole) | `~/.local/share/konsole/` |
 | Fondo NovaShell (claro/oscuro) | `~/.local/share/wallpapers/NovaShell/` |
 | Splash (pantalla de carga) | `~/.local/share/plasma/look-and-feel/org.knova.novashell/` |
 | Tema de inicio de sesión preparado | `~/.local/share/novashell/sddm/novashell/` |
@@ -103,7 +104,7 @@ decoraciones de ventana).
 
 `install` ya aplicó el perfil `balanced`: iconos y carpetas NovaGlass
 monocromas, paleta NovaGlass clara u oscura según la que tenías (también la
-usa la pantalla de bloqueo), acento Liquid Glass neutro, tamaños de Dolphin,
+usa la pantalla de bloqueo), acento Liquid Glass neutro, terminal translúcida, tamaños de Dolphin,
 transiciones de KWin, splash y fondo de bloqueo. Para ajustarlo:
 
 ```sh
