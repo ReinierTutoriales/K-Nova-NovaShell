@@ -66,6 +66,25 @@ nodos estáticos: no hay shaders por frame ni capturas del escritorio.
 Esta base no implementa refracción del escritorio ni reemplaza la decoración
 de las ventanas. El blur real debe validarse en Plasma Wayland.
 
+## Pautas de Apple aplicadas
+
+Referencia: Apple Human Interface Guidelines (Motion, Progress indicators,
+Materials) y la sesión WWDC25 «Meet Liquid Glass». macOS 27 (Golden Gate)
+ajustó la transparencia de Liquid Glass para que botones y etiquetas se lean
+mejor; NovaShell prioriza la legibilidad por la misma razón.
+
+| Pauta | Cómo se aplica |
+| :--- | :--- |
+| Vidrio solo en la capa de navegación | `GlassSurface` en barra, dock, paneles, widgets y avisos flotantes. |
+| No apilar vidrio sobre vidrio | Controles sobre vidrio usan `ControlFill` (relleno de estado) y el contenido `ContentCard`. |
+| Tinte solo en elementos primarios | El acento marca selección, progreso, interruptores activos y el día de hoy. |
+| Movimiento breve, con propósito e interrumpible | Paneles: abrir 200 ms (OutCubic), cerrar 120 ms (InCubic); las `Behavior` se interrumpen solas. |
+| Evitar animar interacciones frecuentes | Ampliación del dock desactivada por defecto (como en macOS); hover solo cambia el relleno. |
+| Movimiento opcional | «Reducir movimiento» lleva las duraciones a 0 y quita barridos y ampliación. |
+| Progreso determinado cuando se conoce el total | El catálogo pasa de indeterminado a determinado en la misma barra. |
+| Ritmo honesto, sin saltos ni parones | El relleno avanza suavizado; la barra no aparece en operaciones de menos de 250 ms. |
+| Etiquetas concretas | «Leyendo aplicaciones instaladas: 24 de 230», no «Cargando…». |
+
 ## Recursos y pruebas
 
 El objetivo visual es macOS 27 Golden Gate. La migración actual es parcial y
