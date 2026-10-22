@@ -25,11 +25,12 @@ ColumnLayout {
             radius: height / 2
             color: Theme.color.sliderTrack
             Rectangle {
-                width: parent.width * Math.max(0, Math.min(1, parent.parent.ratio))
+                // Redondeado al 2 %: una variación mínima de memoria no repinta
+                // el widget. Sin animación: cada 10 s basta un fotograma.
+                width: parent.width * Math.round(Math.max(0, Math.min(1, parent.parent.ratio)) * Theme.metrics.metricSteps) / Theme.metrics.metricSteps
                 height: parent.height
                 radius: height / 2
                 color: parent.parent.ratio > 0.85 ? Theme.color.warn : Theme.color.accent
-                Behavior on width { NumberAnimation { duration: Theme.motion.normal } }
             }
         }
     }

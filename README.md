@@ -17,7 +17,7 @@
 | :--- | :--- |
 | **Barra superior** | Lanzador, apariencia, bandeja del sistema, indicadores de red, Bluetooth, volumen y batería; el reloj abre «Hoy». |
 | **Dock** | Apps fijadas con iconos del sistema, menú contextual, autoocultación y ampliación opcional. |
-| **Lanzador** | Búsqueda sin acentos, teclado completo y progreso real del catálogo. |
+| **Lanzador** | Icono de lupa con destello; búsqueda por relevancia (nombre, iniciales, nombre genérico y palabras clave) sin acentos, Intro abre el primero, teclado completo y progreso real del catálogo. |
 | **Centro de control** | Wi-Fi, Bluetooth, sonido, brillo, No molestar, capturas y acciones de sesión. |
 | **Ajustes** | Barra lateral: apariencia, escritorio, dock, barra, notificaciones, accesibilidad, privacidad e integración. |
 | **Widgets** | Reloj analógico, uso de CPU/memoria y calendario sobre el fondo. |

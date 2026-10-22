@@ -20,7 +20,7 @@ Wayland headless · 🟡 implementado, falta validar en Plasma 6.8 real ·
 - ✅ Bandeja del sistema (StatusNotifierItem).
 - 🟡 Valores reales de PipeWire/NetworkManager/UPower/BlueZ: el entorno de
   prueba no tiene esos servicios.
-- ⬜ Presupuesto medido de RAM/CPU del shell en reposo en Plasma real.
+- 🟡 Reposo medido sin GPU (0,10 % CPU con widgets, daemon 0 % y 17,5 MiB); falta medir en Plasma real con GPU.
 
 ## Fase 2 — Dock ✅ / 🟡
 
@@ -30,7 +30,7 @@ Wayland headless · 🟡 implementado, falta validar en Plasma 6.8 real ·
 
 ## Fase 3 — Lanzador y búsqueda ✅
 
-- ✅ Lanzador con búsqueda sin acentos, fijar/quitar del dock.
+- ✅ Lanzador con búsqueda por relevancia sin acentos (índice por catálogo), teclado completo, fijar/quitar del dock; 18 ms por pulsación con 300 apps ([medida](OPTIMIZACION.md#lanzador-y-búsqueda)).
 - ⬜ Navegación completa por teclado revisada con lector de pantalla.
 
 ## Fase 4 — Notificaciones y centro de control 🟡

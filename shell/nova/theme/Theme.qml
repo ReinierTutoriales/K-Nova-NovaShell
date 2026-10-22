@@ -236,6 +236,8 @@ QtObject {
         // Entrada de la pantalla de inicio: desplazamiento vertical inicial.
         readonly property int loginEnterOffset: 24
         readonly property int spinnerStroke: 2
+        // Pasos de las barras de uso del sistema (50 = cada 2 %).
+        readonly property int metricSteps: 50
         readonly property int splashMark: 96
         readonly property int splashProgressWidth: 160
         // Fracción superior de la superficie que cubre el brillo especular.

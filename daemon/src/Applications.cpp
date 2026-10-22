@@ -49,13 +49,16 @@ void Applications::refresh() {
             }
         }
         QString keywords;
+        QString genericName;
         if (G_IS_DESKTOP_APP_INFO(app)) {
+            genericName = text(g_desktop_app_info_get_generic_name(G_DESKTOP_APP_INFO(app)), 96);
             const char *const *words = g_desktop_app_info_get_keywords(G_DESKTOP_APP_INFO(app));
             if (words) for (int i = 0; words[i] && i < 12; ++i) keywords += text(words[i], 48) + QLatin1Char(' ');
         }
         records.append({{QStringLiteral("id"), id},
             {QStringLiteral("name"), text(g_app_info_get_display_name(app), 128)},
-            {QStringLiteral("icon"), icon}, {QStringLiteral("keywords"), keywords.left(256)}});
+            {QStringLiteral("icon"), icon}, {QStringLiteral("keywords"), keywords.left(256)},
+            {QStringLiteral("genericName"), genericName}});
     }
     g_list_free_full(applications, g_object_unref);
     std::sort(records.begin(), records.end(), [](const auto &a, const auto &b) {

@@ -58,3 +58,41 @@ test("KWin bridge coalesces snapshots and keeps one idle command request", () =>
     timers.find(timer => timer.interval === 1).timeout.callbacks[0]();
     assert.equal(requests.length, 2);
 });
+
+test("launcher search ranks the expected app first and ignores accents", () => {
+    const apps = [
+        {id: "org.kde.dolphin.desktop", name: "Dolphin", genericName: "Gestor de archivos", keywords: "files explorer"},
+        {id: "firefox.desktop", name: "Firefox", genericName: "Navegador web"},
+        {id: "org.mozilla.Thunderbird.desktop", name: "Thunderbird", genericName: "Correo"},
+        {id: "libreoffice-calc.desktop", name: "LibreOffice Calc", genericName: "Hoja de cálculo"},
+        {id: "libreoffice-writer.desktop", name: "LibreOffice Writer", genericName: "Procesador de textos"},
+        {id: "org.kde.konsole.desktop", name: "Konsole", genericName: "Terminal"},
+        {id: "spotify.desktop", name: "Spotify", keywords: "music"},
+    ];
+    const index = Policy.searchIndex(apps);
+    const first = query => Policy.search(apps, query, index)[0]?.name;
+    assert.equal(first("fire"), "Firefox");
+    assert.equal(first("FI"), "Firefox");
+    assert.equal(first("navegador"), "Firefox");
+    assert.equal(first("calc"), "LibreOffice Calc");
+    assert.equal(first("lc"), "LibreOffice Calc");
+    assert.equal(first("libre wri"), "LibreOffice Writer");
+    assert.equal(first("cálculo"), "LibreOffice Calc");
+    assert.equal(first("terminal"), "Konsole");
+    assert.equal(first("archivos"), "Dolphin");
+    assert.equal(first("music"), "Spotify");
+    assert.equal(Policy.search(apps, "zzz", index).length, 0);
+    // Sin texto: catálogo completo en su orden; el índice no altera el original.
+    assert.equal(Policy.search(apps, "  ", index), apps);
+    // Relevancia: "o" coincide con muchos, pero los que empiezan por "o" no
+    // existen; gana inicio de palabra y luego el orden del catálogo.
+    assert.ok(Policy.search(apps, "office", index).every(app => app.name.startsWith("LibreOffice")));
+});
+
+test("search index handles large catalogs quickly", () => {
+    const apps = Array.from({length: 2000}, (_, i) => ({id: `app${i}.desktop`, name: `Aplicación ${i}`, keywords: "uno dos"}));
+    const index = Policy.searchIndex(apps);
+    const started = performance.now();
+    for (const q of ["a", "ap", "apl", "apli", "aplic 19", "dos"]) Policy.search(apps, q, index);
+    assert.ok(performance.now() - started < 200);
+});

@@ -67,7 +67,7 @@ Las conexiones lentas se cierran al superar 128 KiB pendientes de escritura.
 | `platform.ping` | — | `{"ready": true}` |
 | `platform.version` | — | `{"version": "0.2.0", "protocol": 1}` |
 | `platform.capabilities` | — | `{"protocol": 1, "operations": ["…"]}` (lista ordenada) |
-| `applications.list` | `offset` ≥ 0, `limit` 1–32 | `applications`, `next`, `total`; páginas de hasta 48 KiB |
+| `applications.list` | `offset` ≥ 0, `limit` 1–32 | `applications` (`id`, `name`, `genericName`, `icon`, `keywords`), `next`, `total`; páginas de hasta 48 KiB |
 | `application.launch` | `id`: identificador `.desktop` instalado | `launched`, `id`; resolución GIO, sin comando arbitrario |
 | `settings.get` | — | `values`: preferencias validadas del usuario |
 | `settings.patch` | Claves permitidas de `Preferences::defaults()` | `values`; escritura atómica, rechazo completo si hay una clave inválida |

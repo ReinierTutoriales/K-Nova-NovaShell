@@ -21,5 +21,11 @@ Item {
         sourceSize: Qt.size(root.rasterSize, root.rasterSize)
         visible: status === Image.Ready
     }
-    AppIcon { anchors.fill: parent; name: "application"; size: root.size; visible: !image.visible }
+    // El icono genérico solo existe si no hay icono real o falla al cargar;
+    // mientras carga no se crea (sin parpadeo ni objetos de ida y vuelta).
+    Loader {
+        anchors.fill: parent
+        active: root.source === "" || image.status === Image.Error
+        sourceComponent: Component { AppIcon { name: "application"; size: root.size } }
+    }
 }
