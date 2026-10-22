@@ -44,6 +44,16 @@ Scope {
             daemonVersion: Platform.daemonVersion; compositorBlur: Theme.compositorBlur
             onPatchRequested: patch => Platform.preferences.patch(patch)
             onWallpaperRequested: url => Platform.call("wallpaper.set", {url: url, screen: Quickshell.screens.indexOf(desktop.output)})
+            onWelcomeRequested: ShellState.toggle("welcome", desktop.output)
+        } }
+    }
+    DesktopPanel {
+        output: desktop.output; kind: "welcome"; centered: true
+        panelWidth: Theme.metrics.welcomeWidth; panelHeight: Theme.metrics.welcomeHeight
+        content: Component { WelcomeView {
+            values: Platform.preferences.values; connected: Platform.connected
+            onPatchRequested: patch => Platform.preferences.patch(patch)
+            onFinished: ShellState.close()
         } }
     }
     DesktopPanel {

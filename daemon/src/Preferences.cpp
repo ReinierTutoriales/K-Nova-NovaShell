@@ -23,6 +23,8 @@ QJsonObject Preferences::defaults() {
         {QStringLiteral("notificationServer"), false}, {QStringLiteral("clipboardEnabled"), false},
         {QStringLiteral("reduceMotion"), false}, {QStringLiteral("reduceTransparency"), false},
         {QStringLiteral("highContrast"), false}, {QStringLiteral("backgroundBlur"), true},
+        // La bienvenida de primer uso se muestra hasta completarla u omitirla.
+        {QStringLiteral("welcomeCompleted"), false},
         {QStringLiteral("pins"), QJsonArray{QStringLiteral("org.kde.dolphin.desktop"),
             QStringLiteral("org.kde.konsole.desktop"), QStringLiteral("firefox.desktop"),
             QStringLiteral("systemsettings.desktop")}}};
