@@ -45,6 +45,14 @@ private slots:
         QVERIFY(std::holds_alternative<protocol::Error>(second.patch({{QStringLiteral("pins"), QJsonArray{"same.desktop", "same.desktop"}}})));
         QVERIFY(!(QFile::permissions(path) & (QFileDevice::ReadGroup | QFileDevice::ReadOther)));
     }
+    void welcomeStartsPendingAndOnlyAcceptsBool() {
+        QTemporaryDir directory;
+        Preferences preferences(directory.filePath(QStringLiteral("settings.json")));
+        const auto values = std::get<QJsonObject>(preferences.read()).value(QStringLiteral("values")).toObject();
+        QCOMPARE(values.value(QStringLiteral("welcomeCompleted")).toBool(true), false);
+        QVERIFY(std::holds_alternative<protocol::Error>(preferences.patch({{QStringLiteral("welcomeCompleted"), QStringLiteral("yes")}})));
+        QVERIFY(std::holds_alternative<QJsonObject>(preferences.patch({{QStringLiteral("welcomeCompleted"), true}})));
+    }
     void invalidStoredPreferencesRecoverIndividually() {
         QTemporaryDir directory;
         const QString path = directory.filePath(QStringLiteral("settings.json"));

@@ -38,6 +38,11 @@ ShellRoot {
     Component { id: launcher; LauncherView { applications: Platform.applications; iconResolver: name => Platform.iconUrl(name) } }
     Component { id: controls; ControlCenterView { backend: Platform.desktop } }
     Component { id: preferences; SettingsView { values: Platform.preferences.values; connected: Platform.connected } }
+    Component { id: welcome; WelcomeView {
+        values: Platform.preferences.values; connected: Platform.connected
+        onPatchRequested: patch => Platform.preferences.patch(patch)
+        onFinished: Platform.preferences.patch({welcomeCompleted: true})
+    } }
     Timer {
         running: true
         repeat: true
@@ -52,7 +57,14 @@ ShellRoot {
             if (root.phase === 0 && Theme.mode !== Platform.preferences.values.mode) { console.error("NOVA_PREFERENCES_NOT_APPLIED " + Theme.mode); Qt.quit(); return; }
             if (root.phase === 0) content.sourceComponent = controls;
             else if (root.phase === 1) content.sourceComponent = preferences;
-            else if (root.phase === 2) { console.log("NOVA_RUNTIME_OK"); Qt.quit(); }
+            else if (root.phase === 2) {
+                // Bienvenida: pendiente en un perfil nuevo; recorrer y terminar la guarda.
+                if (Platform.preferences.values.welcomeCompleted !== false) { console.error("NOVA_WELCOME_NOT_PENDING"); Qt.quit(); return; }
+                content.sourceComponent = welcome;
+                for (let page = 0; page <= content.item.lastPage; ++page) content.item.next();
+            } else if (root.phase < 10 && Platform.preferences.values.welcomeCompleted !== true) { return; }
+            else if (Platform.preferences.values.welcomeCompleted !== true) { console.error("NOVA_WELCOME_NOT_SAVED"); Qt.quit(); return; }
+            else { console.log("NOVA_RUNTIME_OK"); Qt.quit(); }
             ++root.phase;
         }
     }
@@ -67,7 +79,7 @@ ShellRoot {
             result = subprocess.run([quickshell, "-p", str(directory / "shell.qml")], env=environment,
                                     capture_output=True, text=True, timeout=30)
             output = result.stdout + result.stderr
-            errors = re.findall(r".*(?:ReferenceError|TypeError|Cannot assign|is not a type|is not installed|Binding loop|Failed to load configuration|NOVA_RUNTIME_TIMEOUT|NOVA_CATALOG_NOT_REQUESTED|NOVA_PREFERENCES_NOT_APPLIED|Duplicate property).*", output)
+            errors = re.findall(r".*(?:ReferenceError|TypeError|Cannot assign|is not a type|is not installed|Binding loop|Failed to load configuration|NOVA_RUNTIME_TIMEOUT|NOVA_CATALOG_NOT_REQUESTED|NOVA_PREFERENCES_NOT_APPLIED|NOVA_WELCOME_[A-Z_]*|Duplicate property).*", output)
             if result.returncode or "NOVA_RUNTIME_OK" not in output or errors:
                 raise RuntimeError(output)
             print("Actual Quickshell + daemon + native services + desktop views: OK")

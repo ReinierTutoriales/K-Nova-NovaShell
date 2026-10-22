@@ -57,7 +57,7 @@ set(NOVA_LNF_DIR ${CMAKE_INSTALL_DATADIR}/plasma/look-and-feel/org.knova.novashe
 install(FILES session/lookandfeel/metadata.json DESTINATION ${NOVA_LNF_DIR})
 install(FILES session/splash/Splash.qml DESTINATION ${NOVA_LNF_DIR}/contents/splash)
 install(DIRECTORY shell/nova/theme/ DESTINATION ${NOVA_LNF_DIR}/contents/splash/theme)
-install(FILES assets/brand/nova-mark.svg assets/wallpapers/nova-light.jpg assets/wallpapers/nova-dark.jpg
+install(FILES shell/nova/icons/nova-mark.svg assets/wallpapers/nova-light.jpg assets/wallpapers/nova-dark.jpg
     DESTINATION ${NOVA_LNF_DIR}/contents/splash/images)
 
 if(BUILD_TESTING)

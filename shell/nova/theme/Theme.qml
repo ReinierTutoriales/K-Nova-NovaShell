@@ -40,6 +40,11 @@ QtObject {
         readonly property color textMuted: theme.dark ? "#bec3cf" : "#505662"
         readonly property color accent: theme.accent
         readonly property color accentText: "#ffffff"
+        // Relleno de la acción principal: oscurecido para que accentText
+        // cumpla 4,5:1 (WCAG AA) con el acento por defecto (#3478f6 → 4,8:1).
+        readonly property color accentFill: Qt.darker(theme.accent, 1.1)
+        readonly property color accentFillHover: Qt.darker(theme.accent, 1.18)
+        readonly property color accentFillPressed: Qt.darker(theme.accent, 1.28)
         readonly property color ok: theme.dark ? "#6cdb8e" : "#16783b"
         readonly property color warn: theme.dark ? "#ffd176" : "#895500"
         readonly property color error: theme.dark ? "#ff9a95" : "#b42318"
@@ -166,6 +171,8 @@ QtObject {
         readonly property int desktopWidgetWidth: 380
         readonly property int settingsWidth: 880
         readonly property int settingsHeight: 620
+        readonly property int welcomeWidth: 560
+        readonly property int welcomeHeight: 460
         // Fracción superior de la superficie que cubre el brillo especular.
         readonly property real sheenHeight: 0.55
     }

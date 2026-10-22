@@ -15,12 +15,14 @@ PanelWindow {
     property Component content
     property int panelWidth: Theme.metrics.popupWidth
     property int panelHeight: Theme.metrics.popupHeight
+    // Centrado en la pantalla (sin anclas de layer-shell) en lugar de bajo la barra.
+    property bool centered: false
     screen: output
     readonly property bool opened: ShellState.panel === kind && ShellState.screen === output
     visible: reveal.visible
     color: Theme.color.transparent
-    anchors { top: true; right: true }
-    margins { top: Theme.barHeight + Theme.space.md; right: Theme.space.md }
+    anchors { top: !centered; right: !centered }
+    margins { top: centered ? 0 : Theme.barHeight + Theme.space.md; right: centered ? 0 : Theme.space.md }
     implicitWidth: Math.min(panelWidth, output.width - Theme.space.xl)
     implicitHeight: Math.min(panelHeight, output.height - Theme.barHeight - Theme.space.xl)
     exclusionMode: ExclusionMode.Ignore

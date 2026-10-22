@@ -11,6 +11,9 @@ versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
   solo splash) con progreso determinado por etapas de `ksplashqml`.
 - Fondo NovaShell claro/oscuro como paquete de Plasma, reproducible con
   `tools/render-wallpapers.py`, y marca propia.
+- Bienvenida de primer uso (Apple HIG, *Onboarding*): breve, omitible y con
+  cambios en vivo; se reabre desde Ajustes o `toggle welcome`.
+- Estilo de botón principal (`prominent`) con relleno de acento accesible.
 - `desktop-profile` activa también el splash y el fondo de la pantalla de
   bloqueo, de forma reversible; migra los registros de 0.1.0.
 

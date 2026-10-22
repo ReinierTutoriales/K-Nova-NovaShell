@@ -19,6 +19,7 @@ RowLayout {
     property string section: "appearance"
     signal patchRequested(var changes)
     signal wallpaperRequested(string url)
+    signal welcomeRequested()
     spacing: Theme.space.lg
 
     function update(key, value) { const patch = {}; patch[key] = value; patchRequested(patch); }
@@ -165,6 +166,11 @@ RowLayout {
                 onToggled: (key, value) => settings.update(key, value)
                 model: [{key: "desktopWidgets", label: qsTr("Widgets en el escritorio"), fallback: true,
                     description: qsTr("Reloj, calendario y uso del sistema sobre el fondo.")}]
+            }
+            NovaButton {
+                visible: settings.section === "desktop"; Layout.fillWidth: true
+                text: qsTr("Ver la bienvenida otra vez"); symbol: "nova"
+                onClicked: settings.welcomeRequested()
             }
 
             // Dock

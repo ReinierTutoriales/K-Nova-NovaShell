@@ -50,7 +50,7 @@ Scope {
         // Sin propiedades: IpcHandler expone las suyas por IPC y un array no cabe.
         function toggle(panel: string): string {
             const panels = ["launcher", "controls", "notifications", "settings",
-                "overview", "clipboard", "widgets"];
+                "overview", "clipboard", "widgets", "welcome"];
             if (panels.indexOf(panel) < 0)
                 return "panel desconocido: " + panel;
             ShellState.toggle(panel, ShellState.screen || Quickshell.screens[0]);
@@ -58,6 +58,30 @@ Scope {
         }
         function close(): void { ShellState.close(); }
         function appearance(): void { root.showAppearance(); }
+    }
+
+    // Bienvenida: se abre sola una vez, cuando llegan las preferencias del
+    // daemon y no consta completada. Cerrarla de cualquier modo (terminar,
+    // Omitir, Esc o la X) la marca como vista: no vuelve a aparecer sola.
+    Connections {
+        target: Platform.preferences
+        property bool offered: false
+        function onValuesChanged() {
+            const values = Platform.preferences.values;
+            if (offered || values.welcomeCompleted !== false) return;
+            offered = true;
+            if (ShellState.panel === "") ShellState.toggle("welcome", Quickshell.screens[0]);
+        }
+    }
+    Connections {
+        target: ShellState
+        property string previous: ""
+        function onPanelChanged() {
+            if (previous === "welcome" && ShellState.panel !== "welcome"
+                    && Platform.preferences.values.welcomeCompleted === false)
+                Platform.preferences.patch({welcomeCompleted: true});
+            previous = ShellState.panel;
+        }
     }
 
     function showAppearance() {

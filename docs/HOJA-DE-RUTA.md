@@ -60,7 +60,7 @@ Ver [sesión](SESION.md).
 - 🟡 Fondo NovaShell en la pantalla de bloqueo. La interfaz de bloqueo no se
   reemplaza: KWin no ofrece `ext-session-lock-v1` y `kscreenlocker` la toma
   del paquete de shell de Plasma.
-- ⬜ Asistente de bienvenida de primer uso.
+- ✅ Bienvenida de primer uso: probada con Quickshell y el daemon reales.
 - ⬜ Tema SDDM de inicio de sesión (Plasma Login Manager no admite temas).
 
 ## Fase 6 — Distribución 🟡
