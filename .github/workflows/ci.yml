@@ -60,12 +60,13 @@ jobs:
           diff -r assets/icons build/icon-check
 
   appearance:
-    name: apariencia (Qt ${{ matrix.pyside }})
+    name: apariencia (PySide ${{ matrix.pyside }})
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        pyside: ['6.6.3', '6.11.2']
+        # 6.6.3.1 fixes the upstream 6.6.3 Quick Controls wheel packaging.
+        pyside: ['6.6.3.1', '6.11.2']
     env:
       QT_QPA_PLATFORM: offscreen
       QT_QUICK_BACKEND: software
@@ -77,9 +78,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libegl1 libopengl0 libgl1 libxkbcommon0 libdbus-1-3
       - name: Qt Quick y SVG
-        run: python3 -m pip install --disable-pip-version-check "PySide6==${{ matrix.pyside }}"
+        run: |
+          python3 -m venv "$RUNNER_TEMP/qt-tests"
+          "$RUNNER_TEMP/qt-tests/bin/python" -m pip install --disable-pip-version-check "PySide6==${{ matrix.pyside }}"
       - name: Cargar componentes reales y renderizar SVG
-        run: python3 tests/appearance_smoke.py
+        run: '"$RUNNER_TEMP/qt-tests/bin/python" tests/appearance_smoke.py'
       - name: Capturas del renderizado
         if: always()
         uses: actions/upload-artifact@v7.0.2
