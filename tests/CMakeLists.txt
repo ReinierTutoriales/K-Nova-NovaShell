@@ -25,4 +25,8 @@ if(Python3_Interpreter_FOUND)
                 $<TARGET_FILE:nova-platform>
                 ${PROJECT_SOURCE_DIR}/docs/CONTRATO-IPC-v1.md)
     set_tests_properties(ipc_smoke PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 30)
+    add_test(NAME compositor_probe
+        COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR}/compositor_probe.py
+                $<TARGET_FILE:nova-platform>)
+    set_tests_properties(compositor_probe PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 60)
 endif()
