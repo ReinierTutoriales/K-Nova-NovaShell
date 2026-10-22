@@ -18,7 +18,7 @@ shellcheck -x tools/novactl
 ## Límites innegociables
 
 - QML ≤ 400 líneas por archivo. Colores, radios y duraciones **solo** desde `Theme`.
-- La UI **nunca** ejecuta procesos: prohibido `Process {}`, `execDetached()`, comandos de sistema. Todo acceso al sistema pasa por el daemon vía contrato IPC.
+- La UI **nunca** ejecuta procesos: prohibido `Process {}`, `execDetached()`, comandos de sistema. Aplicaciones, preferencias y KWin pasan por el daemon vía contrato IPC; las API nativas tipadas de Quickshell se encapsulan en `qs.nova.services`, detrás de `Platform`.
 - Operaciones nuevas del daemon: acotadas (nunca comando arbitrario ni ruta de ejecutable), documentadas en `docs/CONTRATO-IPC-v1.md` en el **mismo** cambio (el test `ipc_smoke` lo exige).
 - Cabecera `SPDX-License-Identifier: GPL-3.0-or-later` en todo archivo de código.
 - Sin root: ni daemon ni `novactl`.
@@ -31,4 +31,4 @@ shellcheck -x tools/novactl
 - `code-efficiency`: optimizar rendimiento, recursos y calidad de código.
 - `commit-hygiene`: verificación final, mensajes y prohibición de atribución de IA.
 
-Trabaja paso a paso según la hoja de ruta. No adelantes fases. Preserva el trabajo no relacionado.
+La integración de los módulos del escritorio está autorizada de forma transversal. Mantén la hoja de ruta fiel al estado comprobado y preserva el trabajo no relacionado.

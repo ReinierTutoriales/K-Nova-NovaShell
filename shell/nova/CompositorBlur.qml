@@ -4,21 +4,20 @@ import Quickshell
 import qs.nova.services
 import qs.nova.theme
 
-// Decide Theme.backgroundBlur sin intervención del usuario:
-//   NOVA_BACKGROUND_BLUR=1 -> siempre;  =0 -> nunca;  sin definir -> automático.
-// En automático se pide compositor.capabilities al daemon y el blur solo se
-// solicita si el compositor anuncia ext-background-effect-v1. Pedirlo a un
-// compositor que no lo soporta no tiene efecto visual y obliga a la
-// superficie a usar más transparencia de la legible (ver AppearancePolicy).
+// Fija Theme.compositorBlur: si el compositor admite el blur que usa
+// Quickshell (ext-background-effect-v1). La preferencia del usuario
+// (Theme.backgroundBlur) es independiente; el blur exige ambas.
+//   NOVA_COMPOSITOR_BLUR=1 -> se da por soportado;  =0 -> se da por no
+//   soportado;  sin definir -> se pregunta al daemon (compositor.capabilities).
 QtObject {
     id: root
 
-    readonly property string forced: Quickshell.env("NOVA_BACKGROUND_BLUR") || ""
+    readonly property string forced: Quickshell.env("NOVA_COMPOSITOR_BLUR") || ""
     // Último resultado conocido; se conserva si el daemon se reinicia.
     property bool detected: false
 
     function apply() {
-        Theme.backgroundBlur = forced === "1" || (forced !== "0" && detected);
+        Theme.compositorBlur = forced === "1" || (forced !== "0" && detected);
     }
 
     function probe() {

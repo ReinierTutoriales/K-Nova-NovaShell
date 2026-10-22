@@ -8,7 +8,7 @@ import qs.nova.theme
 Item {
     id: root
     property string iconName: ""
-    property string source: iconName ? Quickshell.iconPath(iconName, true) : ""
+    property string source: iconName ? (iconName.startsWith("/") ? "file://" + encodeURI(iconName) : Quickshell.iconPath(iconName, true)) : ""
     property real size: Theme.icons.application
     implicitWidth: size
     implicitHeight: size

@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Server.h"
+#include "WindowBridge.h"
+#include "DesktopActions.h"
 
 #include <QFile>
 #include <QLocalSocket>
@@ -35,10 +37,45 @@ Server::Server(Router router, QObject *parent)
     m_server.setSocketOptions(QLocalServer::UserAccessOption);
     m_server.setMaxPendingConnections(MaxClients);
     connect(&m_server, &QLocalServer::newConnection, this, &Server::acceptConnections);
+    if (auto *windows = m_router.windowBridge()) {
+        connect(windows, &WindowBridge::shortcutRequested, this, [this](const QString &panel) {
+            const auto event = protocol::encodeEvent(QStringLiteral("desktop.shortcut"), {{QStringLiteral("panel"), panel}});
+            for (auto *socket : m_buffers.keys())
+                if (socket->bytesToWrite() <= 128 * 1024) socket->write(event);
+        });
+        connect(windows, &WindowBridge::changed, this, [this](const QJsonObject &snapshot) {
+            const QByteArray event = protocol::encodeEvent(QStringLiteral("windows.changed"), snapshot);
+            for (auto *socket : m_buffers.keys()) {
+                if (socket->bytesToWrite() > 128 * 1024) socket->abort();
+                else socket->write(event);
+            }
+        });
+    }
+    if (auto *actions = m_router.desktopActions()) {
+        connect(actions, &DesktopActions::event, this, [this](const QString &name, const QJsonObject &payload) {
+            const auto event = protocol::encodeEvent(name, payload);
+            for (auto *socket : m_buffers.keys()) {
+                if (socket->bytesToWrite() > 128 * 1024) socket->abort();
+                else socket->write(event);
+            }
+        });
+    }
 }
 
 Server::~Server()
 {
+    // Los sockets aceptados son hijos de m_server y se destruirían después de
+    // m_buffers y m_router (orden inverso de declaración). Al destruirse
+    // emiten disconnected() -> dropClient(), que tocaría un QHash ya liberado.
+    // Se desconectan y destruyen aquí, mientras todos los miembros viven.
+    // findChildren incluye los ya cerrados con deleteLater() pendiente.
+    const QList<QLocalSocket *> sockets =
+        m_server.findChildren<QLocalSocket *>(Qt::FindDirectChildrenOnly);
+    m_buffers.clear();
+    for (QLocalSocket *socket : sockets) {
+        socket->disconnect(this);
+        delete socket;
+    }
     m_server.close();
     if (!m_socketPath.isEmpty()) {
         QLocalServer::removeServer(m_socketPath);

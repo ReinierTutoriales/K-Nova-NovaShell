@@ -142,6 +142,20 @@ def main():
                   "varias líneas en un paquete se procesan en orden")
             client.close()
 
+            desktop = Client(sock_path)
+            page = desktop.request("apps", "applications.list", {"limit": 2})
+            check(page.get("ok") and len(page["result"]["applications"]) <= 2, "catálogo paginado de aplicaciones")
+            settings = desktop.request("prefs", "settings.get")
+            check(settings.get("ok") and isinstance(settings["result"]["values"].get("dockAutoHide"), bool),
+                  "preferencias con tipos validados")
+            rejected = desktop.request("reject-prefs", "settings.patch", {"arbitrary-command": "false"})
+            check(not rejected["ok"] and rejected["error"]["code"] == "invalid-request", "claves de preferencias desconocidas se rechazan")
+            rejected = desktop.request("reject-launch", "application.launch", {"id": "../bad.desktop"})
+            check(not rejected["ok"], "el lanzamiento rechaza rutas en lugar de identificadores")
+            windows = desktop.request("windows", "windows.list")
+            check(windows.get("ok") and isinstance(windows["result"]["windows"], list), "instantánea de ventanas con ausencia de KWin tolerada")
+            desktop.close()
+
             # Línea gigante sin salto: el daemon corta la conexión, no crece en memoria.
             abuser = Client(sock_path)
             try:
@@ -178,6 +192,16 @@ def main():
             second = subprocess.run([daemon, "--socket", sock_path], capture_output=True, timeout=5)
             check(second.returncode != 0, "una segunda instancia no roba el socket")
             check(Client(sock_path).request("5", "platform.ping")["ok"], "la primera instancia sigue atendiendo")
+
+            # Regresión: cerrar con clientes conectados (el shell siempre lo
+            # está) y con otro recién desconectado. Antes, ~Server destruía
+            # los sockets después de su tabla de buffers (use-after-free).
+            lingering = [Client(sock_path), Client(sock_path)]
+            lingering[0].request("6", "platform.ping")
+            closed = Client(sock_path)
+            closed.request("7", "platform.ping")
+            closed.close()
+            time.sleep(0.05)
         finally:
             if process.poll() is None:
                 process.send_signal(signal.SIGTERM)
@@ -187,7 +211,7 @@ def main():
                     process.kill()
                     process.wait()
 
-        check(process.returncode == 0, "SIGTERM produce salida limpia (código 0)")
+        check(process.returncode == 0, "SIGTERM con clientes conectados produce salida limpia (código 0)")
         check(not os.path.exists(sock_path), "el socket se elimina al salir")
 
     print(f"\n{len(FAILURES)} fallo(s)")

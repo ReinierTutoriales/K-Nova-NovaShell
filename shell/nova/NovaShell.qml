@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import qs.nova.bar
 import qs.nova.theme
 import qs.nova.preview
+import qs.nova.desktop
+import qs.nova.services
 
 // Raíz del escritorio: crea una barra por pantalla y la retira sola cuando
 // una pantalla se desconecta (Variants sigue a Quickshell.screens).
@@ -19,7 +22,8 @@ Scope {
         Theme.highContrast = Quickshell.env("NOVA_HIGH_CONTRAST") === "1";
     }
 
-    // El blur lo decide CompositorBlur (detección + NOVA_BACKGROUND_BLUR).
+    // Soporte de blur del compositor (Theme.compositorBlur); la preferencia
+    // del usuario la aplica PreferencesBridge (Theme.backgroundBlur).
     CompositorBlur {}
 
     // La ventana de apariencia no existe hasta que se pide: en reposo no
@@ -38,6 +42,24 @@ Scope {
         }
     }
 
+    // IPC propia de Quickshell para atajos de teclado (Ajustes de KDE →
+    // Atajos → comando `qs ipc call novashell toggle launcher`, etc.).
+    // Solo abre paneles conocidos; no ejecuta nada del sistema.
+    IpcHandler {
+        target: "novashell"
+        // Sin propiedades: IpcHandler expone las suyas por IPC y un array no cabe.
+        function toggle(panel: string): string {
+            const panels = ["launcher", "controls", "notifications", "settings",
+                "overview", "clipboard", "widgets"];
+            if (panels.indexOf(panel) < 0)
+                return "panel desconocido: " + panel;
+            ShellState.toggle(panel, ShellState.screen || Quickshell.screens[0]);
+            return ShellState.panel;
+        }
+        function close(): void { ShellState.close(); }
+        function appearance(): void { root.showAppearance(); }
+    }
+
     function showAppearance() {
         if (appearance.active && appearance.item) {
             appearance.item.raise();
@@ -50,8 +72,14 @@ Scope {
     Variants {
         model: Quickshell.screens
 
-        Bar {
-            onAppearanceRequested: root.showAppearance()
+        Scope {
+            id: outputScope
+            required property var modelData
+            Desktop { output: outputScope.modelData }
+            Bar {
+                modelData: outputScope.modelData
+                onAppearanceRequested: root.showAppearance()
+            }
         }
     }
 }

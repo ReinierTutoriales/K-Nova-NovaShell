@@ -4,10 +4,20 @@ add_library(nova_protocol STATIC
     src/Protocol.h
     src/Router.cpp
     src/Router.h
+    src/Applications.cpp
+    src/Applications.h
+    src/Preferences.cpp
+    src/Preferences.h
+    src/WindowBridge.cpp
+    src/WindowBridge.h
+    src/DesktopActions.cpp
+    src/DesktopActions.h
 )
 target_include_directories(nova_protocol PUBLIC src)
 target_compile_definitions(nova_protocol PUBLIC NOVA_VERSION="${NOVA_VERSION_FULL}")
-target_link_libraries(nova_protocol PUBLIC Qt6::Core)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GIO REQUIRED IMPORTED_TARGET gio-unix-2.0>=2.80)
+target_link_libraries(nova_protocol PUBLIC Qt6::Core Qt6::DBus PkgConfig::GIO)
 
 # Solo para leer el registro de globals del compositor (compositor.capabilities).
 find_package(PkgConfig REQUIRED)

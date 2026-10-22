@@ -2,3 +2,6 @@ module qs.nova.controls
 GlassSurface 1.0 GlassSurface.qml
 NovaButton 1.0 NovaButton.qml
 IconButton 1.0 IconButton.qml
+NovaSlider 1.0 NovaSlider.qml
+NovaSwitch 1.0 NovaSwitch.qml
+SegmentedChoice 1.0 SegmentedChoice.qml

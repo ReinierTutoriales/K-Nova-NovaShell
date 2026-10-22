@@ -35,7 +35,8 @@ El modo automático sigue el esquema y la tipografía de Qt.
 | `NOVA_REDUCE_MOTION` | `1` para desactivar animaciones |
 | `NOVA_REDUCE_TRANSPARENCY` | `1` para superficies opacas |
 | `NOVA_HIGH_CONTRAST` | `1` para opacidad y bordes contrastados |
-| `NOVA_BACKGROUND_BLUR` | `1` para solicitar blur al compositor |
+| `NOVA_BACKGROUND_BLUR` | `0` desactiva la preferencia de blur (por defecto activa) |
+| `NOVA_COMPOSITOR_BLUR` | `1`/`0` fuerza el soporte detectado del compositor (diagnóstico) |
 | `NOVA_APPEARANCE_PREVIEW` | `1` para abrir la galería |
 
 Ejemplo de desarrollo: `NOVA_APPEARANCE=dark NOVA_ICON_MODE=clear ./tools/novactl dev`.
@@ -53,7 +54,8 @@ El blur se decide solo (`CompositorBlur`): al conectar, el shell pide
 que usa Quickshell 0.3. No se usa un plugin ni el protocolo privado de otro
 escritorio. Con blur la superficie baja hasta opacidad 0.38 (vidrio); sin él
 mantiene un mínimo de 0.88 para que el texto siga legible.
-`NOVA_BACKGROUND_BLUR=1` lo fuerza y `=0` lo desactiva. Reducir transparencia
+El blur exige la preferencia del usuario (Ajustes, activa por defecto) **y**
+el soporte del compositor; `NOVA_COMPOSITOR_BLUR=1/0` fuerza la detección. Reducir transparencia
 y alto contraste fuerzan opacidad 1 y desactivan el blur.
 
 `GlassSurface` añade brillo especular superior y borde de luz interior

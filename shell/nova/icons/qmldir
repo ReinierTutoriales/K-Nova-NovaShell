@@ -1,4 +1,5 @@
 module qs.nova.icons
 Icon 1.0 Icon.qml
 AppIcon 1.0 AppIcon.qml
+Artwork 1.0 Artwork.qml
 SystemAppIcon 1.0 SystemAppIcon.qml

@@ -23,7 +23,8 @@
 | `shell/nova/preview` | Galería de apariencia; se crea al abrirla y se destruye al cerrarla (`LazyLoader`). | Simular funciones del sistema. |
 | `shell/nova/CompositorBlur.qml` | Activa el blur solo si el compositor anuncia `ext-background-effect-v1`. | Forzar efectos no soportados. |
 | `shell/nova/services` | Único cliente del daemon (`Platform`). | Dibujar UI. |
-| `shell/nova/bar` (y futuros módulos) | Presentación. | Ejecutar comandos; tocar archivos del sistema. |
+| `shell/nova/bar` | Barra: lanzador, indicadores de estado, bandeja, reloj. | Ejecutar comandos. |
+| `shell/nova/desktop` | Dock, paneles (lanzador, centro de control, ajustes…) y widgets de escritorio. | Tocar archivos del sistema. |
 | `daemon/` | Integración con el sistema detrás de operaciones acotadas. | UI. |
 | `tools/novactl` | Compilar, instalar en `$HOME`, gestionar servicios. | Usar root. |
 
@@ -53,12 +54,19 @@
 - Un manejador que lanza una excepción devuelve `internal`; el daemon sigue.
 - Una segunda instancia detecta la primera y no le roba el socket.
 
+## Atajos de teclado (IPC de Quickshell)
+
+`qs ipc call novashell toggle <launcher|controls|notifications|settings|overview|clipboard|widgets>`,
+`close` y `appearance`. Se asignan como comandos en Ajustes de KDE → Atajos.
+
 ## Consumo en reposo
 
 - Sin temporizadores periódicos con el escritorio quieto: el reloj despierta
   una vez por minuto (`SystemClock`), la caducidad IPC solo corre con
   peticiones en vuelo y la reconexión solo mientras el daemon está caído.
 - Las ventanas secundarias (apariencia) no existen hasta que se abren.
+- Widgets de escritorio: el reloj despierta una vez por minuto y las métricas
+  se piden cada 10 s solo mientras los widgets están visibles.
 - El vidrio son nodos estáticos del scene graph; el blur lo hace el compositor.
 
 ## Cliente IPC del shell (`JsonlClient`)

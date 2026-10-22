@@ -220,6 +220,7 @@ cmd_install() {
 
     {
         printf '%s\n' "$PREFIX/libexec/nova-platform"
+        printf '%s\n' "$PREFIX/share/novashell/kwin/windows.js"
         local icon_file
         while IFS= read -r -d '' icon_file; do
             printf '%s\n' "$PREFIX/share/icons/${icon_file#"$REPO_DIR/assets/icons/"}"

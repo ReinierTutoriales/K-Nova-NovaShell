@@ -40,18 +40,21 @@ jobs:
           apt_opts=(-o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30)
           sudo apt-get "${apt_opts[@]}" update
           sudo apt-get "${apt_opts[@]}" install -y --no-install-recommends \
-            cmake ninja-build g++ pkg-config libwayland-dev shellcheck python3-venv libegl1 libopengl0 libgl1 libxkbcommon0 libdbus-1-3
+            cmake ninja-build g++ shellcheck python3-venv pkg-config libwayland-dev libglib2.0-dev libegl1 libopengl0 libgl1 libxkbcommon0 libdbus-1-3 \
+            libdrm-dev libpipewire-0.3-dev libcli11-dev spirv-tools libgl1-mesa-dev dbus-x11
       - name: Versión estable compartida por SDK y pruebas
         id: qt
         run: |
           version=$(sed -n 's/^PySide6-Essentials==\([0-9.]*\)$/\1/p' tests/requirements-ci.txt)
           test -n "$version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "quickshell=$(sed -n 's/^NOVA_MIN_QUICKSHELL=//p' packaging/runtime.env)" >> "$GITHUB_OUTPUT"
       - name: SDK Qt estable
         uses: jurplel/install-qt-action@v4.4.1
         with:
           version: ${{ steps.qt.outputs.version }}
-          archives: icu qtbase qtdeclarative qtsvg qttools
+          archives: icu qtbase qtdeclarative qtsvg qttools qtshadertools
+          modules: qtshadertools
           cache: true
       - name: Configurar y compilar
         run: |
@@ -59,6 +62,18 @@ jobs:
           cmake --build build --parallel
       - name: Contratos y regresiones de IPC
         run: ctest --test-dir build --output-on-failure
+      - name: Daemon con AddressSanitizer y UBSan
+        # Detecta errores de memoria (p. ej. use-after-free al cerrar con
+        # clientes conectados) que una salida con código 0 puede ocultar.
+        env:
+          ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: |
+          cmake -S . -B "$RUNNER_TEMP/build-asan" -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=OFF \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
+          cmake --build "$RUNNER_TEMP/build-asan" --target nova-platform --parallel
+          python3 -I tests/ipc_smoke.py "$RUNNER_TEMP/build-asan/daemon/nova-platform" docs/CONTRATO-IPC-v1.md
+          python3 -I tests/compositor_probe.py "$RUNNER_TEMP/build-asan/daemon/nova-platform"
       - name: Reglas, sintaxis QML y shellcheck
         run: |
           python3 -I tools/check-sources.py --qmlformat "$QT_ROOT_DIR/bin/qmlformat"
@@ -68,6 +83,25 @@ jobs:
           node --test tests/appearance.test.mjs
           node tools/export-icons.mjs build/icon-check
           diff -r assets/icons build/icon-check
+      - name: Caché del motor Quickshell para pruebas
+        id: quickshell-cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: build/quickshell-prefix
+          key: quickshell-${{ steps.qt.outputs.quickshell }}-qt-${{ steps.qt.outputs.version }}-headless-v1
+      - name: Compilar Quickshell estable para probar servicios reales
+        if: steps.quickshell-cache.outputs.cache-hit != 'true'
+        run: |
+          version=$(sed -n 's/^NOVA_MIN_QUICKSHELL=//p' packaging/runtime.env)
+          git clone --depth 1 --branch "v$version" https://github.com/quickshell-mirror/quickshell.git "$RUNNER_TEMP/quickshell"
+          cmake -S "$RUNNER_TEMP/quickshell" -B "$RUNNER_TEMP/quickshell-build" -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/build/quickshell-prefix" \
+            -DWAYLAND=OFF -DX11=OFF -DI3=OFF -DCRASH_HANDLER=OFF -DUSE_JEMALLOC=OFF \
+            -DSERVICE_PAM=OFF -DSERVICE_POLKIT=OFF -DSERVICE_GREETD=OFF
+          cmake --build "$RUNNER_TEMP/quickshell-build" --parallel 2
+          cmake --install "$RUNNER_TEMP/quickshell-build"
+      - name: Integración con el motor real y el daemon
+        run: dbus-run-session -- python3 tests/quickshell_smoke.py "$PWD/build/quickshell-prefix/bin/qs" "$PWD/build/daemon/nova-platform"
       - name: Qt Quick y SVG sin módulos innecesarios
         run: |
           python3 -m venv "$RUNNER_TEMP/qt-tests"
@@ -75,11 +109,14 @@ jobs:
       - name: Apariencia e iconos con Qt estable
         run: |
           "$RUNNER_TEMP/qt-tests/bin/python" tests/appearance_smoke.py
+          "$RUNNER_TEMP/qt-tests/bin/python" tests/desktop_smoke.py
           "$RUNNER_TEMP/qt-tests/bin/python" tests/icon_library_test.py --qt
       - name: Capturas del renderizado
         if: always()
         uses: actions/upload-artifact@v7.0.2
         with:
           name: appearance-qt-stable
-          path: build/appearance-*.png
+          path: |
+            build/appearance-*.png
+            build/desktop-*.png
           if-no-files-found: warn
