@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Reversible native Dolphin/KWin preferences through official KConfig tools."""
+"""Reversible native Dolphin/KWin/session preferences through official KConfig tools."""
 import argparse
 from contextlib import contextmanager
 import fcntl
@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 
 # Only these keys can be changed; journal content never supplies command paths.
+# Value: (file, groups, key); several groups address nested KConfig groups.
 KEYS = {
     "apps.motion": ("kdeglobals", "KDE", "AnimationDurationFactor"),
     "windows.motion": ("kwinrc", "KDE", "AnimationDurationFactor"),
@@ -24,10 +25,27 @@ KEYS = {
     "files.icons": ("dolphinrc", "IconsMode", "IconSize"),
     "files.details": ("dolphinrc", "DetailsMode", "IconSize"),
     "files.compact": ("dolphinrc", "CompactMode", "IconSize"),
+    # Session: splash (ksplashqml reads [KSplash] Theme) and lock screen
+    # wallpaper (kscreenlocker: [Greeter][Wallpaper][<plugin>][General] Image).
+    "session.splash": ("ksplashrc", "KSplash", "Theme"),
+    "session.lockPlugin": ("kscreenlockerrc", "Greeter", "WallpaperPlugin"),
+    "session.lockImage": ("kscreenlockerrc", ("Greeter", "Wallpaper", "org.kde.image", "General"), "Image"),
 }
+# Keys that existed in journal version 1; newer keys were never touched by it.
+KEYS_V1 = [key for key in KEYS if not key.startswith("session.")]
+SPLASH_ID = "org.knova.novashell"
+VALUE_LIMIT = 1024
 
 
-def profile(name):
+def data_dir():
+    return Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share")
+
+
+def wallpaper_url(data):
+    return (Path(data) / "wallpapers/NovaShell").as_uri()
+
+
+def profile(name, data=None):
     if name not in ("balanced", "glass", "reduced"):
         raise ValueError("perfil desconocido")
     reduced = name == "reduced"
@@ -36,7 +54,9 @@ def profile(name):
         "windows.squash": "true" if name == "balanced" else "false",
         "windows.lamp": "true" if name == "glass" else "false",
         "windows.inScale": "0.96", "windows.outScale": "0.96", "windows.duration": "0",
-        "files.icons": "64", "files.details": "24", "files.compact": "32"}
+        "files.icons": "64", "files.details": "24", "files.compact": "32",
+        "session.splash": SPLASH_ID, "session.lockPlugin": "org.kde.image",
+        "session.lockImage": wallpaper_url(data or data_dir())}
 
 
 class KConfigStore:
@@ -48,8 +68,12 @@ class KConfigStore:
             raise RuntimeError("se requieren kreadconfig6 y kwriteconfig6 de KDE Frameworks 6")
 
     def arguments(self, key):
-        file, group, entry = KEYS[key]
-        return ["--file", str(self.config / file), "--group", group, "--key", entry]
+        file, groups, entry = KEYS[key]
+        groups = (groups,) if isinstance(groups, str) else groups
+        arguments = ["--file", str(self.config / file)]
+        for group in groups:
+            arguments += ["--group", group]
+        return arguments + ["--key", entry]
 
     @staticmethod
     def run(arguments):
@@ -60,7 +84,7 @@ class KConfigStore:
 
     def read(self, key):
         value = self.run([self.reader, *self.arguments(key), "--default", "__NOVA_ABSENT__"])
-        if len(value.encode("utf-8")) > 128:
+        if len(value.encode("utf-8")) > VALUE_LIMIT:
             raise RuntimeError("valor de configuración demasiado grande")
         return None if value == "__NOVA_ABSENT__" else value
 
@@ -73,8 +97,8 @@ class KConfigStore:
 
 
 class NativeProfile:
-    def __init__(self, store, state):
-        self.store, self.state = store, state
+    def __init__(self, store, state, data=None):
+        self.store, self.state, self.data = store, state, data
 
     @contextmanager
     def locked(self):
@@ -92,8 +116,10 @@ class NativeProfile:
         if self.state.stat().st_size > 65536:
             raise ValueError("registro demasiado grande")
         data = json.loads(self.state.read_text())
-        if not isinstance(data, dict) or data.get("version") != 1:
+        if not isinstance(data, dict) or data.get("version") not in (1, 2):
             raise ValueError("registro no compatible")
+        if data["version"] == 1:
+            data = self.upgrade(data)
         if data.get("phase", "active") not in ("active", "applying"):
             raise ValueError("fase del registro inválida")
         groups = ["before", "applied"] + (["rollback"] if data.get("phase") == "applying" else [])
@@ -101,10 +127,21 @@ class NativeProfile:
             values = data.get(group)
             if not isinstance(values, dict) or set(values) != set(KEYS):
                 raise ValueError("claves del registro inválidas")
-            if any(value is not None and (not isinstance(value, str) or len(value.encode("utf-8")) > 128) for value in values.values()):
+            if any(value is not None and (not isinstance(value, str) or len(value.encode("utf-8")) > VALUE_LIMIT) for value in values.values()):
                 raise ValueError("valores del registro inválidos")
         if data.get("profile") not in ("balanced", "glass", "reduced"):
             raise ValueError("perfil del registro inválido")
+        return data
+
+    @staticmethod
+    def upgrade(data):
+        # Version 1 never wrote session keys: before == applied == None makes
+        # restore leave whatever the user has there untouched.
+        for group in ("before", "applied", "rollback"):
+            values = data.get(group)
+            if isinstance(values, dict) and set(values) == set(KEYS_V1):
+                values.update({key: None for key in KEYS if key not in KEYS_V1})
+        data["version"] = 2
         return data
 
     def save(self, data):
@@ -124,12 +161,12 @@ class NativeProfile:
         return {key: self.store.read(key) for key in KEYS}
 
     def preview(self, name):
-        desired = profile(name)
+        desired = profile(name, self.data)
         return {key: {"before": value, "after": desired[key]}
                 for key, value in self.snapshot().items() if value != desired[key]}
 
     def apply(self, name):
-        desired = profile(name)
+        desired = profile(name, self.data)
         previous = self.load()
         current = self.snapshot()
         if previous and previous.get("phase") == "applying":
@@ -137,7 +174,7 @@ class NativeProfile:
         if previous and current != previous["applied"]:
             raise ValueError("hay cambios posteriores; restaura primero para preservarlos")
         # Journal first: an interrupted application retains the original values.
-        journal = {"version": 1, "profile": name, "phase": "applying", "rollback": current,
+        journal = {"version": 2, "profile": name, "phase": "applying", "rollback": current,
                    "before": previous["before"] if previous else current, "applied": desired}
         self.save(journal)
         try:
@@ -172,6 +209,8 @@ class NativeProfile:
             current = self.store.read(key)
             if current == journal["before"][key]:
                 continue
+            if journal.get("phase") == "active" and journal["before"][key] == journal["applied"][key]:
+                continue  # el perfil nunca cambió esta clave: lo actual es del usuario
             owned = [journal["applied"][key]]
             if journal.get("phase") == "applying":
                 owned.append(journal["rollback"][key])
@@ -188,6 +227,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("preview", "apply", "restore", "status"))
     parser.add_argument("profile", choices=("balanced", "glass", "reduced"), nargs="?", default="balanced")
+    parser.add_argument("--data-dir", help="prefijo share/ donde novactl instaló los paquetes de sesión")
     args = parser.parse_args()
     if os.geteuid() == 0:
         parser.exit(1, "No ejecutes el perfil como root.\n")
@@ -196,7 +236,15 @@ def main():
     try:
         if not config.is_absolute() or not state.is_absolute():
             raise ValueError("las rutas XDG deben ser absolutas")
-        controller = NativeProfile(KConfigStore(config), state)
+        data = Path(args.data_dir) if args.data_dir else data_dir()
+        if not data.is_absolute():
+            raise ValueError("el directorio de datos debe ser absoluto")
+        if args.action == "apply":
+            missing = [str(path) for path in (data / "plasma/look-and-feel" / SPLASH_ID / "metadata.json",
+                                              data / "wallpapers/NovaShell/metadata.json") if not path.is_file()]
+            if missing:
+                raise ValueError("faltan los paquetes de sesión; ejecuta primero novactl install")
+        controller = NativeProfile(KConfigStore(config), state, data)
         with controller.locked():
             result = controller.preview(args.profile) if args.action == "preview" else (
                 controller.apply(args.profile) if args.action == "apply" else (

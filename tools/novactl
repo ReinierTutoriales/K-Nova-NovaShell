@@ -218,20 +218,10 @@ cmd_install() {
         render_unit "$REPO_DIR/packaging/systemd/$unit.in" "$UNIT_DIR/$unit" "$qs"
     done
 
+    # CMake registra cada archivo que instala: es la única fuente de verdad.
     {
-        printf '%s\n' "$PREFIX/libexec/nova-platform"
-        printf '%s\n' "$PREFIX/share/novashell/kwin/windows.js"
-        local scheme
-        for scheme in "$REPO_DIR"/packaging/color-schemes/*.colors; do
-            printf '%s\n' "$PREFIX/share/color-schemes/${scheme##*/}"
-        done
-        local icon_file
-        while IFS= read -r -d '' icon_file; do
-            printf '%s\n' "$PREFIX/share/icons/${icon_file#"$REPO_DIR/assets/icons/"}"
-        done < <(find "$REPO_DIR/assets/icons" -type f -print0)
-        while IFS= read -r -d '' icon_file; do
-            printf '%s\n' "$PREFIX/share/icons/${icon_file#"$BUILD_DIR/icon-library/"}"
-        done < <(find "$BUILD_DIR/icon-library" \( -type f -o -type l \) -print0)
+        cat -- "$BUILD_DIR/install_manifest.txt"
+        printf '\n'
         for unit in "${UNITS[@]}"; do printf '%s\n' "$UNIT_DIR/$unit"; done
     } > "$MANIFEST"
     printf '%s\n' "$VERSION" > "$(dirname -- "$MANIFEST")/installed-version"
@@ -259,6 +249,11 @@ cmd_uninstall() {
             [[ -n "$path" && "$path" == "$HOME"/* ]] && rm -f -- "$path"
         done < "$MANIFEST"
     fi
+    # Paquetes de sesión: sin carpetas vacías que KPackage pueda listar.
+    local package
+    for package in "$PREFIX/share/plasma/look-and-feel/org.knova.novashell" "$PREFIX/share/wallpapers/NovaShell"; do
+        [[ -d "$package" ]] && find "$package" -depth -type d -empty -delete
+    done
     rm -rf -- "$SHELL_DEST" "$(dirname -- "$MANIFEST")"
     systemctl --user daemon-reload 2>/dev/null || true
 
@@ -321,7 +316,7 @@ cmd_version() {
 cmd_desktop_profile() {
     require_user
     have python3 || die "El perfil nativo requiere Python 3"
-    python3 -I "$REPO_DIR/tools/desktop_profile.py" "$@"
+    python3 -I "$REPO_DIR/tools/desktop_profile.py" --data-dir "$PREFIX/share" "$@"
 }
 
 usage() {

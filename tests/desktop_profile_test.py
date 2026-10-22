@@ -123,6 +123,29 @@ class ProfileTest(unittest.TestCase):
                 with self.controller.locked():
                     self.fail("a second writer acquired the lock")
 
+    def test_session_keys_use_nested_groups_and_installed_packages(self):
+        store = object.__new__(PROFILE.KConfigStore)
+        store.config = Path(self.directory.name)
+        self.assertEqual(store.arguments("session.lockImage"),
+                         ["--file", str(store.config / "kscreenlockerrc"), "--group", "Greeter", "--group", "Wallpaper",
+                          "--group", "org.kde.image", "--group", "General", "--key", "Image"])
+        values = PROFILE.profile("balanced", Path("/home/u/.local/share"))
+        self.assertEqual(values["session.splash"], "org.knova.novashell")
+        self.assertEqual(values["session.lockImage"], "file:///home/u/.local/share/wallpapers/NovaShell")
+
+    def test_version_1_journal_keeps_untouched_session_keys(self):
+        self.store.values["session.splash"] = "org.kde.breeze.desktop"
+        legacy = {key: None for key in PROFILE.KEYS_V1}
+        applied = {key: value for key, value in PROFILE.profile("glass").items() if key in PROFILE.KEYS_V1}
+        for key, value in applied.items():
+            self.store.values[key] = value
+        self.controller.save({"version": 1, "profile": "glass", "phase": "active",
+                              "before": legacy, "applied": applied})
+        result = self.controller.restore()
+        self.assertEqual(self.store.values["session.splash"], "org.kde.breeze.desktop")
+        self.assertNotIn("session.splash", result["restored"] + result["preserved"])
+        self.assertTrue(all(self.store.values[key] is None for key in PROFILE.KEYS_V1))
+
     def test_native_palettes_have_readable_text(self):
         def luminance(value):
             channels = [int(channel) / 255 for channel in value.split(",")]
