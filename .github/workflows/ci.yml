@@ -40,7 +40,7 @@ jobs:
           apt_opts=(-o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30)
           sudo apt-get "${apt_opts[@]}" update
           sudo apt-get "${apt_opts[@]}" install -y --no-install-recommends \
-            cmake ninja-build g++ pkg-config libwayland-dev weston shellcheck python3-venv libegl1 libopengl0 libgl1 libxkbcommon0 libdbus-1-3
+            cmake ninja-build g++ pkg-config libwayland-dev shellcheck python3-venv libegl1 libopengl0 libgl1 libxkbcommon0 libdbus-1-3
       - name: Versión estable compartida por SDK y pruebas
         id: qt
         run: |
