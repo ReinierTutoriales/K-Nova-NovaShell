@@ -144,7 +144,7 @@ sudo systemctl disable sddm && sudo systemctl enable plasmalogin   # volver
 
 Ajustes del tema en `/usr/share/sddm/themes/novashell/theme.conf`:
 `appearance` (`auto|light|dark`), `accent` (vacío = Liquid Glass; `#rrggbb`
-para un acento de color), `background` (ruta absoluta a una imagen) y
+para un acento de color), `transparency` (`0`–`1`), `background` (ruta absoluta a una imagen) y
 `reduceMotion` (`true|false`).
 
 ## 8. Atajos de teclado

@@ -6,7 +6,19 @@ versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
 
 ## [Sin publicar]
 
+### Añadido
+- Control **Vidrio** (de opaco a transparente) en Ajustes y en la bienvenida,
+  con vista previa en vivo, y control **Desenfoque** (intensidad del Blur de
+  KWin, 1–15) mediante las operaciones nuevas `blur.get` y `blur.set`.
+
 ### Cambiado
+- La intensidad del vidrio cubre un rango visible: con desenfoque, de 0,85 a
+  0,10 de opacidad en Cristal (antes 0,78–0,58 y nunca por debajo de 0,38).
+- Sin tonos azulados: fondos NovaShell monocromos (perla y grafito), tokens de
+  vista previa neutros y paletas KDE NovaGlass con selección, foco y enlaces
+  grises.
+- La acción principal de vidrio se distingue del panel (vidrio claro sobre
+  negro en oscuro, vidrio tinta en claro).
 - **Acento Liquid Glass** en todo el sistema: sin azul. En claro, vidrio
   transparente claro; en oscuro, vidrio negro translúcido (la superficie
   oscura pasa de gris a negro). Indicadores, día de hoy, interruptores y
