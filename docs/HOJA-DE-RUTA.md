@@ -1,6 +1,6 @@
 # Hoja de ruta
 
-Versión publicada: **0.1.0** (pre-release). Ver [cambios](../CHANGELOG.md).
+Versión publicada: **0.2.0** (pre-release). Ver [cambios](../CHANGELOG.md).
 
 Estados: ✅ implementado y probado con Quickshell 0.3.2 real en un compositor
 Wayland headless · 🟡 implementado, falta validar en Plasma 6.8 real ·

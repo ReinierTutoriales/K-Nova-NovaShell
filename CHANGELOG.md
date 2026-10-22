@@ -4,39 +4,49 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/);
 versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
 `0.x`, cualquier versión menor puede romper compatibilidad.
 
-## [Sin publicar]
+## [0.2.0] — 2026-10-22 · pre-release
+
+Pantallas de sesión con la identidad de NovaShell, bienvenida de primer uso e
+instalación verificada de extremo a extremo. Probado con Quickshell 0.3.2 y
+Qt 6.12.0 reales y con la API de SDDM 0.21 simulada; **pendiente de validar
+en Plasma 6.8 y SDDM reales**, por eso sigue como pre-release.
 
 ### Añadido
-- Splash de inicio de sesión NovaShell (paquete look-and-feel por usuario,
-  solo splash) con progreso determinado por etapas de `ksplashqml`.
+- Tema SDDM (Qt 6) de inicio de sesión: fondo desenfocado, fecha y hora,
+  avatares, contraseña en cápsula, Bloq Mayús, fila de usuarios con teclado
+  (Tab y flechas; Esc borra la contraseña), sesión, teclado y energía.
+  `novactl login-theme` lo prueba sin root; copiarlo al sistema es un script
+  aparte (`packaging/sddm/install-theme.sh`) que se ejecuta con `sudo`.
+  `novactl doctor` detecta el gestor de sesión.
+- Splash de inicio de sesión (paquete look-and-feel por usuario, solo splash)
+  con progreso determinado por las etapas de `ksplashqml`.
 - Fondo NovaShell claro/oscuro como paquete de Plasma, reproducible con
   `tools/render-wallpapers.py`, y marca propia.
-- Tema SDDM (Qt 6) de inicio de sesión con la identidad de NovaShell;
-  `novactl login-theme` lo prueba sin root y la instalación de sistema es un
-  script aparte que se ejecuta con `sudo`. `novactl doctor` detecta el gestor.
-- Símbolos `restart`, `sleep` y `forward`.
-- Bienvenida de primer uso (Apple HIG, *Onboarding*): breve, omitible y con
-  cambios en vivo; se reabre desde Ajustes o `toggle welcome`.
-- Estilo de botón principal (`prominent`) con relleno de acento accesible.
 - `desktop-profile` activa también el splash y el fondo de la pantalla de
   bloqueo, de forma reversible; migra los registros de 0.1.0.
-
+- Bienvenida de primer uso (Apple HIG, *Onboarding*): breve, omitible y con
+  cambios en vivo; se reabre desde Ajustes o `toggle welcome`.
+- Estilo de botón principal (`prominent`) con relleno de acento accesible
+  (4,8:1) y símbolos `restart`, `sleep` y `forward`.
 - Guía de instalación paso a paso (`docs/INSTALACION.md`) y prueba de
   instalación de extremo a extremo en el CI (`tests/install_smoke.py`).
-- Pantalla de inicio de sesión: la fila de usuarios se maneja con teclado
-  (Tab y flechas) y Esc borra la contraseña.
 
 ### Cambiado
-- `novactl install` compila sin las pruebas; `uninstall` borra en lote (de
-  ~5 minutos a segundos con la biblioteca de iconos) y también las carpetas
-  que quedan vacías, sin salir del prefijo.
+- `novactl install` toma la lista de archivos instalados de CMake
+  (`install_manifest.txt`) y compila sin las pruebas.
+- `novactl uninstall` borra en lote (de minutos a segundos con la biblioteca
+  de iconos) y elimina las carpetas que quedan vacías sin salir del prefijo.
+- Medidas de las pantallas de sesión en `Theme` (sin literales de diseño).
 
 ### Corregido
 - `novactl uninstall --purge` no borraba los ajustes del daemon
   (`~/.config/novashell`).
-- Medidas de las pantallas de sesión movidas a `Theme` (sin literales).
-- `novactl install` toma la lista de archivos instalados de CMake
-  (`install_manifest.txt`) en lugar de enumerarlos a mano.
+
+### Limitaciones conocidas
+- La interfaz de bloqueo sigue siendo la de Plasma: KWin no implementa
+  `ext-session-lock-v1` y `kscreenlocker` la carga del paquete de shell. Solo
+  se cambia su fondo ([detalles](https://github.com/ReinierTutoriales/K-Nova-NovaShell/blob/v0.2.0/docs/SESION.md#bloqueo)).
+- Plasma Login Manager no admite temas; el tema de inicio de sesión requiere SDDM.
 
 ## [0.1.0] — 2026-10-22 · pre-release
 
@@ -84,5 +94,5 @@ del sistema), por eso se publica como pre-release.
 - Capa de iconos GoldenGate v3: su autor la describe como una recopilación
   de iconos de terceros, por lo que su licencia no cubría ese arte.
 
-[Sin publicar]: https://github.com/ReinierTutoriales/K-Nova-NovaShell/compare/v0.1.0...main
+[0.2.0]: https://github.com/ReinierTutoriales/K-Nova-NovaShell/releases/tag/v0.2.0
 [0.1.0]: https://github.com/ReinierTutoriales/K-Nova-NovaShell/releases/tag/v0.1.0

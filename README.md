@@ -6,10 +6,10 @@
 
 <p align="center"><img src="docs/images/escritorio-claro.png" alt="Escritorio NovaShell en modo claro: barra superior, widgets de reloj, sistema y calendario, y dock con aplicaciones" width="820"></p>
 
-> **Versión 0.1.0 (pre-release).** Todo lo descrito funciona con Quickshell
-> 0.3.2 y Qt 6.12 reales y pasa el CI, pero aún no se ha validado en una
-> sesión Plasma 6.8 real (blur de KWin, GPU, consumo en reposo y servicios del
-> sistema). Ver [cambios](CHANGELOG.md) y [hoja de ruta](docs/HOJA-DE-RUTA.md).
+> **Versión 0.2.0 (pre-release).** Todo lo descrito funciona con Quickshell
+> 0.3.2 y Qt 6.12 reales y pasa el CI (incluida una instalación completa en
+> un usuario vacío), pero aún no se ha validado en una sesión Plasma 6.8 ni con
+> SDDM reales (blur de KWin, GPU, consumo en reposo y servicios del sistema). Ver [cambios](CHANGELOG.md) y [hoja de ruta](docs/HOJA-DE-RUTA.md).
 
 ## Qué incluye
 
@@ -29,6 +29,7 @@
   <img src="docs/images/centro-control-oscuro.png" alt="Centro de control en modo oscuro" width="400">
   <img src="docs/images/lanzador-oscuro.png" alt="Lanzador de aplicaciones en modo oscuro" width="400">
 </p>
+<p align="center"><img src="docs/images/inicio-sesion.png" alt="Pantalla de inicio de sesión NovaShell (tema SDDM) en modo oscuro" width="820"></p>
 
 El diseño sigue las pautas de Apple para Liquid Glass, movimiento y progreso:
 vidrio solo en la capa de navegación, nada de vidrio sobre vidrio, movimiento
