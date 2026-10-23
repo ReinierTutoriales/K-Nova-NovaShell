@@ -121,7 +121,7 @@ ColumnLayout {
                 horizontalAlignment: Text.AlignHCenter
             }
             WelcomeText {
-                text: qsTr("Abre las aplicaciones desde la barra o el dock. Para un atajo de teclado, asigna en Ajustes de KDE el comando «qs ipc call novashell toggle launcher».")
+                text: qsTr("Abre las aplicaciones desde la barra o el dock. Para un atajo de teclado, asigna en Ajustes de KDE el comando «qs ipc -c novashell call novashell toggle launcher».")
                 color: Theme.color.textMuted
                 horizontalAlignment: Text.AlignHCenter
             }

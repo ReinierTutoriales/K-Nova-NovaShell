@@ -84,7 +84,7 @@ los valores por defecto ya son razonables (portapapeles desactivado).
   daemon con `welcomeCompleted: false`.
 - Terminarla, «Omitir», Esc o la X la marcan como vista y no vuelve a salir
   sola. Se reabre en Ajustes → Escritorio → «Ver la bienvenida otra vez» o con
-  `qs ipc call novashell toggle welcome`.
+  `qs ipc -c novashell call novashell toggle welcome`.
 - Quien actualice desde 0.1.0 la verá una vez (la preferencia es nueva).
 - La acción principal usa el relleno `accentFill` (acento oscurecido): texto
   blanco a 4,8:1 con el acento por defecto (WCAG AA).

@@ -19,7 +19,7 @@ PanelWindow {
     readonly property int iconSize: Platform.preferences.values.dockIconSize || Theme.icons.application
     screen: output
     anchors.bottom: true
-    implicitWidth: Math.min(output.width - Theme.space.xl, row.implicitWidth + Theme.space.xl * 2)
+    implicitWidth: Math.min((output?.width ?? Infinity) - Theme.space.xl, row.implicitWidth + Theme.space.xl * 2)
     implicitHeight: Theme.metrics.dockHeight + Math.max(0, iconSize - Theme.icons.application)
     color: Theme.color.transparent
     exclusionMode: Platform.preferences.values.dockAutoHide ? ExclusionMode.Ignore : ExclusionMode.Normal

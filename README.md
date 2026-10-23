@@ -112,7 +112,7 @@ Blur activo, splash y fondo de bloqueo NovaShell. Todo se deshace con
 | `novactl version` | Versión de las fuentes y la instalada. |
 | `novactl desktop-profile preview\|apply\|restore\|status [balanced\|glass\|reduced]` | Perfil reversible: iconos, paleta y acento, Dolphin, efectos de KWin, splash y fondo de bloqueo; `--appearance auto\|light\|dark`, `--keep-look` ([detalles](docs/ESCRITORIO-NATIVO.md)). |
 | `novactl login-theme preview\|install\|uninstall\|status` | Tema SDDM: vista previa sin root; instalarlo en el sistema imprime la orden con `sudo` ([detalles](docs/SESION.md)). |
-| `qs ipc call novashell toggle <launcher\|controls\|notifications\|settings\|overview\|clipboard\|widgets\|welcome>` | Abre o cierra un panel; asígnalo a un atajo en Ajustes de KDE → Atajos. |
+| `qs ipc -c novashell call novashell toggle <launcher\|controls\|notifications\|settings\|overview\|clipboard\|widgets\|welcome>` | Abre o cierra un panel; asígnalo a un atajo en Ajustes de KDE → Atajos. |
 
 ## Documentación
 
