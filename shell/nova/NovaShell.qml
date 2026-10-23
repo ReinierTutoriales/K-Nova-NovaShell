@@ -43,7 +43,7 @@ Scope {
     }
 
     // IPC propia de Quickshell para atajos de teclado (Ajustes de KDE →
-    // Atajos → comando `qs ipc call novashell toggle launcher`, etc.).
+    // Atajos → comando `qs ipc -c novashell call novashell toggle launcher`).
     // Solo abre paneles conocidos; no ejecuta nada del sistema.
     IpcHandler {
         target: "novashell"
@@ -53,7 +53,7 @@ Scope {
                 "overview", "clipboard", "widgets", "welcome"];
             if (panels.indexOf(panel) < 0)
                 return "panel desconocido: " + panel;
-            ShellState.toggle(panel, ShellState.screen || Quickshell.screens[0]);
+            ShellState.toggle(panel, root.liveScreen(ShellState.screen));
             return ShellState.panel;
         }
         function close(): void { ShellState.close(); }
@@ -81,6 +81,20 @@ Scope {
                     && Platform.preferences.values.welcomeCompleted === false)
                 Platform.preferences.patch({welcomeCompleted: true});
             previous = ShellState.panel;
+        }
+    }
+
+    // Al cambiar de VT o reconectar, KWin retira y vuelve a anunciar las
+    // pantallas: los objetos anteriores dejan de existir. Un panel abierto en
+    // una pantalla retirada se cierra y la IPC nunca apunta a una antigua.
+    function liveScreen(screen) {
+        return Quickshell.screens.indexOf(screen) >= 0 ? screen : Quickshell.screens[0];
+    }
+    Connections {
+        target: Quickshell
+        function onScreensChanged() {
+            if (ShellState.panel !== "" && Quickshell.screens.indexOf(ShellState.screen) < 0)
+                ShellState.close();
         }
     }
 

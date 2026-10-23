@@ -19,12 +19,15 @@ PanelWindow {
     property bool centered: false
     screen: output
     readonly property bool opened: ShellState.panel === kind && ShellState.screen === output
-    visible: reveal.visible
+    // Estado, no visibilidad efectiva del hijo: con la ventana oculta,
+    // reveal.visible es siempre false y el panel no volvía a abrirse.
+    visible: panel.opened || reveal.opacity > 0
     color: Theme.color.transparent
     anchors { top: !centered; right: !centered }
     margins { top: centered ? 0 : Theme.barHeight + Theme.space.md; right: centered ? 0 : Theme.space.md }
-    implicitWidth: Math.min(panelWidth, output.width - Theme.space.xl)
-    implicitHeight: Math.min(panelHeight, output.height - Theme.barHeight - Theme.space.xl)
+    // La pantalla puede quedar nula un instante (cambio de VT, reconexión).
+    implicitWidth: Math.min(panelWidth, (output?.width ?? panelWidth + Theme.space.xl) - Theme.space.xl)
+    implicitHeight: Math.min(panelHeight, (output?.height ?? panelHeight + Theme.barHeight + Theme.space.xl) - Theme.barHeight - Theme.space.xl)
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.namespace: "novashell-panel-" + kind
     WlrLayershell.layer: WlrLayer.Overlay
@@ -62,7 +65,7 @@ PanelWindow {
                 Loader {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    active: reveal.visible
+                    active: panel.visible
                     focus: panel.opened
                     enabled: panel.opened
                     sourceComponent: panel.content

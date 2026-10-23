@@ -158,11 +158,15 @@ En Preferencias del sistema → Teclado → Atajos → Añadir orden:
 
 | Acción | Orden |
 | :--- | :--- |
-| Lanzador | `qs ipc call novashell toggle launcher` |
-| Centro de control | `qs ipc call novashell toggle controls` |
-| Ventanas | `qs ipc call novashell toggle overview` |
-| Portapapeles | `qs ipc call novashell toggle clipboard` |
-| Cerrar panel | `qs ipc call novashell close` |
+| Lanzador | `qs ipc -c novashell call novashell toggle launcher` |
+| Centro de control | `qs ipc -c novashell call novashell toggle controls` |
+| Ventanas | `qs ipc -c novashell call novashell toggle overview` |
+| Portapapeles | `qs ipc -c novashell call novashell toggle clipboard` |
+| Cerrar panel | `qs ipc -c novashell call novashell close` |
+
+`-c novashell` elige la configuración de NovaShell (sin él, `qs` busca la
+configuración `default` y falla). Desde una consola de texto (Ctrl+Alt+F3)
+añade `--any-display` tras `-c novashell`.
 
 ## 9. Actualizar
 

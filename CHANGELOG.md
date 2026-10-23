@@ -23,6 +23,16 @@ versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
   13 roles propios.
 
 ### Corregido
+- Los paneles (lanzador, centro de control, ajustes…) solo se abrían la
+  primera vez: al reabrirlos quedaban invisibles pero activos, con el teclado
+  y los clics de su zona capturados. La ventana seguía la visibilidad efectiva
+  de su contenido, que es falsa mientras la ventana está oculta.
+- La orden de los atajos era `qs ipc call novashell …` y fallaba («Could not
+  find "default" config»): la correcta es `qs ipc -c novashell call novashell …`
+  (documentación y bienvenida).
+- Al cambiar de VT o reconectar una pantalla, KWin la retira un instante:
+  los paneles ya no fallan con una pantalla nula, un panel abierto en una
+  pantalla retirada se cierra y la IPC no apunta a pantallas antiguas.
 - Las aplicaciones abiertas desde NovaShell (lanzador, dock, captura)
   heredaban el aislamiento del servicio `nova-platform`: `sudo` fallaba con
   «no new privileges» y reiniciar el servicio las cerraba. Ahora cada una
@@ -113,6 +123,12 @@ en Plasma 6.8 y SDDM reales**, por eso sigue como pre-release.
 - Medidas de las pantallas de sesión en `Theme` (sin literales de diseño).
 
 ### Corregido
+- La orden de los atajos era `qs ipc call novashell …` y fallaba («Could not
+  find "default" config»): la correcta es `qs ipc -c novashell call novashell …`
+  (documentación y bienvenida).
+- Al cambiar de VT o reconectar una pantalla, KWin la retira un instante:
+  los paneles ya no fallan con una pantalla nula, un panel abierto en una
+  pantalla retirada se cierra y la IPC no apunta a pantallas antiguas.
 - `novactl uninstall --purge` no borraba los ajustes del daemon
   (`~/.config/novashell`).
 
