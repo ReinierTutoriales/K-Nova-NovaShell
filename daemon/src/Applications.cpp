@@ -2,7 +2,9 @@
 // Include GIO before Qt's signals macro.
 #include <gio/gdesktopappinfo.h>
 #include "Applications.h"
+#include "AppLauncher.h"
 #include <QDir>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QRegularExpression>
 #include <QStandardPaths>
@@ -95,14 +97,27 @@ Reply Applications::launch(const QJsonObject &payload) {
     if (!validId(id)) return invalid(QStringLiteral("identificador de aplicación inválido"));
     GDesktopAppInfo *app = g_desktop_app_info_new(id.toUtf8().constData());
     if (!app) return invalid(QStringLiteral("aplicación no instalada"));
-    GError *error = nullptr;
-    const bool launched = g_app_info_launch(G_APP_INFO(app), nullptr, nullptr, &error);
-    g_object_unref(app);
-    if (!launched) {
-        const QString message = error ? QString::fromUtf8(error->message) : QStringLiteral("no se pudo iniciar");
-        g_clear_error(&error);
-        return protocol::Error{QStringLiteral("launch-failed"), message.left(512), false};
+    const QString file = text(g_desktop_app_info_get_filename(app), 4096);
+    const QString name = text(g_app_info_get_display_name(G_APP_INFO(app)), 128);
+    // Preferred: the systemd user manager runs `gio launch <file>` as the
+    // app's own unit (GIO still expands Exec, field codes and activation).
+    const QString gio = QStandardPaths::findExecutable(QStringLiteral("gio"));
+    bool managed = false;
+    QString failure = QStringLiteral("no se pudo iniciar");
+    if (!gio.isEmpty() && QFileInfo(file).isAbsolute()) {
+        failure = AppLauncher::start(id, name, {gio, QStringLiteral("launch"), file}, &managed);
     }
+    if (!managed) {
+        // Without a systemd user session: direct GIO launch (inherits the
+        // daemon's process attributes; documented in the contract).
+        GError *error = nullptr;
+        const bool launched = g_app_info_launch(G_APP_INFO(app), nullptr, nullptr, &error);
+        failure = launched ? QString() : (error ? QString::fromUtf8(error->message) : failure);
+        g_clear_error(&error);
+    }
+    g_object_unref(app);
+    if (!failure.isEmpty())
+        return protocol::Error{QStringLiteral("launch-failed"), failure.left(512), false};
     return QJsonObject{{QStringLiteral("launched"), true}, {QStringLiteral("id"), id}};
 }
 }

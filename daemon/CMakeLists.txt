@@ -4,6 +4,8 @@ add_library(nova_protocol STATIC
     src/Protocol.h
     src/Router.cpp
     src/Router.h
+    src/AppLauncher.cpp
+    src/AppLauncher.h
     src/Applications.cpp
     src/Applications.h
     src/Preferences.cpp

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "DesktopActions.h"
+#include "AppLauncher.h"
 #include <QDBusConnectionInterface>
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
@@ -69,7 +70,12 @@ Reply DesktopActions::session(const QJsonObject &payload) {
 Reply DesktopActions::screenshot() {
     const QString executable = QStandardPaths::findExecutable(QStringLiteral("spectacle"));
     if (executable.isEmpty()) return protocol::Error{QStringLiteral("unavailable"), QStringLiteral("Spectacle no está instalado"), false};
-    const bool launched = QProcess::startDetached(executable, QStringList{QStringLiteral("--region")});
+    // Own unit like any app (see AppLauncher); direct start without systemd.
+    bool managed = false;
+    const QString failure = AppLauncher::start(QStringLiteral("org.kde.spectacle.desktop"), QStringLiteral("Spectacle"),
+                                               {executable, QStringLiteral("--region")}, &managed);
+    const bool launched = managed ? failure.isEmpty()
+                                  : QProcess::startDetached(executable, QStringList{QStringLiteral("--region")});
     return QJsonObject{{QStringLiteral("launched"), launched}};
 }
 Reply DesktopActions::wallpaper(const QJsonObject &payload) {

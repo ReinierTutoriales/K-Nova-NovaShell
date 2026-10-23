@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include "AppLauncher.h"
+#include <QDBusMessage>
+#include <QDBusMetaType>
 #include "Applications.h"
 #include "DesktopActions.h"
 #include "Preferences.h"
@@ -28,6 +31,24 @@ private slots:
                               QStringLiteral("fake\n.desktop"), QStringLiteral("command"), QStringLiteral(".desktop")})
             QVERIFY(!Applications::validId(id));
         QVERIFY(!Applications::validId(QString(256, QLatin1Char('a')) + QStringLiteral(".desktop")));
+    }
+    void launchedAppsGetTheirOwnUnitName() {
+        QCOMPARE(AppLauncher::unitName(QStringLiteral("org.kde.konsole.desktop"), QStringLiteral("abc123")),
+                 QStringLiteral("app-novashell-org.kde.konsole-abc123.service"));
+        // '-' separates fields and other bytes are escaped like systemd-escape.
+        QCOMPARE(AppLauncher::unitName(QStringLiteral("my-app ñ.desktop"), QStringLiteral("r")),
+                 QStringLiteral("app-novashell-my\\x2dapp\\x20\\xc3\\xb1-r.service"));
+        const QString longName = AppLauncher::unitName(QString(250, QLatin1Char('a')) + QStringLiteral(".desktop"),
+                                                       QStringLiteral("0123456789ab"));
+        QVERIFY(longName.toUtf8().size() <= 255);
+        const QDBusMessage request = AppLauncher::request(QStringLiteral("org.kde.konsole.desktop"), QStringLiteral("Konsole"),
+            {QStringLiteral("/usr/bin/gio"), QStringLiteral("launch"), QStringLiteral("/usr/share/applications/org.kde.konsole.desktop")});
+        QCOMPARE(request.member(), QStringLiteral("StartTransientUnit"));
+        // Signature systemd expects: StartTransientUnit(s name, s mode, a(sv), a(sa(sv))).
+        QCOMPARE(request.arguments().size(), 4);
+        QCOMPARE(QByteArray(QDBusMetaType::typeToSignature(request.arguments().at(2).metaType())), QByteArray("a(sv)"));
+        QCOMPARE(QByteArray(QDBusMetaType::typeToSignature(request.arguments().at(3).metaType())), QByteArray("a(sa(sv))"));
+        QVERIFY(request.arguments().at(0).toString().startsWith(QStringLiteral("app-novashell-org.kde.konsole-")));
     }
     void preferencesPersistAndRejectPartialUpdates() {
         QTemporaryDir directory;

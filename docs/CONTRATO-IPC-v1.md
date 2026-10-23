@@ -68,13 +68,13 @@ Las conexiones lentas se cierran al superar 128 KiB pendientes de escritura.
 | `platform.version` | — | `{"version": "0.3.0", "protocol": 1}` |
 | `platform.capabilities` | — | `{"protocol": 1, "operations": ["…"]}` (lista ordenada) |
 | `applications.list` | `offset` ≥ 0, `limit` 1–32 | `applications` (`id`, `name`, `genericName`, `icon`, `keywords`), `next`, `total`; páginas de hasta 48 KiB |
-| `application.launch` | `id`: identificador `.desktop` instalado | `launched`, `id`; resolución GIO, sin comando arbitrario |
+| `application.launch` | `id`: identificador `.desktop` instalado | `launched`, `id`; resolución GIO, sin comando arbitrario. Con gestor de usuario systemd, la app corre como unidad propia `app-novashell-<id>-<aleatorio>.service` (`StartTransientUnit` con `gio launch <archivo .desktop>`): no hereda el aislamiento del daemon (`NoNewPrivileges` impediría `sudo`) ni su cgroup (reiniciar el daemon no la cierra). Sin systemd, lanzamiento GIO directo |
 | `settings.get` | — | `values`: preferencias validadas del usuario |
 | `settings.patch` | Claves permitidas de `Preferences::defaults()` | `values`; escritura atómica, rechazo completo si hay una clave inválida |
 | `windows.list` | — | `available`, `windows`, `desktops`, `activeWindow`, `currentDesktop` |
 | `window.action` | `action`: activate/minimize/maximize/close/desktop; `id` existente | `accepted`; falla si KWin no está preparado, nunca se encola para más tarde |
 | `session.action` | `action`: lock/suspend/logout/reboot/poweroff | `accepted`, `token`; D-Bus tipado, autorización del sistema |
-| `screenshot.capture` | — | `launched`; abre el selector de región de Spectacle con argumentos fijos |
+| `screenshot.capture` | — | `launched`; abre el selector de región de Spectacle con argumentos fijos, como unidad propia igual que `application.launch` |
 | `wallpaper.set` | `url` de imagen local ≤ 64 MiB; `screen` 0–31 | `accepted`, `token`; API de wallpaper de Plasma |
 | `brightness.get` | — | `available`, `displays`; lectura asíncrona y caché de 1 s |
 | `brightness.set` | `id` de pantalla enumerada; `percent` entero 1–100 | `accepted`, `token`; API ScreenBrightness de KDE |
