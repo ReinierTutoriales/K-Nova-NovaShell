@@ -22,6 +22,12 @@ versiones según [SemVer](https://semver.org/lang/es/). Mientras la versión sea
 - 73 sinónimos de carpetas (Dolphin, KIO, biblioteca heredada) enlazados a los
   13 roles propios.
 
+### Corregido
+- Las aplicaciones abiertas desde NovaShell (lanzador, dock, captura)
+  heredaban el aislamiento del servicio `nova-platform`: `sudo` fallaba con
+  «no new privileges» y reiniciar el servicio las cerraba. Ahora cada una
+  corre como unidad propia de systemd (`app-novashell-…service`).
+
 ### Cambiado
 - Carpetas NovaGlass en vidrio monocromo (perla y grafito) en las cuatro
   apariencias; sin tonos azules.

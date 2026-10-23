@@ -92,4 +92,9 @@
 - `novashell.service`: `KillMode=process` (reiniciar el shell no mata las apps
   lanzadas desde él), `QS_DISABLE_FILE_WATCHER=1` (sin recargas de QML a medio
   copiar), `MALLOC_ARENA_MAX=2`.
+- `nova-platform.service` va aislado (`NoNewPrivileges`, `RestrictRealtime`,
+  `LockPersonality`, `SystemCallArchitectures=native`). Las apps que lanza
+  no heredan nada de eso: el gestor de usuario de systemd las arranca como
+  unidades transitorias `app-novashell-<id>-<aleatorio>.service` en
+  `app.slice` (convención de KDE/GNOME), con su propio cgroup.
 - La instalación del árbol QML es atómica (preparar al lado + `mv`).
